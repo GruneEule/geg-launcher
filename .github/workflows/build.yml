@@ -77,7 +77,11 @@ jobs:
 
       - name: Build Tauri App (No Signing)
         run: |
-          yarn tauri build --target ${{ matrix.target != '' && matrix.target || '' }}
+          if [ -n "${{ matrix.target }}" ]; then
+            yarn tauri build --target ${{ matrix.target }}
+          else
+            yarn tauri build
+          fi
         env:
           # Deaktiviere Signing komplett
           TAURI_SKIP_SIGNING: "true"
