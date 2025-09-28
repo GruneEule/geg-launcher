@@ -66,8 +66,18 @@ jobs:
 
       - name: Debug project structure
         run: |
-          ls -la
-          ls -la src-tauri/ || true
+          # Plattformspezifische Befehle für das Listing
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            dir
+            if [ -d "src-tauri" ]; then
+              dir src-tauri
+            fi
+          else
+            ls -la
+            if [ -d "src-tauri" ]; then
+              ls -la src-tauri/
+            fi
+          fi
 
       - name: Install frontend dependencies
         run: yarn install --frozen-lockfile
@@ -117,20 +127,24 @@ jobs:
         run: |
           echo "--- Listing content BEFORE rename ---"
           echo "Output path: ${{ matrix.output_path }}"
-          Get-ChildItem -Path "${{ matrix.output_path }}\release\bundle" -Recurse -ErrorAction SilentlyContinue
+          Get-ChildItem -Path "${{ matrix.output_path }}" -Recurse -ErrorAction SilentlyContinue
           echo "-----------------------------------"
 
           $ARTIFACT_DIR = "${{ matrix.output_path }}\nsis"
           echo "Listing content of $ARTIFACT_DIR"
-          Get-ChildItem -Path $ARTIFACT_DIR -Recurse
+          Get-ChildItem -Path $ARTIFACT_DIR -Recurse -ErrorAction SilentlyContinue
           # Finde die Originalnamen (angenommen nur eine .exe)
-          $ExeFile = Get-ChildItem -Path $ARTIFACT_DIR -Filter *.exe
+          $ExeFile = Get-ChildItem -Path $ARTIFACT_DIR -Filter *.exe -ErrorAction SilentlyContinue
 
-          # Benenne .exe um
-          Move-Item -Path $ExeFile.FullName -Destination "$ARTIFACT_DIR\${{ matrix.asset_name_base }}.exe"
+          if ($ExeFile) {
+            # Benenne .exe um
+            Move-Item -Path $ExeFile.FullName -Destination "$ARTIFACT_DIR\${{ matrix.asset_name_base }}.exe"
+          } else {
+            Write-Warning "No .exe file found in $ARTIFACT_DIR"
+          }
 
           echo "Final content of $ARTIFACT_DIR after move"
-          Get-ChildItem -Path $ARTIFACT_DIR -Recurse
+          Get-ChildItem -Path $ARTIFACT_DIR -Recurse -ErrorAction SilentlyContinue
 
           echo "--- Listing content AFTER rename ---"
           echo "Output path: ${{ matrix.output_path }}"
