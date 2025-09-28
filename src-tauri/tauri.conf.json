@@ -119,6 +119,12 @@
         "name": "NoriskPack File",
         "description": "NoRiskClient Modpack File"
       }
-    ]
+    ],
+    "windows": {
+      "signCommand": null,
+      "certificateThumbprint": null,
+      "digestAlgorithm": null,
+      "timestampUrl": null
+    }
   }
 }
