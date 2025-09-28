@@ -75,13 +75,13 @@ jobs:
       - name: Install frontend dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Build Tauri App
-        uses: tauri-apps/tauri-action@v0
+      - name: Build Tauri App (No Signing)
+        run: |
+          yarn tauri build --target ${{ matrix.target != '' && matrix.target || '' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tauriScript: "yarn tauri"
-          args: ${{ matrix.target != '' && format('--target {0}', matrix.target) || '' }}
+          # Deaktiviere Signing komplett
+          TAURI_SKIP_SIGNING: "true"
+        shell: bash
 
       # --- Umbenennen und Artefakte vorbereiten ---
       - name: Rename Linux Artifacts
@@ -92,7 +92,7 @@ jobs:
           ls -R "${{ matrix.output_path }}" || true
           echo "-----------------------------------"
 
-          APP_BASE_NAME="NoRisk Launcher"
+          APP_BASE_NAME="GEG Launcher"
           APPIMAGE_DIR=${{ matrix.output_path }}/appimage
           DEB_DIR=${{ matrix.output_path }}/deb
 
@@ -153,7 +153,7 @@ jobs:
           ls -R "${{ matrix.output_path }}" || true 
           echo "-----------------------------------"
 
-          APP_BASE_NAME="NoRisk Launcher"
+          APP_BASE_NAME="GEG Launcher"
           ARTIFACT_DIR_DMG=${{ matrix.output_path }}/dmg
           ARTIFACT_DIR_APP=${{ matrix.output_path }}/macos
           RENAMED_DIR="$ARTIFACT_DIR_APP/renamed"
