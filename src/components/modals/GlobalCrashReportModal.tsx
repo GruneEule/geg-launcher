@@ -200,15 +200,7 @@ export function GlobalCrashReportModal() {
     }
   };
   
-  const handleContactSupport = async () => {
-    try {
-      await openExternalUrl('https://discord.norisk.gg');
-      toast.success("Opened NoRisk Discord in your browser!");
-    } catch (error) {
-      console.error("Failed to open Discord URL:", error);
-      toast.error("Could not open Discord. Please go to discord.norisk.gg manually.");
-    }
-  };
+  // Discord-Support-Option entfernt
 
   let primaryButtonText = 'Upload Logs & Report';
   if (mclogsUrl && noriskReportSubmitted) {
@@ -224,14 +216,6 @@ export function GlobalCrashReportModal() {
         disabled={isProcessing || !crashData?.process_metadata}
       >
         {primaryButtonText}
-      </Button>
-      <Button 
-        onClick={handleContactSupport} 
-        variant="default" 
-        icon={<Icon icon="solar:letter-linear" className="w-5 h-5" />}
-        disabled={isProcessing}
-      >
-        Contact Support
       </Button>
     </div>
   );

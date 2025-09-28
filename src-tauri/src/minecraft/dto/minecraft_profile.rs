@@ -7,8 +7,8 @@ pub struct MinecraftProfile {
     pub id: String,
     /// Player username
     pub name: String,
-    /// Properties of the profile, including skin and cape data
-    pub properties: Vec<ProfileProperty>,
+    /// Properties of the profile, ohne Cape-Daten
+    pub properties: Vec<ProfileProperty>, // Cape-Daten entfernt
 }
 
 /// A property of a Minecraft profile, typically containing textures
@@ -29,11 +29,11 @@ pub struct TexturesData {
     /// Unix timestamp in milliseconds
     pub timestamp: i64,
     /// Profile's UUID
-    pub profileId: String,
+    pub profile_id: String,
     /// Profile's name
-    pub profileName: String,
-    /// Textures dictionary containing skin and cape information
-    pub textures: TexturesDictionary,
+    pub profile_name: String,
+    /// Textures dictionary containing skin information
+    pub textures: TexturesDictionary, // Cape-Daten entfernt
 }
 
 /// Dictionary of textures for a Minecraft profile
@@ -41,10 +41,7 @@ pub struct TexturesData {
 pub struct TexturesDictionary {
     /// Skin information
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub SKIN: Option<TextureInfo>,
-    /// Cape information
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub CAPE: Option<TextureInfo>,
+    pub skin: Option<TextureInfo>,
 }
 
 /// Information about a texture (skin or cape)

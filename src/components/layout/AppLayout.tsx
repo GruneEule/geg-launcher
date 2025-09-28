@@ -32,7 +32,7 @@ const navItems = [
   { id: "profiles", icon: "solar:user-id-bold", label: "Profiles" },
   { id: "mods", icon: "solar:widget-bold", label: "Mods" },
   { id: "skins", icon: "solar:emoji-funny-circle-bold", label: "Skins" },
-  { id: "capes", icon: "solar:shop-bold", label: "Capes" },
+  // Capes-Tab entfernt
   { id: "settings", icon: "solar:settings-bold", label: "Settings" },
 ];
 

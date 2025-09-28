@@ -1,4 +1,4 @@
-pub mod cape_api;
+// Cape-API entfernt
 pub mod fabric_api;
 pub mod forge_api;
 pub mod mc_api;

@@ -90,11 +90,6 @@ use tauri::{
 // Import path commands
 use commands::path_commands::{get_launcher_directory, resolve_image_path};
 
-// Import cape commands
-use commands::cape_command::{
-    browse_capes, delete_cape, download_template_and_open_explorer, equip_cape, get_player_capes,
-    unequip_cape, upload_cape, add_favorite_cape, remove_favorite_cape, get_capes_by_hashes,
-};
 
 // Import NRC commands
 use commands::nrc_commands::get_news_and_changelogs_command;
@@ -416,14 +411,7 @@ async fn main() {
             remove_skin,
             update_skin_properties,
             set_discord_state,
-            browse_capes,
-            get_player_capes,
-            equip_cape,
-            delete_cape,
-            upload_cape,
-            unequip_cape,
-            add_favorite_cape,
-            remove_favorite_cape,
+            // Cape-Kommandos entfernt
             refresh_norisk_packs,
             refresh_standard_versions,
             is_content_installed,
@@ -458,7 +446,6 @@ async fn main() {
             commands::minecraft_command::get_profile_by_name_or_uuid,
             commands::minecraft_command::add_skin_locally,
             commands::file_command::get_image_preview,
-            download_template_and_open_explorer,
             get_all_profiles_and_last_played,
             get_local_content,
             install_local_content_to_profile,
@@ -477,7 +464,7 @@ async fn main() {
             commands::flagsmith_commands::refresh_blocked_mods_config,
             commands::nrc_commands::get_mobile_app_token,
             commands::nrc_commands::reset_mobile_app_token,
-            get_capes_by_hashes
+            // get_capes_by_hashes entfernt
         ])
         .build(tauri::generate_context!()) 
         .expect("error while building tauri application") 

@@ -1461,7 +1461,7 @@ pub fn extract_skin_info_from_profile(
     // Access textures.SKIN correctly
     let skin_texture_info = textures_data
         .textures // This is TexturesDictionary
-        .SKIN // This is Option<TextureInfo>
+        .skin // This is Option<TextureInfo>
         .ok_or_else(|| {
             error!(
                 "[MC Utils] SKIN texture info not found for profile {}",

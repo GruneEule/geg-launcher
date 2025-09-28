@@ -5,13 +5,7 @@ import { Icon } from "@iconify/react";
 import { toast } from "react-hot-toast";
 import { Modal } from "../ui/Modal";
 import { Button } from "../ui/buttons/Button";
-import {
-  discordAuthLink,
-  discordAuthStatus,
-  discordAuthUnlink,
-  getMobileAppToken,
-  resetMobileAppToken,
-} from "../../services/nrc-service";
+import { getMobileAppToken, resetMobileAppToken } from "../../services/nrc-service";
 import { Skeleton } from "../ui/Skeleton";
 import { useSocialsModalStore } from "../../store/socials-modal-store";
 import { openExternalUrl } from "../../services/tauri-service";
@@ -28,9 +22,6 @@ interface SocialPlatform {
   icon: string;
   visitUrl?: string;
   isImplemented: boolean;
-  fetchStatus?: () => Promise<boolean>;
-  handleLink?: () => Promise<void>;
-  handleUnlink?: () => Promise<void>;
   showMobileApp?: boolean;
   generateQrCode?: () => Promise<void>;
   resetToken?: () => Promise<void>;
@@ -42,11 +33,7 @@ export function SocialsModal() {
   const { accentColor } = useThemeStore();
   const { confirm, confirmDialog } = useConfirmDialog();
 
-  // States for Discord (can be generalized later if needed)
-  const [isLoadingDiscordStatus, setIsLoadingDiscordStatus] = useState(true);
-  const [isDiscordLinked, setIsDiscordLinked] = useState(false);
-  const [isProcessingDiscordAction, setIsProcessingDiscordAction] =
-    useState(false);
+  // Discord-States entfernt
 
   const [isLoadingMobileAppToken, setIsLoadingMobileAppToken] = useState(true);
   const [mobileAppToken, setMobileAppToken] = useState<string | null>(null);
@@ -55,21 +42,7 @@ export function SocialsModal() {
   const [showQrCode, setShowQrCode] = useState(false);
   const [experimentalMode, setExperimentalMode] = useState(false);
 
-  const fetchDiscordStatus = useCallback(async (): Promise<boolean> => {
-    setIsLoadingDiscordStatus(true);
-    try {
-      const status = await discordAuthStatus();
-      setIsDiscordLinked(status);
-      return status;
-    } catch (error) {
-      console.error("Failed to fetch Discord auth status:", error);
-      toast.error("Could not fetch Discord status. See console.");
-      setIsDiscordLinked(false);
-      return false;
-    } finally {
-      setIsLoadingDiscordStatus(false);
-    }
-  }, []);
+  // Discord-Funktion entfernt
 
   const fetchMobileAppToken = useCallback(async () => {
     setIsLoadingMobileAppToken(true);
@@ -97,7 +70,6 @@ export function SocialsModal() {
 
   useEffect(() => {
     if (isModalOpen) {
-      fetchDiscordStatus();
       fetchMobileAppToken();
       fetchConfig();
       // Future: fetch statuses for other implemented platforms
@@ -105,59 +77,12 @@ export function SocialsModal() {
       setShowQrCode(false);
       setMobileAppToken(null);
     }
-  }, [isModalOpen, fetchDiscordStatus, fetchMobileAppToken, fetchConfig]);
+  }, [isModalOpen, fetchMobileAppToken, fetchConfig]);
 
-  const handleDiscordLink = async () => {
-    setIsProcessingDiscordAction(true);
-    try {
-      await discordAuthLink(); // Rust backend handles window, this waits for it to complete
 
-      // Now that the linking window process is done, re-fetch status to update UI
-      const successfullyLinked = await fetchDiscordStatus();
-
-      if (successfullyLinked) {
-        toast.success("Discord account successfully linked!");
-      } else {
-        toast(
-          "Discord linking process finished. Please check your link status or try again if needed."
-        );
-      }
-      // Modal remains open to show updated status
-    } catch (error) {
-      console.error("Failed to initiate Discord linking process:", error);
-      toast.error("Could not start Discord linking. See console for details.");
-    } finally {
-      setIsProcessingDiscordAction(false);
-    }
-  };
-
-  const handleDiscordUnlink = async () => {
-    setIsProcessingDiscordAction(true);
-    try {
-      await discordAuthUnlink();
-      toast.success("Discord account unlinked successfully.");
-      setIsDiscordLinked(false);
-    } catch (error) {
-      console.error("Failed to unlink Discord account:", error);
-      toast.error("Could not unlink Discord. See console.");
-    } finally {
-      setIsProcessingDiscordAction(false);
-    }
-  };
-
+  // Show QR code for mobile app
   const handleGenerateQrCode = async () => {
-    const confirmed = await confirm({
-      title: "Show QR Code",
-      message:
-        "This QR code contains your norisk token. Do not share it on stream or with others as it could compromise your account security.",
-      confirmText: "Show QR Code",
-      cancelText: "Cancel",
-      type: "warning",
-    });
-
-    if (confirmed) {
-      setShowQrCode(true);
-    }
+    setShowQrCode(true);
   };
 
   const handleResetMobileAppToken = async () => {
@@ -180,7 +105,6 @@ export function SocialsModal() {
 
     return JSON.stringify({
       uuid: activeAccount.id,
-      experimental: experimentalMode,
       token: mobileAppToken,
     });
   };
@@ -195,50 +119,24 @@ export function SocialsModal() {
 
   const socialPlatforms: SocialPlatform[] = [
     {
-      key: "mobile",
-      name: "Mobile App",
-      icon: "material-symbols:phone-android",
-      isImplemented: true,
-      showMobileApp: true,
-      generateQrCode: handleGenerateQrCode,
-      resetToken: handleResetMobileAppToken,
-    },
-    {
-      key: "discord",
-      name: "Discord",
-      icon: "ic:baseline-discord",
-      visitUrl: "https://discord.norisk.gg",
-      isImplemented: true,
-      fetchStatus: fetchDiscordStatus,
-      handleLink: handleDiscordLink,
-      handleUnlink: handleDiscordUnlink,
-    },
-    {
       key: "youtube",
       name: "YouTube",
       icon: "mdi:youtube",
-      visitUrl: "https://youtube.norisk.gg",
+      visitUrl: "https://www.youtube.com/@grueneeule",
       isImplemented: false,
     },
     {
       key: "x",
       name: "X (Twitter)",
       icon: "simple-icons:x",
-      visitUrl: "https://twitter.norisk.gg",
-      isImplemented: false,
-    },
-    {
-      key: "tiktok",
-      name: "TikTok",
-      icon: "ic:baseline-tiktok",
-      visitUrl: "https://tiktok.norisk.gg",
+      visitUrl: "https://x.com/grueneeule",
       isImplemented: false,
     },
     {
       key: "twitch",
       name: "Twitch",
       icon: "mdi:twitch",
-      visitUrl: "https://twitch.norisk.gg",
+      visitUrl: "https://www.twitch.tv/grueneeulede",
       isImplemented: false,
     },
   ];
@@ -248,19 +146,8 @@ export function SocialsModal() {
   }
 
   const renderPlatformRow = (platform: SocialPlatform) => {
-    const isLoadingStatus =
-      platform.key === "discord"
-        ? isLoadingDiscordStatus
-        : platform.key === "mobile"
-          ? isLoadingMobileAppToken
-          : false;
-    const isLinked = platform.key === "discord" ? isDiscordLinked : false;
-    const isProcessingAction =
-      platform.key === "discord"
-        ? isProcessingDiscordAction
-        : platform.key === "mobile"
-          ? isProcessingMobileAppAction
-          : false;
+    const isLoadingStatus = platform.key === "mobile" ? isLoadingMobileAppToken : false;
+    const isProcessingAction = platform.key === "mobile" ? isProcessingMobileAppAction : false;
 
     if (platform.showMobileApp) {
       return (
@@ -339,45 +226,11 @@ export function SocialsModal() {
             icon={platform.icon}
             className="w-7 h-7 mr-3 text-white/80 flex-shrink-0"
           />
-          <span className="text-white/90 font-medium font-minecraft-ten text-xs">
-            Link {platform.name} account
-          </span>
+            <span className="text-white/90 font-medium font-minecraft-ten text-xs">
+              {platform.name}
+            </span>
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0">
-          {platform.isImplemented &&
-          platform.handleLink &&
-          platform.handleUnlink ? (
-            isLinked ? (
-              <Button
-                variant="destructive"
-                onClick={platform.handleUnlink}
-                disabled={isProcessingAction || isLoadingStatus}
-                size="sm"
-                icon={<Icon icon="mdi:link-off" />}
-              >
-                Unlink
-              </Button>
-            ) : (
-              <Button
-                variant="default"
-                onClick={platform.handleLink}
-                disabled={isProcessingAction || isLoadingStatus}
-                size="sm"
-                icon={<Icon icon="mdi:link-variant" />}
-              >
-                Link
-              </Button>
-            )
-          ) : (
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled
-              icon={<Icon icon="mdi:link-variant" />}
-            >
-              Link
-            </Button>
-          )}
           {platform.visitUrl && (
             <IconButton
               variant="ghost"
@@ -408,16 +261,10 @@ export function SocialsModal() {
         width="md"
       >
         <div className="p-4 space-y-2 min-h-[45vh] max-h-[70vh] overflow-y-auto custom-scrollbar">
-          {(isLoadingDiscordStatus || isLoadingMobileAppToken) &&
-          (socialPlatforms.find((p) => p.key === "discord")?.isImplemented ||
-            socialPlatforms.find((p) => p.key === "mobile")?.isImplemented) ? (
+          {isLoadingMobileAppToken && socialPlatforms.find((p) => p.key === "mobile")?.isImplemented ? (
             <div className="space-y-2">
               {socialPlatforms
-                .filter(
-                  (p) =>
-                    p.isImplemented &&
-                    (p.key === "discord" || p.key === "mobile")
-                )
+                .filter((p) => p.isImplemented && p.key === "mobile")
                 .map((platform, i) => (
                   <div
                     key={`skeleton-${platform.key}-${i}`}
@@ -436,52 +283,6 @@ export function SocialsModal() {
                       <Skeleton variant="block" width={80} height={32} />
                       {platform.visitUrl && (
                         <Skeleton variant="block" width={32} height={32} />
-                      )}
-                    </div>
-                  </div>
-                ))}
-              {socialPlatforms
-                .filter(
-                  (p) =>
-                    !p.isImplemented ||
-                    (p.key !== "discord" && p.key !== "mobile")
-                )
-                .map((platform) => (
-                  <div
-                    key={`skeleton-${platform.key}`}
-                    className="flex items-center justify-between p-3 bg-black/20 rounded-md opacity-70 gap-2"
-                  >
-                    <div className="flex items-center flex-grow">
-                      <Icon
-                        icon={platform.icon}
-                        className="w-7 h-7 mr-3 text-white/50 flex-shrink-0"
-                      />
-                      <span className="text-white/60 font-minecraft-ten text-xs">
-                        Link {platform.name} account
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        disabled
-                        icon={<Icon icon="mdi:link-variant" />}
-                      >
-                        Link
-                      </Button>
-                      {platform.visitUrl && (
-                        <IconButton
-                          variant="ghost"
-                          size="sm"
-                          disabled
-                          icon={
-                            <Icon
-                              icon="mdi:arrow-top-right-bold-box-outline"
-                              className="w-5 h-5"
-                            />
-                          }
-                          aria-label={`Visit ${platform.name} page`}
-                        />
                       )}
                     </div>
                   </div>
