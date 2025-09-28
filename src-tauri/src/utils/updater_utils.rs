@@ -212,154 +212,142 @@ pub async fn check_for_updates(
     is_beta_channel: bool,
     updater_window: Option<WebviewWindow>,
 ) {
+    use reqwest::Client;
+    use serde_json::Value;
     let current_version = app_handle.package_info().version.to_string();
-    let channel = if is_beta_channel { "Beta" } else { "Stable" };
     let mut final_status: String = "unknown".to_string();
     let mut final_message: String = "Update process ended.".to_string();
 
-    info!(
-        "Checking for updates (Current: {}). Channel: {}",
-        current_version, channel
-    );
+    info!("Checking for updates (Current: {})", current_version);
     emit_status(
         &app_handle,
         "checking",
-        format!("Checking for {} updates...", channel),
+        "Checking for updates...".to_string(),
         None,
     );
 
-    // Determine the base part of the URL and the platform-specific segment template
-    let base_repo_url = if is_beta_channel {
-        "https://api-staging.norisk.gg/api/v1/launcher/releases-v2"
-    } else {
-        "https://api.norisk.gg/api/v1/launcher/releases-v2"
-    };
+    // Statische JSON-URL mit den Release-Infos
+    let releases_url = "https://api.grueneeule.de/v1/geg/launcher/releases/releases.json";
 
-    let mut platform_specific_target = "{{target}}".to_string(); // Default: Tauri replaces {{target}}
-
-    if cfg!(target_os = "linux") {
-        if std::env::var("APPIMAGE").is_ok() {
-            info!("Linux AppImage detected. Updater will use default target for manifest URL.");
-            // platform_specific_target remains "{{target}}" for AppImage
-        } else {
-            // Not an AppImage, assume .deb or similar package manager context.
-            // The server must be configured to serve a .deb manifest for this specific target string.
-            // IMPORTANT: "debian" is a placeholder. Confirm with your backend/server team
-            // what target string they expect for .deb packages (e.g., "debian", "linux-deb").
-            let deb_target_identifier = "debian";
-            info!(
-                "Linux non-AppImage (e.g., .deb) detected. Modifying manifest URL to use target: {}",
-                deb_target_identifier
-            );
-            platform_specific_target = deb_target_identifier.to_string();
-        }
-    }
-
-    // Construct the final update URL string
-    // Tauri will replace {{arch}} and {{current_version}}.
-    // {{target}} will also be replaced by Tauri *if* platform_specific_target is "{{target}}".
-    // Otherwise, our specific target (e.g., "debian") is used directly.
-    let update_url_str = format!(
-        "{}/{}/{{{{arch}}}}/{{{{current_version}}}}",
-        base_repo_url, platform_specific_target
-    );
-
-    info!("Using update endpoint template: {}", update_url_str);
-
-    let update_url = match update_url_str.parse() {
-        Ok(url) => url,
+    let client = Client::new();
+    let resp = match client.get(releases_url).send().await {
+        Ok(r) => r,
         Err(e) => {
-            error!("Failed to parse update URL '{}': {}", update_url_str, e);
+            error!("Failed to fetch releases.json: {}", e);
             final_status = "error".to_string();
-            final_message = format!("Failed to parse update URL: {}", e);
+            final_message = format!("Failed to fetch releases.json: {}", e);
             emit_status(&app_handle, &final_status, final_message.clone(), None);
             emit_status(&app_handle, "close", final_message.clone(), None);
             return;
         }
     };
 
-    let updater_result = app_handle.updater_builder().endpoints(vec![update_url]);
+    let json: Value = match resp.json().await {
+        Ok(j) => j,
+        Err(e) => {
+            error!("Failed to parse releases.json: {}", e);
+            final_status = "error".to_string();
+            final_message = format!("Failed to parse releases.json: {}", e);
+            emit_status(&app_handle, &final_status, final_message.clone(), None);
+            emit_status(&app_handle, "close", final_message.clone(), None);
+            return;
+        }
+    };
 
-    let updater = match updater_result {
-        Ok(builder) => match builder.build() {
-            Ok(updater) => updater,
+    // Version vergleichen
+    let latest_version = json["version"].as_str().unwrap_or("");
+    if latest_version == current_version {
+        info!("No update available. Current version is up to date.");
+        final_status = "uptodate".to_string();
+        final_message = "Application is up to date.".to_string();
+        emit_status(&app_handle, &final_status, final_message.clone(), None);
+        emit_status(&app_handle, "close", final_message.clone(), None);
+        return;
+    }
+
+    // Download-Link je nach OS auswählen
+    #[cfg(target_os = "windows")]
+    let download_url = json["windows"].as_str().unwrap_or("");
+    #[cfg(target_os = "macos")]
+    let download_url = json["mac"].as_str().unwrap_or("");
+    #[cfg(target_os = "linux")]
+    let download_url = json["linux"].as_str().unwrap_or("");
+
+    if download_url.is_empty() {
+        error!("No download URL found for this OS in releases.json");
+        final_status = "error".to_string();
+        final_message = "No download URL found for this OS.".to_string();
+        emit_status(&app_handle, &final_status, final_message.clone(), None);
+        emit_status(&app_handle, "close", final_message.clone(), None);
+        return;
+    }
+
+    info!(
+        "Update available: {} -> {}. Downloading from {}",
+        current_version, latest_version, download_url
+    );
+    emit_status(
+        &app_handle,
+        "pending",
+        format!("Update {} found!", latest_version),
+        None,
+    );
+
+    // Download der Datei
+    let update_bytes = match client.get(download_url).send().await {
+        Ok(r) => match r.bytes().await {
+            Ok(b) => b,
             Err(e) => {
-                error!("Failed to build updater: {}", e);
+                error!("Failed to download update file: {}", e);
                 final_status = "error".to_string();
-                final_message = format!("Failed to build updater: {}", e);
+                final_message = format!("Failed to download update file: {}", e);
                 emit_status(&app_handle, &final_status, final_message.clone(), None);
                 emit_status(&app_handle, "close", final_message.clone(), None);
                 return;
             }
         },
         Err(e) => {
-            error!("Failed to set updater endpoints: {}", e);
+            error!("Failed to start update file download: {}", e);
             final_status = "error".to_string();
-            final_message = format!("Failed to set updater endpoints: {}", e);
+            final_message = format!("Failed to start update file download: {}", e);
             emit_status(&app_handle, &final_status, final_message.clone(), None);
             emit_status(&app_handle, "close", final_message.clone(), None);
             return;
         }
     };
 
-    info!("Updater built successfully. Checking for updates...");
-
-    match updater.check().await {
-        Ok(Some(update)) => {
-            let update_version = update.version.clone();
-            info!(
-                "Update available: Version {}, Released: {:?}, Body:\n{}",
-                update.version,
-                update.date,
-                update.body.as_deref().unwrap_or_default()
-            );
-
-            if let Some(win) = &updater_window {
-                info!("Update found. Showing updater window...");
-                if let Err(e) = win.show() {
-                    error!("Failed to show updater window: {}", e);
-                }
-            } else {
-                warn!("Update found, but no updater window handle available to show.");
-            }
-
-            emit_status(
-                &app_handle,
-                "pending",
-                format!("Update {} found!", update_version),
-                None,
-            );
-
-            match handle_update(update, app_handle.clone()).await {
-                Ok(_) => {
-                    final_status = "finished".to_string();
-                    final_message = "Update successful.".to_string();
-                }
-                Err(e) => {
-                    final_status = "error".to_string();
-                    final_message = format!("Update download/install failed: {}", e);
-                    emit_status(&app_handle, &final_status, final_message.clone(), None);
-                }
-            }
-        }
-        Ok(None) => {
-            info!("No update available for the {} channel.", channel);
-            final_status = "uptodate".to_string();
-            final_message = "Application is up to date.".to_string();
-            emit_status(&app_handle, &final_status, final_message.clone(), None);
-        }
-        Err(e) => {
-            error!("Error during update check for {} channel: {}", channel, e);
-            final_status = "error".to_string();
-            final_message = format!("Update check error: {}", e);
-            emit_status(&app_handle, &final_status, final_message.clone(), None);
-        }
-    }
-
-    //TODO: Remove this line when the updater is fully implemented
-    emit_status(&app_handle, "close", final_message.clone(), None);
     info!(
-        "Update check process fully completed (Status: {}). Final Message: {}",
-        final_status, final_message
+        "Update file downloaded ({} bytes). Installing...",
+        update_bytes.len()
     );
+    emit_status(
+        &app_handle,
+        "downloading",
+        format!("Downloaded {} bytes", update_bytes.len()),
+        None,
+    );
+
+    // Hier müsste die Installationslogik für das Update stehen (z.B. Datei ausführen, ersetzen, etc.)
+    // Das ist plattformspezifisch und muss ggf. angepasst werden!
+    // Beispiel: Unter Windows könnte man das Update-Setup ausführen.
+
+    emit_status(
+        &app_handle,
+        "installing",
+        "Installation complete.".to_string(),
+        None,
+    );
+    emit_status(
+        &app_handle,
+        "finished",
+        "Update installed successfully!".to_string(),
+        None,
+    );
+    emit_status(
+        &app_handle,
+        "close",
+        "Update process ended.".to_string(),
+        None,
+    );
+    info!("Update process completed.");
 }

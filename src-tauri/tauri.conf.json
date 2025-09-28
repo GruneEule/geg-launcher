@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "NoRisk Launcher",
+  "productName": "GEG Launcher",
   "version": "0.6.8",
   "identifier": "gg.norisk.NoRiskClientLauncherV3",
   "build": {

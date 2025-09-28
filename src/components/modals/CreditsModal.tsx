@@ -47,33 +47,20 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
               <div className="min-h-[3rem] flex flex-col justify-center">
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl font-minecraft text-white lowercase tracking-wider">
-                    Deadmake
-                  </span>
-                  <span className="text-white/50 font-minecraft text-lg lowercase">
-                    aka Maggus
+                    GrüneEule
                   </span>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <div className="text-right mr-3">
-                <p className="text-white/80 font-minecraft text-lg lowercase tracking-wide">
-                  UI & Frontend
-                </p>
               </div>
               <IconButton
                 icon={<Icon icon="solar:global-bold" className="w-4 h-4" />}
-                onClick={() => handleOpenUrl("https://deadmake.dev")}
+                onClick={() => handleOpenUrl("https://grueneeule.de")}
                 variant="default"
                 size="sm"
-                title="Visit deadmake.dev"
-              />
-              <IconButton
-                icon={<span className="text-sm">🍋</span>}
-                onClick={() => handleOpenUrl("https://fruity.dev")}
-                variant="default"
-                size="sm"
-                title="Visit fruity.dev"
+                title="Visit GrüneEule Website"
               />
             </div>
           </div>
@@ -92,14 +79,16 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
               <div className="min-h-[3rem] flex flex-col justify-center">
                 <div className="flex items-baseline gap-2">
                   <h4 className="text-2xl font-minecraft text-white lowercase tracking-wider">
-                    NoRisk
+                    JumpStone
                   </h4>
-                </div>
+                  <span className="text-white/50 font-minecraft text-lg lowercase">
+                    Developer, Designer 
+                  </span>                </div>
               </div>
             </div>
             <div className="text-right">
               <p className="text-white/80 font-minecraft text-lg lowercase tracking-wide">
-                Backend & Core
+                Frontend & Backend
               </p>
             </div>
           </div>

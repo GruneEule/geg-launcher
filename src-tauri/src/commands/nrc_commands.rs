@@ -1,26 +1,58 @@
 use crate::error::{AppError, CommandError};
 use crate::minecraft::api::norisk_api::CrashlogDto;
 use crate::minecraft::api::norisk_api::NoRiskApi;
-use crate::minecraft::api::wordpress_api::{BlogPost, WordPressApi};
-use crate::minecraft::auth::minecraft_auth::Credentials;
 use crate::state::state_manager::State;
 use chrono::{Duration as ChronoDuration, Utc};
+use log::debug;
 use log::info;
-use log::{debug, error};
-use std::sync::Arc;
 use tauri::{AppHandle, Manager, Url, UserAttentionType, WebviewUrl, WebviewWindowBuilder};
 
-/// Fetches news and changelog posts from the WordPress API.
-///
-/// # Returns
-///
-/// * `Result<Vec<BlogPost>, CommandError>` - A vector of blog posts or an error.
-#[tauri::command]
-pub async fn get_news_and_changelogs_command() -> Result<Vec<BlogPost>, CommandError> {
-    info!("Executing get_news_and_changelogs_command");
-    Ok(WordPressApi::get_news_and_changelogs().await?)
+// Neue Imports für JSON-Loading
+use reqwest::Client;
+use serde::{Deserialize, Serialize};
+
+// ----- JSON-Strukturen für Blogposts -----
+#[derive(Serialize, Deserialize)]
+struct OgImage {
+    url: String,
 }
 
+#[derive(Serialize, Deserialize)]
+struct YoastHeadJson {
+    title: String,
+    og_image: Vec<OgImage>,
+    og_url: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct BlogPost {
+    id: u32,
+    yoast_head_json: YoastHeadJson,
+}
+
+// ----- News Command (JSON statt WordPress) -----
+#[tauri::command]
+pub async fn get_news_and_changelogs_command() -> Result<Vec<BlogPost>, CommandError> {
+    info!("Executing get_news_and_changelogs_command (JSON version)");
+
+    let url = "https://api.grueneeule.de/v1/geg/launcher/blog/posts.json";
+    let client = Client::new();
+
+    let posts: Vec<BlogPost> = client
+        .get(url)
+        .send()
+        .await
+        .map_err(|e| CommandError::from(AppError::Generic(format!("Failed to fetch JSON: {}", e))))?
+        .json()
+        .await
+        .map_err(|e| {
+            CommandError::from(AppError::Generic(format!("Failed to parse JSON: {}", e)))
+        })?;
+
+    Ok(posts)
+}
+
+// ----- Discord / Crashlog / MobileToken Commands -----
 #[tauri::command]
 pub async fn discord_auth_link(app: AppHandle) -> Result<(), CommandError> {
     debug!("Executing discord_auth_link command");
@@ -47,7 +79,7 @@ pub async fn discord_auth_link(app: AppHandle) -> Result<(), CommandError> {
     debug!("Generated Discord auth URL string: {}", url_string);
 
     let external_url = Url::parse(&url_string).map_err(|e| {
-        CommandError::from(AppError::Other(format!(
+        CommandError::from(AppError::Generic(format!(
             "Invalid URL format for Discord auth: {}",
             e
         )))
@@ -55,12 +87,7 @@ pub async fn discord_auth_link(app: AppHandle) -> Result<(), CommandError> {
 
     if let Some(window) = app.get_webview_window("discord-signin") {
         debug!("Closing existing discord-signin window.");
-        if let Err(e) = window.close().map_err(|e_close| {
-            CommandError::from(AppError::Other(format!(
-                "Failed to close existing Discord window: {}",
-                e_close
-            )))
-        }) {
+        if let Err(e) = window.close() {
             debug!("Error closing existing discord-signin window: {:?}", e);
         }
     }
@@ -75,7 +102,7 @@ pub async fn discord_auth_link(app: AppHandle) -> Result<(), CommandError> {
             .max_inner_size(1250.0, 1000.0)
             .build()
             .map_err(|e| {
-                CommandError::from(AppError::Other(format!(
+                CommandError::from(AppError::Generic(format!(
                     "Failed to build Discord window: {}",
                     e
                 )))
@@ -84,7 +111,7 @@ pub async fn discord_auth_link(app: AppHandle) -> Result<(), CommandError> {
     window
         .request_user_attention(Some(UserAttentionType::Critical))
         .map_err(|e| {
-            CommandError::from(AppError::Other(format!(
+            CommandError::from(AppError::Generic(format!(
                 "Failed to request user attention for Discord window: {}",
                 e
             )))
@@ -92,12 +119,7 @@ pub async fn discord_auth_link(app: AppHandle) -> Result<(), CommandError> {
     debug!("Discord sign-in window opened.");
 
     while (Utc::now() - start_time) < ChronoDuration::minutes(10) {
-        match window.url().map_err(|e| {
-            CommandError::from(AppError::Other(format!(
-                "Failed to get Discord window URL: {}",
-                e
-            )))
-        }) {
+        match window.url() {
             Ok(current_url) => {
                 let current_url_str = current_url.as_str();
                 if current_url_str
@@ -108,12 +130,9 @@ pub async fn discord_auth_link(app: AppHandle) -> Result<(), CommandError> {
                 {
                     debug!("Discord authentication successful, closing window.");
                     tokio::time::sleep(std::time::Duration::from_millis(1000)).await;
-                    window.close().map_err(|e_close| {
-                        CommandError::from(AppError::Other(format!(
-                            "Failed to close Discord window after auth: {}",
-                            e_close
-                        )))
-                    })?;
+                    if let Err(e) = window.close() {
+                        debug!("Failed to close Discord window after auth: {:?}", e);
+                    }
                     return Ok(());
                 }
             }
@@ -128,12 +147,9 @@ pub async fn discord_auth_link(app: AppHandle) -> Result<(), CommandError> {
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
     }
     debug!("Discord auth timed out after 10 minutes.");
-    window.close().map_err(|e_close| {
-        CommandError::from(AppError::Other(format!(
-            "Failed to close Discord window after timeout: {}",
-            e_close
-        )))
-    })?;
+    if let Err(e) = window.close() {
+        debug!("Failed to close Discord window after timeout: {:?}", e);
+    }
     Ok(())
 }
 
@@ -231,7 +247,7 @@ pub async fn log_message_command(level: String, message: String) -> Result<(), C
         "debug" => debug!("[Frontend] {}", message),
         "info" => info!("[Frontend] {}", message),
         "warn" => log::warn!("[Frontend] {}", message),
-        "error" => error!("[Frontend] {}", message),
+        "error" => log::error!("[Frontend] {}", message),
         _ => info!("[Frontend] {}", message),
     }
     Ok(())

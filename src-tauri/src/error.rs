@@ -79,6 +79,9 @@ pub enum AppError {
     #[error("Account error: {0}")]
     AccountError(String),
 
+    #[error("Generic error: {0}")]
+    Generic(String),
+
     #[error("Event error: {0}")]
     EventError(String),
 

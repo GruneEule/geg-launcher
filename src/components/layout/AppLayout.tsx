@@ -370,7 +370,7 @@ function HeaderBar({ minimizeRef, maximizeRef, closeRef }: HeaderBarProps) {
             className="font-minecraft text-4xl tracking-wider text-white font-bold lowercase text-shadow"
             data-tauri-drag-region
           >
-            noriskclient
+            geg launcher
           </h1>
           <span className="text-white/70 font-minecraft-ten text-[8px] font-normal -mt-2.5">
             {appVersion || "v?.?.?"}
