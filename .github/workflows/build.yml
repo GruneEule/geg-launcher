@@ -66,18 +66,11 @@ jobs:
 
       - name: Debug project structure
         run: |
-          # Plattformspezifische Befehle für das Listing
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            dir
-            if [ -d "src-tauri" ]; then
-              dir src-tauri
-            fi
-          else
-            ls -la
-            if [ -d "src-tauri" ]; then
-              ls -la src-tauri/
-            fi
+          ls -la
+          if [ -d "src-tauri" ]; then
+            ls -la src-tauri/
           fi
+        shell: bash
 
       - name: Install frontend dependencies
         run: yarn install --frozen-lockfile
