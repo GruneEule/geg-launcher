@@ -2,15 +2,14 @@ use crate::error::{AppError, Result};
 use crate::state; // Need this for State and ProcessState access
 use discord_rich_presence::{activity, DiscordIpc, DiscordIpcClient};
 use log::{debug, error, info, warn};
-use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::Manager; // Keep for app_handle.state()
 use tokio::sync::{Mutex, RwLock};
 use uuid::Uuid;
 
-// Discord application ID for NoRiskClient
-const DISCORD_APP_ID: &str = "1237087999104122981"; // Replace with actual Discord application ID
+// Discord application ID for GEG Launcher
+const DISCORD_APP_ID: &str = "1422293493455388783";
 
 // Different states for Discord Rich Presence
 #[derive(Debug, Clone, PartialEq)]
@@ -237,11 +236,11 @@ impl DiscordManager {
 
     // Make async to allow reading the timestamp lock
     async fn create_activity_for_state(&self, state: &DiscordState) -> activity::Activity {
-        let icon = "icon_512px"; // Use a consistent icon name
+        let icon = "icon"; // Verweist auf dein icon.png Cover Art
 
-        // TODO: Resolve button issue
-        let download_button = activity::Button::new("DOWNLOAD", "https://norisk.gg/");
-        let buttons = vec![download_button];
+        // Button zur GEG Launcher Website
+        let website_button = activity::Button::new("WEBSITE", "https://gaming.grueneeule.de");
+        let buttons = vec![website_button];
 
         debug!("Creating activity for Discord state: {:?}", state);
         match state {
@@ -259,13 +258,14 @@ impl DiscordManager {
 
                 activity::Activity::new()
                     .state("Idling...")
+                    .details("GEG Launcher")
                     .assets(
                         activity::Assets::new()
                             .large_image(icon)
-                            .large_text("NoRiskClient"),
+                            .large_text("GEG Launcher"),
                     )
                     .timestamps(activity::Timestamps::new().start(start_time))
-                    .buttons(buttons) // Include buttons here
+                    .buttons(buttons)
             }
         }
     }
