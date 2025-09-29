@@ -83,8 +83,16 @@ jobs:
             yarn tauri build
           fi
         env:
-          # Deaktiviere Signing komplett
+          # Deaktiviere Signing komplett für alle Plattformen (Windows, Mac, Linux)
           TAURI_SKIP_SIGNING: "true"
+          TAURI_PRIVATE_KEY: ""
+          TAURI_KEY_PASSWORD: ""
+          APPLE_CERTIFICATE: ""
+          APPLE_CERTIFICATE_PASSWORD: ""
+          APPLE_SIGNING_IDENTITY: ""
+          APPLE_ID: ""
+          APPLE_PASSWORD: ""
+          APPLE_TEAM_ID: ""
         shell: bash
 
       # --- Umbenennen und Artefakte vorbereiten ---

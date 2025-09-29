@@ -6,13 +6,13 @@ use std::sync::RwLock;
 
 pub static LAUNCHER_DIRECTORY: Lazy<ProjectDirs> =
     Lazy::new(
-        || match ProjectDirs::from("gg", "norisk", "NoRiskClientV3") {
+        || match ProjectDirs::from("gg", "grueneeule", "geglauncher") {
             Some(proj_dirs) => proj_dirs,
             None => panic!("Failed to get application directory"),
         },
     );
 
-pub static CUSTOM_GAME_DIR_CACHE: Lazy<RwLock<Option<Option<PathBuf>>>> = 
+pub static CUSTOM_GAME_DIR_CACHE: Lazy<RwLock<Option<Option<PathBuf>>>> =
     Lazy::new(|| RwLock::new(None));
 
 static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
@@ -42,7 +42,7 @@ impl ProjectDirsExt for ProjectDirs {
                 }
             }
         }
-        
+
         // Fallback to standard logic
         standard_meta_dir()
     }

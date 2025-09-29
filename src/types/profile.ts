@@ -205,6 +205,7 @@ export interface ExportProfileParams {
   file_name: string;
   include_files?: string[];
   open_folder: boolean;
+  export_format?: "mrpack" | "noriskpack" | "gegpack";
 }
 
 // --- Payload for upload_profile_icon command ---

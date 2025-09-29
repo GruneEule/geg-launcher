@@ -547,7 +547,20 @@ export function ProfilesTab() {
             ) : (
               <EmptyState
                 icon="solar:widget-bold"
-                message="no profiles found"
+                message="keine profile gefunden"
+                description="Du kannst großartige Modpacks von GrüneEule installieren – schnell, stabil und schön vorkonfiguriert."
+                action={
+                  <Button
+                    variant="flat"
+                    size="md"
+                    className="h-[42px]"
+                    icon={<Icon icon="solar:box-bold" className="w-5 h-5" />}
+                    iconPosition="left"
+                    onClick={() => navigate("/geg")}
+                  >
+                    ZU GRÜNEEULE MODPACKS
+                  </Button>
+                }
               />
             )}
           </div>

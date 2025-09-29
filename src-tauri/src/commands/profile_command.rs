@@ -76,6 +76,7 @@ pub struct ExportProfileParams {
     file_name: String,           // Base name without extension
     include_files: Option<Vec<PathBuf>>,
     open_folder: bool, // Whether to open the exports folder after export
+    export_format: Option<String>, // "mrpack" | "noriskpack" | "gegpack"
 }
 
 // DTO for the new command
@@ -913,8 +914,8 @@ pub async fn import_profile_from_file(app_handle: tauri::AppHandle) -> Result<()
         app_handle
             .dialog()
             .file()
-            .add_filter("Modpack Files", &["mrpack", "noriskpack"])
-            .set_title("Select Modpack File (.mrpack or .noriskpack)")
+            .add_filter("Modpack Files", &["mrpack", "noriskpack", "gegpack"])
+            .set_title("Select Modpack File (.mrpack, .noriskpack or .gegpack)")
             .blocking_pick_file() // Use the blocking version for single file selection
     })
     .await
@@ -948,8 +949,8 @@ pub async fn import_profile_from_file(app_handle: tauri::AppHandle) -> Result<()
                 log::info!("File extension is .mrpack, proceeding with mrpack processing.");
                 mrpack::import_mrpack_as_profile(file_path_buf).await?
             }
-            Some("noriskpack") => {
-                log::info!("File extension is .noriskpack, proceeding with noriskpack processing.");
+            Some("noriskpack") | Some("gegpack") => {
+                log::info!("File extension is .noriskpack/.gegpack, proceeding with noriskpack-compatible processing.");
                 crate::integrations::norisk_packs::import_noriskpack_as_profile(file_path_buf)
                     .await?
             }
@@ -959,7 +960,7 @@ pub async fn import_profile_from_file(app_handle: tauri::AppHandle) -> Result<()
                     file_path_buf
                 );
                 return Err(CommandError::from(AppError::Other(
-                    "Invalid file type selected. Please select a .mrpack or .noriskpack file."
+                    "Invalid file type selected. Please select a .mrpack, .noriskpack or .gegpack file."
                         .to_string(),
                 )));
             }
@@ -1021,8 +1022,8 @@ pub async fn import_profile(file_path_str: String) -> Result<Uuid, CommandError>
             log::info!("File extension is .mrpack, proceeding with mrpack processing.");
             mrpack::import_mrpack_as_profile(file_path_buf).await?
         }
-        Some("noriskpack") => {
-            log::info!("File extension is .noriskpack, proceeding with noriskpack processing.");
+        Some("noriskpack") | Some("gegpack") => {
+            log::info!("File extension is .noriskpack/.gegpack, proceeding with noriskpack-compatible processing.");
             crate::integrations::norisk_packs::import_noriskpack_as_profile(file_path_buf).await?
         }
         _ => {
@@ -1031,7 +1032,7 @@ pub async fn import_profile(file_path_str: String) -> Result<Uuid, CommandError>
                 file_path_buf
             );
             return Err(CommandError::from(AppError::Other(
-                "Invalid file type selected. Please select a .mrpack or .noriskpack file."
+                "Invalid file type selected. Please select a .mrpack, .noriskpack or .gegpack file."
                     .to_string(),
             )));
         }
@@ -1383,7 +1384,7 @@ pub async fn export_profile(
         .await
         .map_err(|e| CommandError::from(AppError::Io(e)))?;
 
-    // Sanitize the filename and add .noriskpack extension
+    // Sanitize the filename and add extension based on export_format
     let sanitized_name = sanitize(&params.file_name);
     if sanitized_name.is_empty() {
         return Err(CommandError::from(AppError::Other(
@@ -1391,21 +1392,46 @@ pub async fn export_profile(
         )));
     }
 
-    // Generate complete filename with extension
-    let noriskpack_filename = format!("{}.noriskpack", sanitized_name);
+    // Determine extension
+    let format_lower = params
+        .export_format
+        .as_deref()
+        .unwrap_or("gegpack")
+        .to_lowercase();
+    let ext = match format_lower.as_str() {
+        "mrpack" => "mrpack",
+        "noriskpack" => "noriskpack",
+        "gegpack" => "gegpack",
+        _ => "gegpack",
+    };
+    let target_filename = format!("{}.{}", sanitized_name, ext);
 
     // Create full export path
-    let export_path = exports_dir.join(&noriskpack_filename);
+    let export_path = exports_dir.join(&target_filename);
 
-    info!("Exporting profile to {}", export_path.display());
+    info!("Exporting profile to {} (format: {})", export_path.display(), ext);
 
-    // Perform the export
-    let result_path = profile_utils::export_profile_to_noriskpack(
-        params.profile_id,
-        Some(export_path.clone()),
-        params.include_files,
-    )
-    .await?;
+    // Perform the export based on format
+    let result_path = match ext {
+        "mrpack" => {
+            // TODO: implement real mrpack export. For now, fallback to noriskpack-compatible export with .mrpack extension
+            profile_utils::export_profile_to_noriskpack(
+                params.profile_id,
+                Some(export_path.clone()),
+                params.include_files.clone(),
+            )
+            .await?
+        }
+        "noriskpack" | "gegpack" => {
+            profile_utils::export_profile_to_noriskpack(
+                params.profile_id,
+                Some(export_path.clone()),
+                params.include_files.clone(),
+            )
+            .await?
+        }
+        _ => unreachable!(),
+    };
 
     // Open the export directory if requested
     if params.open_folder {
@@ -1862,28 +1888,9 @@ pub async fn get_all_profiles_and_last_played() -> Result<AllProfilesAndLastPlay
     info!("Executing get_all_profiles_and_last_played command");
     let state = State::get().await?;
 
-    // 1. Fetch User Profiles
+    // 1. Fetch only user profiles (no preinstalled/standard profiles in the list)
     let user_profiles = state.profile_manager.list_profiles().await?;
-
-    // 2. Fetch Standard Norisk Profiles
-    let norisk_versions_config = state.norisk_version_manager.get_config().await;
-    let standard_profiles = norisk_versions_config.profiles; // This is Vec<Profile>
-
-    // 3. Combine Profiles
-    let mut all_profiles_combined = user_profiles.clone();
-    all_profiles_combined.extend(standard_profiles.clone());
-
-    // Deduplicate based on ID, preferring user profiles if IDs clash (highly unlikely with UUIDs but safe)
-    // This is a more robust way to combine, though simple concatenation is often fine.
-    let mut unique_profiles_map: HashMap<Uuid, Profile> = HashMap::new();
-    for profile in standard_profiles.iter() {
-        unique_profiles_map.insert(profile.id, profile.clone());
-    }
-    for profile in user_profiles.iter() {
-        // User profiles overwrite standard if same ID
-        unique_profiles_map.insert(profile.id, profile.clone());
-    }
-    let all_profiles_final: Vec<Profile> = unique_profiles_map.values().cloned().collect();
+    let all_profiles_final: Vec<Profile> = user_profiles.clone();
 
     // 4. Handle `last_played_profile_id`
     let mut launcher_config = state.config_manager.get_config().await;
@@ -1905,10 +1912,8 @@ pub async fn get_all_profiles_and_last_played() -> Result<AllProfilesAndLastPlay
 
     // If effective_last_played_id is None (either initially or after validation failed)
     if effective_last_played_id.is_none() {
-        info!("Last played profile ID is not set or invalid. Attempting to set a default.");
-        let new_default_id: Option<Uuid> = if !standard_profiles.is_empty() {
-            standard_profiles.first().map(|p| p.id)
-        } else if !user_profiles.is_empty() {
+        info!("Last played profile ID is not set or invalid. Attempting to set a default from USER profiles only.");
+        let new_default_id: Option<Uuid> = if !user_profiles.is_empty() {
             user_profiles.first().map(|p| p.id)
         } else {
             None

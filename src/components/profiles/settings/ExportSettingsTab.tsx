@@ -36,6 +36,7 @@ export function ExportSettingsTab({
   isInModalContext = false, // Default to false
 }: ExportSettingsTabProps) {
   const [exportFilename, setExportFilename] = useState(profile.name);
+  const [exportFormat, setExportFormat] = useState<"mrpack" | "noriskpack" | "gegpack">("gegpack");
   const [selectedExportPaths, setSelectedExportPaths] = useState<Set<string>>(
     new Set()
   );
@@ -134,6 +135,7 @@ export function ExportSettingsTab({
           ? Array.from(currentPathsForExport) // Use the value from the ref
           : undefined,
       open_folder: exportOpenFolder,
+      export_format: exportFormat,
     });
 
     toast.promise(exportPromise, {
@@ -225,9 +227,32 @@ export function ExportSettingsTab({
             disabled={isExporting}
             variant="flat"
           />
-          <p className="mt-1 text-xs text-white/50 font-minecraft-ten tracking-wide">
-            The .noriskpack extension will be added automatically.
-          </p>
+          <div className="mt-2 flex items-center gap-3">
+            <span className="text-white/70 font-minecraft text-xl">Format:</span>
+            <div className="flex gap-2">
+              <Button
+                variant={exportFormat === "gegpack" ? "default" : "flat-secondary"}
+                size="sm"
+                onClick={() => setExportFormat("gegpack")}
+              >
+                .gegpack
+              </Button>
+              <Button
+                variant={exportFormat === "noriskpack" ? "default" : "flat-secondary"}
+                size="sm"
+                onClick={() => setExportFormat("noriskpack")}
+              >
+                .noriskpack
+              </Button>
+              <Button
+                variant={exportFormat === "mrpack" ? "default" : "flat-secondary"}
+                size="sm"
+                onClick={() => setExportFormat("mrpack")}
+              >
+                .mrpack
+              </Button>
+            </div>
+          </div>
         </div>
         {/* File selection section */}
         <div>

@@ -9,16 +9,9 @@ import { StatusMessage } from "../../ui/StatusMessage";
 import { useThemeStore } from "../../../store/useThemeStore";
 import { Input } from "../../ui/Input";
 import { RangeSlider } from "../../ui/RangeSlider";
-import { Select } from "../../ui/Select";
-import { Card } from "../../ui/Card";
-import { invoke } from "@tauri-apps/api/core";
-import { NoriskModEntryDefinition, NoriskModpacksConfig } from "../../../types/noriskPacks";
+// NoRisk Client selection removed
 
-interface NoriskPack {
-    displayName: string;
-    description: string;
-    isExperimental?: boolean;
-}
+// NoRisk Client pack types removed
 
 interface ProfileWizardV2Step3Props {
     onClose: () => void;
@@ -50,41 +43,11 @@ export function ProfileWizardV2Step3({
     const [profileGroup, setProfileGroup] = useState("");
     const [memoryMaxMb, setMemoryMaxMb] = useState<number>(3072); // 3GB default
     const [systemRamMb] = useState<number>(16384); // 16GB default for slider range
-    const [selectedNoriskPackId, setSelectedNoriskPackId] = useState<string | null>(null);
-    const [noriskPacks, setNoriskPacks] = useState<Record<string, NoriskPack>>({});
-    const [loadingPacks, setLoadingPacks] = useState(false);
-    const [packCompatibilityWarning, setPackCompatibilityWarning] = useState<string | null>(null);
-    const [showYellowWarning, setShowYellowWarning] = useState(false);
-    const [checkingCompatibility, setCheckingCompatibility] = useState(false);
+    // NoRisk Client related state removed
     const [creating, setCreating] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Load NoRisk packs on component mount
-    useEffect(() => {
-        const loadNoriskPacks = async () => {
-            try {
-                setLoadingPacks(true);
-                const packsData = await invoke<{ packs: Record<string, NoriskPack> }>(
-                    "get_norisk_packs_resolved",
-                ).catch(() => ({
-                    packs: {},
-                }));
-                console.log("PACKS", packsData);
-                setNoriskPacks(packsData.packs);
-
-                // Auto-select "norisk-prod" if available
-                if (packsData.packs["norisk-prod"]) {
-                    setSelectedNoriskPackId("norisk-prod");
-                }
-            } catch (err) {
-                console.error("Failed to load NoRisk packs:", err);
-            } finally {
-                setLoadingPacks(false);
-            }
-        };
-
-        loadNoriskPacks();
-    }, []);
+    // NoRisk pack loading removed
 
     const getLoaderDisplayName = (loader: ModLoader) => {
         const names = {
@@ -101,78 +64,9 @@ export function ProfileWizardV2Step3({
         setMemoryMaxMb(value);
     };
 
-    const noriskPackOptions = Object.entries(noriskPacks).map(
-        ([packId, packDef]) => ({
-            value: packId,
-            label: `${packDef.displayName} ${packDef.isExperimental ? "(experimental)" : ""}`,
-        }),
-    );
+    // NoRisk pack options removed
 
-    // Check pack compatibility when selection changes
-    useEffect(() => {
-        const checkPackCompatibility = async () => {
-            if (!selectedNoriskPackId || selectedNoriskPackId === "") {
-                setPackCompatibilityWarning(null);
-                setShowYellowWarning(false);
-                return;
-            }
-
-            setCheckingCompatibility(true);
-            setPackCompatibilityWarning(null);
-            setShowYellowWarning(false);
-
-            try {
-                // Get resolved packs with all mods
-                const resolvedPacks = await invoke<NoriskModpacksConfig>(
-                    "get_norisk_packs_resolved"
-                );
-
-                // Check if the selected pack has NoRisk Client mods for this version/loader
-                const selectedPack = resolvedPacks.packs[selectedNoriskPackId];
-
-                if (!selectedPack) {
-                    setShowYellowWarning(true);
-                    return;
-                }
-
-                // Get the mods in the pack
-                const mods = selectedPack.mods || [];
-
-                // Check if any NoRisk Client mod exists and is compatible with the selected version/loader
-                const hasCompatibleNoRiskClient = mods.some((mod: NoriskModEntryDefinition) => {
-                    // Check if this is a NoRisk Client mod
-                    if (mod.id === "noriskclient-client" || mod.id === "nrc-client") {
-                        // Check if it has compatibility for the selected version and loader
-                        const versionCompat = mod.compatibility?.[selectedMinecraftVersion];
-                        const loaderCompat = versionCompat?.[selectedLoader];
-                        console.log(`Checking mod ${mod.id} compatibility:`, {
-                            version: selectedMinecraftVersion,
-                            loader: selectedLoader,
-                            versionCompat,
-                            loaderCompat,
-                            hasCompat: !!loaderCompat
-                        });
-                        return !!loaderCompat; // Returns true if compatibility exists
-                    }
-                    return false;
-                });
-
-                console.log("Pack mods for", selectedNoriskPackId, selectedMinecraftVersion, selectedLoader, ":", mods);
-                console.log("Has compatible NoRisk Client:", hasCompatibleNoRiskClient);
-
-                if (!hasCompatibleNoRiskClient) {
-                    setShowYellowWarning(true);
-                }
-            } catch (err) {
-                console.warn("Failed to check pack compatibility:", err);
-                setShowYellowWarning(true);
-            } finally {
-                setCheckingCompatibility(false);
-            }
-        };
-
-        checkPackCompatibility();
-    }, [selectedNoriskPackId, selectedMinecraftVersion, selectedLoader]);
+    // NoRisk pack compatibility checks removed
 
     // Auto-generate profile name based on loader and minecraft version
     useEffect(() => {
@@ -201,7 +95,7 @@ export function ProfileWizardV2Step3({
                 loader: selectedLoader,
                 loaderVersion: selectedLoaderVersion,
                 memoryMaxMb: memoryMaxMb,
-                selectedNoriskPackId: selectedNoriskPackId
+                selectedNoriskPackId: null
             });
         } catch (err) {
             console.error("Failed to create profile:", err);
@@ -258,86 +152,7 @@ export function ProfileWizardV2Step3({
                     />
                 </div>
 
-                {/* NoRisk Pack Selection */}
-                <div className="space-y-3">
-                    <label className="block text-base font-minecraft-ten text-white/50">
-                        NoRisk Client Pack
-                    </label>
-                    {loadingPacks ? (
-                        <div className="flex items-center gap-2 text-white/70">
-                            <Icon
-                                icon="solar:refresh-bold"
-                                className="w-4 h-4 animate-spin"
-                            />
-                            <span className="text-sm font-minecraft-ten">
-                                Loading NoRisk packs...
-                            </span>
-                        </div>
-                    ) : (
-                        <>
-                            <Select
-                                value={selectedNoriskPackId || ""}
-                                onChange={(value) => setSelectedNoriskPackId(value === "" ? null : value)}
-                                options={[
-                                    { value: "", label: "None (Optional)" },
-                                    ...noriskPackOptions,
-                                ]}
-                                placeholder="Select a NoRisk pack..."
-                                size="md"
-                                className="w-full"
-                            />
-                            {/* Show either warning or description, but not both */}
-                            {showYellowWarning ? (
-                                <div className="text-center">
-                                    <p className="text-base text-yellow-400 font-minecraft-ten">
-                                        NoRiskClient is not currently compatible with this loader or version!<br />
-                                        You can still create it, but you won't have the features.<br />
-                                        This may change in the future.
-                                    </p>
-                                </div>
-                            ) : (
-                                selectedNoriskPackId && noriskPacks[selectedNoriskPackId] && (
-                                    <div className="text-center">
-                                        <p className="text-sm text-white/70 font-minecraft-ten">
-                                            {noriskPacks[selectedNoriskPackId].description}
-                                        </p>
-                                    </div>
-                                )
-                            )}
-
-                            {/* Compatibility Checking */}
-                            {checkingCompatibility && (
-                                <div className="flex items-center gap-2 text-white/70">
-                                    <Icon
-                                        icon="solar:refresh-bold"
-                                        className="w-4 h-4 animate-spin"
-                                    />
-                                    <span className="text-sm font-minecraft-ten">
-                                        Checking compatibility...
-                                    </span>
-                                </div>
-                            )}
-
-                            {/* Compatibility Warning */}
-                            {packCompatibilityWarning && (
-                                <Card
-                                    variant="flat"
-                                    className="p-3 bg-red-900/20 border border-red-500/30"
-                                >
-                                    <div className="flex items-start gap-2">
-                                        <Icon
-                                            icon="solar:danger-triangle-bold"
-                                            className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5"
-                                        />
-                                        <p className="text-xs text-red-300 font-minecraft-ten">
-                                            {packCompatibilityWarning}
-                                        </p>
-                                    </div>
-                                </Card>
-                            )}
-                        </>
-                    )}
-                </div>
+                {/* NoRisk Client pack selection removed */}
             </div>
         );
     };

@@ -66,7 +66,7 @@ export function useGlobalDragAndDrop() {
             }, PROCESS_COOLDOWN_MS);
 
             const profilePackPath = droppedPaths.find(path => 
-              path.toLowerCase().endsWith('.noriskpack') || path.toLowerCase().endsWith('.mrpack')
+              path.toLowerCase().endsWith('.noriskpack') || path.toLowerCase().endsWith('.mrpack') || path.toLowerCase().endsWith('.gegpack')
             );
 
             if (profilePackPath) {
@@ -161,7 +161,7 @@ export function useGlobalDragAndDrop() {
                 toast(`No files matching expected types (${expectedExtensions.join(', ')}) for ${itemTypeName} were dropped.`);
               }
             } else {
-              toast('Drop files onto an active profile content area to import them, or drop a .noriskpack/.mrpack file anywhere to import a profile.');
+              toast('Drop files onto an active profile content area to import them, or drop a .noriskpack/.gegpack/.mrpack file anywhere to import a profile.');
             }
           } else if (payload.type === 'cancel') {
             console.log(`[DragDrop Hook ${instanceId}] File drop cancelled at ${eventTimestamp}`);

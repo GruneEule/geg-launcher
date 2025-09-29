@@ -20,21 +20,21 @@ export function TermsOfServiceModal({ isOpen }: TermsOfServiceModalProps) {
 
   const handleOpenPrivacyPolicy = async () => {
     try {
-      await openExternalUrl('https://blog.norisk.gg/en/privacy-policy/');
+      await openExternalUrl('https://grueneeule.de/legal/privacy-policy');
       toast.success("Privacy Policy opened in your browser!");
     } catch (error) {
       console.error("Failed to open Privacy Policy URL:", error);
-      toast.error("Could not open Privacy Policy. Please visit blog.norisk.gg/privacy-policy/ manually.");
+      toast.error("Could not open Privacy Policy. Please visit grueneeule.de/legal/privacy-policy manually.");
     }
   };
 
   const handleOpenTerms = async () => {
     try {
-      await openExternalUrl('https://blog.norisk.gg/en/terms-of-use/');
-      toast.success("Terms of Service opened in your browser!");
+      await openExternalUrl('https://grueneeule.de/legal/agb');
+      toast.success("AGB opened in your browser!");
     } catch (error) {
-      console.error("Failed to open Terms URL:", error);
-      toast.error("Could not open Terms. Please visit blog.norisk.gg/en/terms-of-use/ manually.");
+      console.error("Failed to open AGB URL:", error);
+      toast.error("Could not open AGB. Please visit grueneeule.de/legal/agb manually.");
     }
   };
 
@@ -66,7 +66,7 @@ export function TermsOfServiceModal({ isOpen }: TermsOfServiceModalProps) {
       <div className="p-6 space-y-6 text-white">
         <div className="text-center space-y-4">
           <h3 className="text-3xl font-minecraft text-blue-400 lowercase">
-            Welcome to NoRisk Launcher!
+            Welcome to GEG Launcher!
           </h3>
           <p className="text-lg font-minecraft-ten text-gray-300">
             Before you start using our launcher, please read and accept our Terms of Service.
@@ -79,7 +79,6 @@ export function TermsOfServiceModal({ isOpen }: TermsOfServiceModalProps) {
             <ul className="space-y-2 list-disc list-inside text-sm">
               <li>You must own a legitimate copy of Minecraft to use this launcher</li>
               <li>This launcher is provided "as is" without warranties</li>
-              <li>We collect minimal usage data to improve the experience</li>
               <li>You are responsible for your use of mods and content</li>
               <li>We reserve the right to update these terms at any time</li>
               <li>By using this launcher, you agree to comply with Minecraft's EULA</li>
@@ -109,13 +108,13 @@ export function TermsOfServiceModal({ isOpen }: TermsOfServiceModalProps) {
             icon={<Icon icon="solar:document-text-linear" className="w-4 h-4" />}
             size="sm"
           >
-            View Full Terms
+            AGB
           </Button>
         </div>
 
         <div className="text-center text-sm text-gray-400">
           <p>
-            You can withdraw your consent at any time. However, you must accept the terms to use NoRisk Client.
+            You can withdraw your consent at any time. However, you must accept the terms to use GEG Launcher.
           </p>
         </div>
       </div>

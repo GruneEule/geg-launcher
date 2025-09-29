@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>gg.norisk.NoRiskClientLauncherV3</id>
+  <id>gg.grueneeule.geglauncher</id>
 
-  <name>NoRisk Client Launcher</name>
-  <summary>A Launcher for the NoRisk Client</summary>
+  <name>GEG Launcher</name>
+  <summary>Launcher for the GrueneEule GEG</summary>
 
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-only</project_license>
 
-  <developer id="gg.norisk">
-    <name>NoRisk Client Team</name>
+  <developer id="gg.grueneeule">
+    <name>GrueneEule</name>
   </developer>
 
   <description>
@@ -18,17 +18,15 @@
     </p>
   </description>
 
-  <launchable type="desktop-id">gg.norisk.NoRiskClientLauncherV3.desktop</launchable>
+  <launchable type="desktop-id">gg.grueneeule.geglauncher.desktop</launchable>
 
-  <url type="homepage">https://norisk.gg/</url>
-  <url type="contribute">https://github.com/NoRiskClient/noriskclient-launcher</url>
-  <url type="bugtracker">https://github.com/NoRiskClient/issues</url>
+  <url type="homepage">https://grueneeule.gg/</url>
+  <url type="contribute">https://github.com/GrueneEule/geg-launcher</url>
+  <url type="bugtracker">https://github.com/GrueneEule/geg-launcher/issues</url>
   <screenshots>
     <screenshot type="default">
-      <image>
-        https://cdn.norisk.gg/website-assets/launcher_flatpack_image.png
-      </image>
-      <caption>NoRisk Client home screen</caption>
+      <image>https://example.com/geg-launcher-screenshot.png</image>
+      <caption>GEG Launcher home screen</caption>
     </screenshot>
   </screenshots>
 

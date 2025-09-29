@@ -40,7 +40,7 @@ export function ProfileImport({
         filters: [
           {
             name: "Modpack Files",
-            extensions: ["noriskpack", "mrpack"],
+            extensions: ["noriskpack", "gegpack", "mrpack"],
           },
         ],
         title: "Select Modpack to Import",
@@ -126,7 +126,7 @@ export function ProfileImport({
               import profile pack
             </h3>
             <p className="text-2xl text-white/70 mb-6 font-minecraft tracking-wide select-none">
-              Import a .mrpack or .noriskpack file to create a new profile. This
+              Import a .mrpack, .noriskpack or .gegpack file to create a new profile. This
               will open a file selection dialog.
             </p>
           </div>
@@ -172,6 +172,23 @@ export function ProfileImport({
                   />
                 </div>
                 <span>.noriskpack (NoRisk Launcher)</span>
+              </li>
+              <li className="flex items-center">
+                <div
+                  className="w-10 h-10 rounded-md flex items-center justify-center mr-4"
+                  style={{
+                    backgroundColor: `${accentColor.value}30`,
+                    borderWidth: "2px",
+                    borderStyle: "solid",
+                    borderColor: `${accentColor.value}60`,
+                  }}
+                >
+                  <Icon
+                    icon="solar:file-bold"
+                    className="w-5 h-5 text-purple-400"
+                  />
+                </div>
+                <span>.gegpack (GEG Launcher)</span>
               </li>
             </ul>
           </Card>

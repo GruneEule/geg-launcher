@@ -185,19 +185,15 @@ impl NoriskPackManager {
 #[async_trait]
 impl PostInitializationHandler for NoriskPackManager {
     async fn on_state_ready(&self, _app_handle: Arc<tauri::AppHandle>) -> Result<()> {
-        info!("NoriskPackManager: on_state_ready called. Loading configuration...");
-        // Select load path based on experimental mode if accessible
-        let load_path = if let Ok(state) = crate::state::state_manager::State::get().await {
-            let is_exp = state.config_manager.is_experimental_mode().await;
-            norisk_packs_path_for(is_exp)
-        } else {
-            self.config_path.clone()
-        };
-        let loaded_config = self.load_config_internal(&load_path).await?;
+        info!("NoriskPackManager: on_state_ready called. Starting with EMPTY configuration (no preinstalled modpacks).");
+        // Intentionally start with an empty config so no modpacks are preinstalled/displayed by default.
+        // Users can populate packs explicitly via the refresh command.
         let mut config_guard = self.config.write().await;
-        *config_guard = loaded_config;
+        *config_guard = NoriskModpacksConfig {
+            packs: HashMap::new(),
+            repositories: HashMap::new(),
+        };
         drop(config_guard);
-        info!("NoriskPackManager: Successfully loaded configuration in on_state_ready.");
         Ok(())
     }
 }
