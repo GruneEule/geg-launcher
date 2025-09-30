@@ -239,7 +239,7 @@ impl DiscordManager {
         let icon = "icon"; // Verweist auf dein icon.png Cover Art
 
         // Button zur GEG Launcher Website
-        let website_button = activity::Button::new("WEBSITE", "https://gaming.grueneeule.de");
+        let website_button = activity::Button::new("Website", "https://gaming.grueneeule.de");
         let buttons = vec![website_button];
 
         debug!("Creating activity for Discord state: {:?}", state);

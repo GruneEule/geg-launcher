@@ -9,17 +9,6 @@
     "beforeBuildCommand": "yarn build",
     "frontendDist": "../dist"
   },
-  "plugins": {
-    "minecraft_auth": {},
-    "updater": {
-      "active": false,
-      "endpoints": [],
-      "dialog": false
-    },
-    "singleInstance": {
-      "active": true
-    }
-  },
   "app": {
     "windows": [
       {
@@ -64,16 +53,44 @@
         "enable": true,
         "scope": {
           "requireLiteralLeadingDot": false,
-          "allow": [
-            "**/*"
-          ]
+          "allow": ["**/*"]
         }
-      }
+      },
+      "capabilities": ["default"]
+    }
+  },
+  "plugins": {
+    "singleInstance": {
+      "active": true
     }
   },
   "bundle": {
+    "active": true,
+    "targets": ["app", "dmg", "deb", "appimage", "nsis"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "createUpdaterArtifacts": false,
+    "publisher": null,
+    "externalBin": null,
+    "fileAssociations": [
+      {
+        "ext": ["noriskpack"],
+        "name": "NoriskPack File",
+        "description": "NoRiskClient Modpack File"
+      },
+      {
+        "ext": ["gegpack"],
+        "name": "GEGPack File",
+        "description": "GEG Launcher Modpack File"
+      }
+    ],
     "macOS": {
-      "entitlements": "App.entitlements",
+      "entitlements": null,
       "exceptionDomain": "",
       "frameworks": [],
       "providerShortName": null,
@@ -94,38 +111,15 @@
         }
       }
     },
-    "active": true,
-    "targets": [
-      "app",
-      "dmg",
-      "deb",
-      "appimage",
-      "nsis"
-    ],
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ],
-    "createUpdaterArtifacts": false,
-    "fileAssociations": [
-      {
-        "ext": [
-          "noriskpack"
-        ],
-        "name": "NoriskPack File",
-        "description": "NoRiskClient Modpack File"
+    "linux": {
+      "appimage": {
+        "bundleMediaFramework": false
       },
-      {
-        "ext": [
-          "gegpack"
-        ],
-        "name": "GEGPack File",
-        "description": "GEG Launcher Modpack File"
+      "deb": {
+        "depends": [],
+        "files": {}
       }
-    ],
+    },
     "windows": {
       "signCommand": null,
       "certificateThumbprint": null,
@@ -133,6 +127,9 @@
       "timestampUrl": null,
       "webviewInstallMode": {
         "type": "downloadBootstrapper"
+      },
+      "wix": {
+        "language": "en-US"
       }
     }
   }

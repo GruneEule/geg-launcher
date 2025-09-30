@@ -72,6 +72,21 @@ jobs:
           fi
         shell: bash
 
+      - name: Create local config to disable macOS signing
+        if: matrix.platform == 'macos-latest'
+        run: |
+          cat > src-tauri/tauri.conf.local.json << EOF
+          {
+            "bundle": {
+              "macOS": {
+                "signingIdentity": null
+              }
+            }
+          }
+          EOF
+          echo "Created local config to disable macOS signing"
+        shell: bash
+
       - name: Install frontend dependencies
         run: yarn install --frozen-lockfile
 

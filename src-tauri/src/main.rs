@@ -20,7 +20,6 @@ use std::sync::Arc;
 use tauri::Listener;
 use tauri::Manager;
 use utils::debug_utils;
-use utils::updater_utils;
 
 use crate::commands::process_command::{
     get_full_log, get_process, get_processes, get_processes_by_profile, open_log_window,
@@ -117,7 +116,7 @@ async fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
+        // Updater plugin removed to fix configuration error
         .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
             info!("SingleInstance plugin: Second instance triggered with args: {:?}", argv);
             if let Some(window) = app.get_webview_window("main") {
@@ -125,16 +124,6 @@ async fn main() {
                 let _ = window.unminimize();
                 let _ = window.set_focus();
             }
-            // Focus the main window on second instance
-            /*if let Some(window) = app.get_webview_window("main") {
-                let _ = window.unminimize(); // Ensure it's not minimized
-                let _ = window.set_focus();   // Bring to front and focus
-            }
-            // Call the handler for .noriskpack files
-            let app_handle_clone = app.clone();
-            tauri::async_runtime::spawn(async move {
-                norisk_packs::handle_noriskpack_file_paths(&app_handle_clone, argv).await;
-            });*/
         }))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
@@ -204,86 +193,35 @@ async fn main() {
                 })
                 .build(app)?;
 
-            // --- Handle .noriskpack file opening on initial startup (all platforms) ---
-            // The single-instance plugin does not handle the *very first* launch with arguments.
-            // We still need to check std::env::args() here for that first launch.
-            /*info!("Checking for startup file arguments...");
-            let startup_args: Vec<String> = std::env::args().collect();
-            if startup_args.len() > 1 { // args[0] is exe path, check if there are more
-                let handle_clone = app_handle.clone();
-                tauri::async_runtime::spawn(async move {
-                    // Pass all startup_args; handle_noriskpack_file_paths will skip the exe path if needed
-                    norisk_packs::handle_noriskpack_file_paths(&handle_clone, startup_args).await;
-                });
-            }*/
-            // --- End .noriskpack handling on startup ---
-
-            // Task for State Init and Updater Window
+            // Task for State Init
             let state_init_app_handle = app_handle.clone(); 
             tauri::async_runtime::spawn(async move {
-                // --- Create Updater Window (but keep hidden initially) ---
-                let updater_window = match updater_utils::create_updater_window(&state_init_app_handle).await {
-                    Ok(win) => {
-                        info!("Updater window created successfully (initially hidden).");
-                        Some(win)
-                    }
-                    Err(e) => {
-                        error!("Failed to create updater window: {}", e);
-                        None
-                    }
-                };
-
                 // --- State Initialization --- 
                 info!("Initiating state initialization...");
                 if let Err(e) = state::state_manager::State::init(Arc::new(state_init_app_handle.clone())).await {
-                    error!("CRITICAL: Failed to initialize state: {}. Update check and main window might not proceed correctly.", e);
-                    if let Some(win) = updater_window {
-                        updater_utils::emit_status(&state_init_app_handle, "close", "Closing due to state init error.".to_string(), None);
-                        tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
-                        if let Err(close_err) = win.close() {
-                            error!("Failed to close updater window after state init error: {}", close_err);
-                        }
-                    }
+                    error!("CRITICAL: Failed to initialize state: {}. Main window might not proceed correctly.", e);
                     return;
                 }
                 info!("State initialization finished successfully.");
 
-                info!("Attempting to retrieve launcher configuration for update check...");
+                info!("Attempting to retrieve launcher configuration...");
                 match state::state_manager::State::get().await {
                     Ok(state_manager_instance) => { 
                         let config = state_manager_instance.config_manager.get_config().await;
-                        let check_beta_channel = config.check_beta_channel;
                         let auto_check_updates_enabled = config.auto_check_updates;
 
                         if auto_check_updates_enabled {
-                            info!("Initiating application update check (Channel determined by config: Beta={})...", check_beta_channel);
-                            updater_utils::check_for_updates(state_init_app_handle.clone(), check_beta_channel, updater_window.clone()).await;
-                            info!("Update check process has finished.");
+                            info!("Auto-check for updates is enabled but updater is currently disabled.");
                         } else {
-                            info!("Auto-check for updates is disabled in settings. Skipping update check.");
-                            // Ensure the updater window (if created) is closed if we skip the check.
-                            if let Some(win) = updater_window {
-                                updater_utils::emit_status(&state_init_app_handle, "close", "Auto-update disabled.".to_string(), None);
-                                tokio::time::sleep(tokio::time::Duration::from_millis(200)).await; // Give time for emit to process
-                                if let Err(close_err) = win.close() {
-                                    error!("Failed to close updater window when skipping updates: {}", close_err);
-                                }
-                            }
+                            info!("Auto-check for updates is disabled in settings.");
                         }
                     }
                     Err(e) => {
-                        error!("Failed to get global state for update check: {}.", e);
-                        if let Some(win) = updater_window { 
-                            updater_utils::emit_status(&state_init_app_handle, "close", "Closing due to state fetch error.".to_string(), None);
-                            tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
-                            if let Err(close_err) = win.close() {
-                                error!("Failed to close updater window after state fetch error: {}", close_err);
-                            }
-                        }
+                        error!("Failed to get global state: {}.", e);
                     }
                 }
 
-                info!("Updater process finished. Attempting to show main window...");
+                info!("Showing main window...");
                 if let Some(main_window) = state_init_app_handle.get_webview_window("main") { 
                     if let Err(e) = main_window.show() {
                         error!("Failed to show main window: {}", e);
@@ -294,7 +232,7 @@ async fn main() {
                         }
                     }
                 } else {
-                    error!("Could not get main window handle to show it after update check!");
+                    error!("Could not get main window handle to show it!");
                 }
             });
 
@@ -326,7 +264,6 @@ async fn main() {
             } else {
                 error!("Could not get main window handle to attach focus listener!");
             }
-
 
             Ok(())
         })
@@ -471,8 +408,6 @@ async fn main() {
         .run(
             #[allow(unused_variables)]
             |app_handle, event| {
-                // Removed macOS/iOS specific Opened event handling as single-instance handles args now
-                // Keep other run event handling if needed, e.g., for window events, exit requested, etc.
                 if let tauri::RunEvent::ExitRequested { api, .. } = event {
                     info!("Exit requested, preventing default to allow async tasks to finish if any.");
                     // api.prevent_exit(); // Example: if you need to do cleanup before exit

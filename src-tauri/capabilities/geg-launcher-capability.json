@@ -1,0 +1,14 @@
+{
+  "identifier": "geg-launcher-capability",
+  "description": "GEG Launcher capability",
+  "local": true,
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "fs:default",
+    "dialog:default",
+    "opener:default",
+    "process:default",
+    "clipboard-manager:default"
+  ]
+}
