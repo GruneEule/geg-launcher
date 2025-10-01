@@ -14,14 +14,22 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - platform: "macos-latest"
+            target: aarch64-apple-darwin
+            output_path: ./src-tauri/target/aarch64-apple-darwin/release/bundle
+            asset_name_base: NoRiskClient-MacOS-arm64
+          - platform: "macos-latest"
+            target: x86_64-apple-darwin
+            output_path: ./src-tauri/target/x86_64-apple-darwin/release/bundle
+            asset_name_base: NoRiskClient-MacOS-x86_64
           - platform: "ubuntu-22.04"
             target: ""
             output_path: ./src-tauri/target/release/bundle
-            asset_name_base: GEG-Launcher-Linux
+            asset_name_base: NoRiskClient-Linux
           - platform: "windows-latest"
             target: ""
             output_path: ./src-tauri/target/release/bundle
-            asset_name_base: GEG-Launcher-Windows-setup
+            asset_name_base: NoRiskClient-Windows-setup
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -62,6 +70,21 @@ jobs:
           if [ -d "src-tauri" ]; then
             ls -la src-tauri/
           fi
+        shell: bash
+
+      - name: Create local config to disable macOS signing
+        if: matrix.platform == 'macos-latest'
+        run: |
+          cat > src-tauri/tauri.conf.local.json << EOF
+          {
+            "bundle": {
+              "macOS": {
+                "signingIdentity": null
+              }
+            }
+          }
+          EOF
+          echo "Created local config to disable macOS signing"
         shell: bash
 
       - name: Install frontend dependencies
@@ -152,6 +175,39 @@ jobs:
           echo "-----------------------------------"
         shell: pwsh
 
+      - name: Rename macOS Artifacts
+        if: matrix.platform == 'macos-latest'
+        run: |
+          echo "--- Listing content BEFORE rename ---"
+          echo "Output path: ${{ matrix.output_path }}"
+          ls -R "${{ matrix.output_path }}" || true 
+          echo "-----------------------------------"
+
+          APP_BASE_NAME="GEG Launcher"
+          ARTIFACT_DIR_DMG=${{ matrix.output_path }}/dmg
+          ARTIFACT_DIR_APP=${{ matrix.output_path }}/macos
+          RENAMED_DIR="$ARTIFACT_DIR_APP/renamed"
+
+          echo "Listing content of $ARTIFACT_DIR_DMG and $ARTIFACT_DIR_APP"
+          ls -R "$ARTIFACT_DIR_DMG" || true
+          ls -R "$ARTIFACT_DIR_APP" || true
+          mkdir -p "$RENAMED_DIR"
+
+          # Verschiebe DMG
+          mv "$ARTIFACT_DIR_DMG"/*.dmg "$RENAMED_DIR"/${{ matrix.asset_name_base }}.dmg
+
+          # Verschiebe App Tarball
+          mv "$ARTIFACT_DIR_APP/${APP_BASE_NAME}.app.tar.gz" "$RENAMED_DIR"/${{ matrix.asset_name_base }}.app.tar.gz
+
+          echo "Final content of $RENAMED_DIR after move"
+          ls -R "$RENAMED_DIR" || true
+
+          echo "--- Listing content AFTER rename ---"
+          echo "Output path: ${{ matrix.output_path }}"
+          ls -R "${{ matrix.output_path }}" || true
+          echo "-----------------------------------"
+        shell: bash
+
       # --- Artefakte hochladen ---
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v4
@@ -167,6 +223,14 @@ jobs:
         with:
           name: artifact-${{ matrix.platform }}
           path: ${{ matrix.output_path }}\nsis\${{ matrix.asset_name_base }}.*
+          if-no-files-found: error
+
+      - name: Upload macOS Artifact
+        uses: actions/upload-artifact@v4
+        if: matrix.platform == 'macos-latest'
+        with:
+          name: artifact-${{ matrix.platform }}-${{ matrix.target }}
+          path: ${{ matrix.output_path }}/macos/renamed/${{ matrix.asset_name_base }}.*
           if-no-files-found: error
 
   # --- JOB 2: Create Release ---
