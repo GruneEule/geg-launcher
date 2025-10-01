@@ -32,6 +32,9 @@ interface ProfileWizardV2Step3Props {
     defaultGroup?: string | null;
 }
 
+const forbiddenChars = /[<>:"/\\|?*]/g;
+const forbiddenTrailing = /[. ]$/;
+
 export function ProfileWizardV2Step3({
     onClose,
     onBack,
