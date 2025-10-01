@@ -12,6 +12,7 @@ mod logging;
 mod minecraft;
 mod state;
 mod utils;
+
 use crate::integrations::norisk_packs;
 use crate::integrations::norisk_versions;
 use log::{debug, error, info};
@@ -30,6 +31,7 @@ use commands::minecraft_auth_command::{
 };
 use commands::minecraft_command::{
     add_skin,
+    add_skin_locally,
     apply_skin_from_base64,
     // Local skin database commands
     get_all_skins,
@@ -50,7 +52,7 @@ use commands::minecraft_command::{
 };
 use commands::profile_command::{
     abort_profile_launch, add_modrinth_content_to_profile, add_modrinth_mod_to_profile,
-    batch_check_content_installed, check_world_lock_status, copy_profile, copy_world,
+    batch_check_content_installed, check_for_group_migration_command, check_world_lock_status, copy_profile, copy_world,
     create_profile, delete_custom_mod, delete_mod_from_profile, delete_profile, delete_world,
     export_profile, get_all_profiles_and_last_played, get_custom_mods, get_local_content,
     get_local_datapacks, get_local_resourcepacks, get_local_shaderpacks, get_log_file_content,
@@ -60,18 +62,21 @@ use commands::profile_command::{
     import_profile, import_profile_from_file, is_content_installed, is_profile_launching,
     launch_profile, list_profile_screenshots, list_profiles, open_profile_folder,
     open_profile_latest_log, refresh_norisk_packs, refresh_standard_versions, repair_profile,
-    search_profiles, set_custom_mod_enabled, set_norisk_mod_status, set_profile_mod_enabled,
-    update_datapack_from_modrinth, update_modrinth_mod_version, update_profile,
-    update_resourcepack_from_modrinth, update_shaderpack_from_modrinth,
+    resolve_loader_version, search_profiles, set_custom_mod_enabled, set_norisk_mod_status,
+    set_profile_mod_enabled, update_datapack_from_modrinth, update_modrinth_mod_version,
+    update_profile, update_resourcepack_from_modrinth, update_shaderpack_from_modrinth,
 };
 
 // Use statements for registered commands only
+use commands::curseforge_commands::{get_curseforge_mods_by_ids, import_curseforge_pack, download_and_install_curseforge_modpack_command, get_curseforge_file_changelog_command};
+
 use commands::modrinth_commands::{
-    check_modrinth_updates, download_and_install_modrinth_modpack,
+    check_modrinth_updates, check_mod_updates_unified_command, download_and_install_modrinth_modpack,
     get_all_modrinth_versions_for_contexts, get_modrinth_categories_command,
     get_modrinth_game_versions_command, get_modrinth_loaders_command, get_modrinth_mod_versions,
-    get_modrinth_project_details, get_modrinth_versions_by_hashes, search_modrinth_mods,
-    search_modrinth_projects,
+    get_modpack_versions_unified_command, get_modrinth_project_details, get_modrinth_versions_by_hashes, search_modrinth_mods,
+    search_modrinth_projects, search_mods_unified_command, get_mod_versions_unified_command,
+    switch_modpack_version_command
 };
 
 use commands::file_command::{
@@ -90,13 +95,20 @@ use tauri::{
 use commands::path_commands::{get_launcher_directory, resolve_image_path};
 
 
+// Import vanilla cape commands
+use commands::vanilla_cape_command::{
+    get_owned_vanilla_capes, get_currently_equipped_vanilla_cape, equip_vanilla_cape,
+    get_vanilla_cape_info, refresh_vanilla_cape_data,
+};
+
 // Import NRC commands
 use commands::nrc_commands::get_news_and_changelogs_command;
 
 // Import Content commands
 use commands::content_command::{
-    install_content_to_profile, install_local_content_to_profile, switch_content_version,
-    toggle_content_from_profile, uninstall_content_from_profile,
+    bulk_toggle_mod_updates, install_content_to_profile, install_local_content_to_profile,
+    switch_content_version, toggle_content_from_profile, toggle_mod_updates,
+    uninstall_content_from_profile,
 };
 
 // Import Java commands
@@ -193,8 +205,22 @@ async fn main() {
                 })
                 .build(app)?;
 
-            // Task for State Init
-            let state_init_app_handle = app_handle.clone(); 
+            // --- Handle .noriskpack file opening on initial startup (all platforms) ---
+            // The single-instance plugin does not handle the *very first* launch with arguments.
+            // We still need to check std::env::args() here for that first launch.
+            /*info!("Checking for startup file arguments...");
+            let startup_args: Vec<String> = std::env::args().collect();
+            if startup_args.len() > 1 { // args[0] is exe path, check if there are more
+                let handle_clone = app_handle.clone();
+                tauri::async_runtime::spawn(async move {
+                    // Pass all startup_args; handle_noriskpack_file_paths will skip the exe path if needed
+                    norisk_packs::handle_noriskpack_file_paths(&handle_clone, startup_args).await;
+                });
+            }*/
+            // --- End .noriskpack handling on startup ---
+
+            // Task for State Init and Updater Window
+            let state_init_app_handle = app_handle.clone();
             tauri::async_runtime::spawn(async move {
                 // --- State Initialization --- 
                 info!("Initiating state initialization...");
@@ -234,6 +260,12 @@ async fn main() {
                 } else {
                     error!("Could not get main window handle to show it!");
                 }
+
+                // --- Test Unified Mod Search ---
+                //debug_utils::debug_unified_mod_search().await;
+
+                // --- Test Unified Mod Versions ---
+                //debug_utils::debug_unified_mod_versions().await;
             });
 
             // --- Register Focus Event Listener for Discord RPC --- 
@@ -273,6 +305,7 @@ async fn main() {
             update_profile,
             delete_profile,
             repair_profile,
+            resolve_loader_version,
             list_profiles,
             search_profiles,
             get_minecraft_versions,
@@ -291,11 +324,19 @@ async fn main() {
             get_accounts,
             search_modrinth_mods,
             search_modrinth_projects,
+            search_mods_unified_command,
+            get_mod_versions_unified_command,
+            get_modpack_versions_unified_command,
+            get_curseforge_mods_by_ids,
+            import_curseforge_pack,
+            download_and_install_curseforge_modpack_command,
+            get_curseforge_file_changelog_command,
             get_modrinth_mod_versions,
             add_modrinth_mod_to_profile,
             add_modrinth_content_to_profile,
             get_modrinth_project_details,
             check_modrinth_updates,
+            check_mod_updates_unified_command,
             get_icons_for_archives,
             set_profile_mod_enabled,
             delete_mod_from_profile,
@@ -353,6 +394,7 @@ async fn main() {
             refresh_standard_versions,
             is_content_installed,
             batch_check_content_installed,
+            check_for_group_migration_command,
             open_profile_latest_log,
             get_profile_latest_log_content,
             detect_java_installations_command,
@@ -377,11 +419,15 @@ async fn main() {
             get_modrinth_loaders_command,
             get_modrinth_game_versions_command,
             get_modrinth_versions_by_hashes,
+            switch_modpack_version_command,
             uninstall_content_from_profile,
             toggle_content_from_profile,
+            toggle_mod_updates,
+            bulk_toggle_mod_updates,
             install_content_to_profile,
             commands::minecraft_command::get_profile_by_name_or_uuid,
             commands::minecraft_command::add_skin_locally,
+            commands::minecraft_command::get_base64_from_skin_source_command,
             commands::file_command::get_image_preview,
             get_all_profiles_and_last_played,
             get_local_content,

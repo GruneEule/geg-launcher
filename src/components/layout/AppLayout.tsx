@@ -7,6 +7,7 @@ import { Icon } from "@iconify/react";
 
 import { VerticalNavbar } from ".././navigation/VerticalNavbar";
 import { UserProfileBar } from ".././header/UserProfileBar";
+import { NavigationHistory } from "../ui/NavigationHistory";
 import { useThemeStore } from "../../store/useThemeStore";
 import {
   BACKGROUND_EFFECTS,
@@ -25,6 +26,9 @@ import { RetroGridEffect } from "../effects/RetroGridEffect";
 import PlainBackground from "../effects/PlainBackground";
 import * as ConfigService from "../../services/launcher-config-service";
 import { SocialsModal } from "../modals/SocialsModal";
+import { ProfileWizardV2Modal } from "../modals/ProfileWizardV2Modal";
+import { ProfileSettingsModal } from "../modals/ProfileSettingsModal";
+import { ProfileDuplicateModal } from "../modals/ProfileDuplicateModal";
 import { exit, relaunch } from '@tauri-apps/plugin-process';
 
 const navItems = [
@@ -295,6 +299,9 @@ export function AppLayout({
       </div>
       {/* Global Modals Portal */}
       <SocialsModal />
+      <ProfileWizardV2Modal />
+      <ProfileSettingsModal />
+      <ProfileDuplicateModal />
     </div>
   );
 }
@@ -366,6 +373,8 @@ function HeaderBar({ minimizeRef, maximizeRef, closeRef }: HeaderBarProps) {
       data-tauri-drag-region
     >
       <div className="flex items-center gap-4" data-tauri-drag-region>
+        <NavigationHistory />
+
         <div className="flex flex-col items-start -mt-2.5">
           <h1
             className="font-minecraft text-4xl tracking-wider text-white font-bold lowercase text-shadow"
