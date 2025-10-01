@@ -139,9 +139,7 @@ pub struct Profile {
     /// Optional group name for UI organization and filtering
     #[serde(default)]
     pub group: Option<String>,
-    /// Whether this profile should use a shared Minecraft folder
-    #[serde(default)]
-    pub use_shared_minecraft_folder: bool,
+
     /// True if this is a standard profile template, false if it's a user profile.
     #[serde(default)] // Defaults to false for existing user profiles
     pub is_standard_version: bool,
@@ -296,21 +294,7 @@ pub struct CustomModInfo {
     pub path: PathBuf,    // Full path to the file in custom_mods directory
 }
 
-impl Profile {
-    /// Returns whether this profile should actually use a shared Minecraft folder.
-    /// This method takes into account both the profile setting and special group logic.
-    pub fn should_use_shared_minecraft_folder(&self) -> bool {
-        // For isolated groups (server, modpacks), always return false regardless of the setting
-        if let Some(group) = &self.group {
-            if ProfileManager::is_isolated_group(group) {
-                return false;
-            }
-        }
-        
-        // Profile has no group, don't use shared folder (use original path logic)
-        self.use_shared_minecraft_folder
-    }
-}
+
 
 // Profile Manager
 pub struct ProfileManager {
@@ -2128,7 +2112,7 @@ impl ProfileManager {
         );
 
         // Determine final path based on shared folder logic and group
-        let final_path = if profile.should_use_shared_minecraft_folder() {
+        let final_path = if false {
             // Profile should use shared folder - use group directory logic
             log::trace!("Profile '{}' should use shared Minecraft folder, using group directory", profile.name);
             self.calculate_group_directory(profile)?
@@ -2202,11 +2186,11 @@ impl ProfileManager {
             profile.loader,
             profile.game_version,
             profile.is_standard_version,
-            profile.should_use_shared_minecraft_folder()
+            false
         );
 
         // Use standard logic for standard versions or profiles without group/shared folder
-        let mods_path = if profile.is_standard_version || !profile.should_use_shared_minecraft_folder() {
+        let mods_path = if profile.is_standard_version || !false {
             let path = self.get_profile_mods_path_single(profile)?;
             log::info!(
                 "Calculated standard mods path for profile '{}': {:?}",

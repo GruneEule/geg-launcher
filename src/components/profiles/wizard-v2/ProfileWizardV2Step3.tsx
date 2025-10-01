@@ -24,7 +24,7 @@ interface ProfileWizardV2Step3Props {
         loaderVersion: string | null;
         memoryMaxMb: number;
         selectedNoriskPackId: string | null;
-        use_shared_minecraft_folder?: boolean;
+
     }) => void;
     selectedMinecraftVersion: string;
     selectedLoader: ModLoader;
@@ -167,22 +167,7 @@ export function ProfileWizardV2Step3({
                     </div>
                 </div>
 
-                {/* Checkbox Options */}
-                <div className="grid grid-cols-1 gap-3">
-                    <div className="space-y-1">
-                        <Checkbox
-                            label="Use shared Minecraft folder"
-                            checked={useSharedMinecraftFolder}
-                            onChange={(event) => setUseSharedMinecraftFolder(event.target.checked)}
-                            description="When enabled, a shared Minecraft folder will be used based on the group. Your settings, worlds, configs and resource packs will remain the same between profiles."
-                            descriptionClassName="font-minecraft-ten text-sm"
-                            size="lg"
-                        />
-                        <p className="text-xs text-white/50 font-minecraft-ten ml-10 -mt-1">
-                            (you can change this anytime)
-                        </p>
-                    </div>
-                </div>
+
 
                 {/* RAM Settings */}
                 <div className="space-y-3">

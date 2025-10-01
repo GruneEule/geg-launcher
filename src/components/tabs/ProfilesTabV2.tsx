@@ -100,20 +100,11 @@ export function ProfilesTabV2() {
     return Array.from(uniqueGroups).sort();
   };
 
-  // Helper function to check if a group belongs to NRC
-  const isNrcGroup = (groupName: string | null): boolean => {
-    if (!groupName) return false;
-    const normalized = groupName.toLowerCase();
-    return normalized === "nrc" || normalized === "noriskclient" || normalized === "norisk client";
-  };
-
   // Calculate group counts based on current search/filter
   const getFilteredCountForGroup = (groupId: string) => {
     if (groupId === "all") return profiles.length;
     
     // Handle default groups
-    if (groupId === "nrc") return profiles.filter(p => isNrcGroup(p.group)).length;
-    if (groupId === "server") return profiles.filter(p => p.group === "SERVER").length;
     if (groupId === "modpacks") return profiles.filter(p => p.group === "MODPACKS").length;
     
     // Handle dynamic groups (groupId is normalized lowercase, compare with profile.group in lowercase)
@@ -124,8 +115,6 @@ export function ProfilesTabV2() {
   const createGroups = (): GroupTab[] => {
     const defaultGroups: GroupTab[] = [
       { id: "all", name: "All", count: getFilteredCountForGroup("all") },
-      { id: "nrc", name: "NRC", count: getFilteredCountForGroup("nrc") },
-      { id: "server", name: "SERVER", count: getFilteredCountForGroup("server") },
       { id: "modpacks", name: "MODPACKS", count: getFilteredCountForGroup("modpacks") },
     ];
 
@@ -133,8 +122,7 @@ export function ProfilesTabV2() {
     const uniqueGroups = getUniqueProfileGroups();
     const dynamicGroups: GroupTab[] = uniqueGroups
       .filter(group => 
-        !["server", "modpacks"].includes(group) && // Exclude SERVER and MODPACKS (already normalized)
-        !isNrcGroup(group) // Exclude all NRC variations
+        !["modpacks"].includes(group) // Exclude MODPACKS (already normalized)
       )
       .map(group => ({
         id: group, // group is already lowercase from getUniqueProfileGroups
@@ -247,15 +235,6 @@ export function ProfilesTabV2() {
     );
   }
 
-  if (profiles.length === 0) {
-    return (
-      <EmptyState
-        icon="solar:widget-bold"
-        message="No profiles found"
-      />
-    );
-  }
-
   // Filter profiles based on search query, active group, and version filter
   const filteredProfiles = profiles.filter((profile) => {
     // Search filter
@@ -265,8 +244,6 @@ export function ProfilesTabV2() {
     
     // Group filter
     const matchesGroup = activeGroup === "all" || 
-      (activeGroup === "nrc" && isNrcGroup(profile.group)) ||
-      (activeGroup === "server" && profile.group === "SERVER") ||
       (activeGroup === "modpacks" && profile.group === "MODPACKS") ||
       (profile.group && profile.group.toLowerCase() === activeGroup);
     
@@ -375,26 +352,42 @@ export function ProfilesTabV2() {
         </div>
       </div>
 
-      {/* Profile list */}
-      <div className={
-        layoutMode === "list" 
-          ? "space-y-3"
-          : layoutMode === "grid"
-          ? "grid grid-cols-2 gap-3" 
-          : "grid grid-cols-3 gap-3"
-      }>
-                 {sortedProfiles.map((profile) => (
-           <ProfileCardV2
-             key={profile.id}
-             profile={profile}
-             onSettings={handleSettings}
-             onMods={handleMods}
-             onDelete={handleDeleteProfile}
-             onOpenFolder={handleOpenFolder}
-             layoutMode={layoutMode}
-           />
-         ))}
-      </div>
+      {sortedProfiles.length === 0 ? (
+        <EmptyState
+          icon="solar:widget-bold"
+          message="No profiles found"
+          description="Discover great modpacks from GrüneEule in the GEG tab."
+          action={
+            <button
+              onClick={() => navigate("/geg")}
+              className="flex items-center gap-2 px-4 py-2 bg-accent/80 hover:bg-accent text-white border border-accent/50 hover:border-accent-hover rounded-lg font-minecraft text-2xl lowercase transition-all duration-200"
+            >
+              <Icon icon="solar:star-fall-bold" className="w-6 h-6" />
+              VISIT GEG TAB
+            </button>
+          }
+        />
+      ) : (
+        <div className={
+          layoutMode === "list" 
+            ? "space-y-3"
+            : layoutMode === "grid"
+            ? "grid grid-cols-2 gap-3" 
+            : "grid grid-cols-3 gap-3"
+        }>
+                   {sortedProfiles.map((profile) => (
+             <ProfileCardV2
+               key={profile.id}
+               profile={profile}
+               onSettings={handleSettings}
+               onMods={handleMods}
+               onDelete={handleDeleteProfile}
+               onOpenFolder={handleOpenFolder}
+               layoutMode={layoutMode}
+             />
+           ))}
+        </div>
+      )}
 
       {/* Bottom tip */}
       </div>

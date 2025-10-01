@@ -46,7 +46,6 @@ pub struct CreateProfileParams {
     loader: String,
     loader_version: Option<String>,
     selected_norisk_pack_id: Option<String>,
-    use_shared_minecraft_folder: Option<bool>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -59,7 +58,6 @@ pub struct UpdateProfileParams {
     selected_norisk_pack_id: Option<String>,
     group: Option<String>,
     clear_group: Option<bool>,
-    use_shared_minecraft_folder: Option<bool>,
     clear_selected_norisk_pack: Option<bool>,
     norisk_information: Option<crate::state::profile_state::NoriskInformation>,
 }
@@ -69,7 +67,7 @@ pub struct UpdateProfileParams {
 pub struct CopyProfileParams {
     source_profile_id: Uuid,
     new_profile_name: String,
-    use_shared_minecraft_folder: Option<bool>,
+
     // Option um nur bestimmte Dateien zu kopieren
     include_files: Option<Vec<PathBuf>>,
 }
@@ -144,7 +142,6 @@ pub async fn create_profile(params: CreateProfileParams) -> Result<Uuid, Command
         selected_norisk_pack_id: params.selected_norisk_pack_id.clone(),
         disabled_norisk_mods_detailed: HashSet::new(),
         source_standard_profile_id: None,
-        use_shared_minecraft_folder: params.use_shared_minecraft_folder.unwrap_or(false),
         group: None,
         description: None,
         banner: None,
@@ -466,52 +463,7 @@ pub async fn update_profile(id: Uuid, params: UpdateProfileParams) -> Result<(),
     }
 }
 
-/// Checks if mods directory migration is needed based on profile changes
-fn needs_mods_migration(
-    original_profile: &Profile, 
-    updated_profile: &Profile, 
-    params: &UpdateProfileParams
-) -> Result<bool, CommandError> {
-    // Only check for actual path-affecting changes for regular user profiles
-    
-    // Check if group actually changed (affects shared path)
-    let group_changed = if params.clear_group == Some(true) {
-        // Clearing group: changed if profile had a group before
-        original_profile.group.is_some()
-    } else if let Some(new_group) = &params.group {
-        // Setting new group: changed if different from current group
-        original_profile.group.as_deref() != Some(new_group)
-    } else {
-        // No group change requested
-        false
-    };
-    
-    // Check if use_shared_minecraft_folder setting changed 
-    let shared_setting_changed = params.use_shared_minecraft_folder.is_some();
-    
-    // Only migrate if we actually changed something that affects the mods path
-    let migration_needed = if group_changed || shared_setting_changed {
-        // Recalculate if shared folder usage would change
-        let original_uses_shared = original_profile.should_use_shared_minecraft_folder();
-        let updated_uses_shared = updated_profile.should_use_shared_minecraft_folder();
-        
-        // Migration needed if shared folder usage actually changed
-        original_uses_shared != updated_uses_shared
-    } else {
-        // No path-affecting changes, no migration needed
-        false
-    };
-    
-    info!(
-        "Migration check for profile {}: group_changed={}, shared_setting_changed={} -> migration_needed={}",
-        original_profile.id,
-        group_changed,
-        shared_setting_changed,
-        migration_needed
-    );
-    
-    Ok(migration_needed)
-}
+
 
 /// Migrates mods directory from old path to new path
 async fn migrate_mods_directory(old_path: &std::path::Path, new_path: &std::path::Path) -> Result<(), CommandError> {
@@ -620,11 +572,7 @@ async fn try_update_profile(id: Uuid, params: UpdateProfileParams) -> Result<(),
         profile.group = Some(new_group.clone());
     }
 
-    // Handle use_shared_minecraft_folder
-    if let Some(use_shared) = params.use_shared_minecraft_folder {
-        info!("Updating use_shared_minecraft_folder to: {}", use_shared);
-        profile.use_shared_minecraft_folder = use_shared;
-    }
+
 
     // Handle norisk_information
     if let Some(norisk_info) = params.norisk_information {
@@ -643,38 +591,7 @@ async fn try_update_profile(id: Uuid, params: UpdateProfileParams) -> Result<(),
         );
     }
 
-    // Check if mods directory location needs to change (using the params copy from above)
-    let mods_migration_needed = needs_mods_migration(&original_profile, &profile, &params_for_migration)?;
-    
-    if mods_migration_needed {
-        info!("Mods directory migration needed for profile {}", id);
-        
-        // Get old and new mods paths
-        let old_mods_path = if original_profile.is_standard_version || !original_profile.should_use_shared_minecraft_folder() {
-            state.profile_manager.get_profile_mods_path_single(&original_profile)?
-        } else {
-            state.profile_manager.get_profile_mods_path_shared(&original_profile)?
-        };
-        
-        let new_mods_path = if profile.is_standard_version || !profile.should_use_shared_minecraft_folder() {
-            state.profile_manager.get_profile_mods_path_single(&profile)?
-        } else {
-            state.profile_manager.get_profile_mods_path_shared(&profile)?
-        };
-        
-        // Only migrate if paths are actually different
-        if old_mods_path != new_mods_path {
-            info!(
-                "Migrating mods from {:?} to {:?} for profile {}",
-                old_mods_path, new_mods_path, id
-            );
-            
-            // Perform the migration
-            migrate_mods_directory(&old_mods_path, &new_mods_path).await?;
-        } else {
-            info!("Mods paths are identical, skipping migration for profile {}", id);
-        }
-    }
+
 
     state.profile_manager.update_profile(id, profile).await?;
     info!("Profile {} updated successfully.", id);
@@ -1493,7 +1410,7 @@ pub async fn copy_profile(params: CopyProfileParams) -> Result<Uuid, CommandErro
         disabled_norisk_mods_detailed: source_profile.disabled_norisk_mods_detailed.clone(),
         source_standard_profile_id: source_profile.source_standard_profile_id,
         group: source_profile.group.clone(),
-        use_shared_minecraft_folder: params.use_shared_minecraft_folder.unwrap_or(source_profile.should_use_shared_minecraft_folder()),
+
         is_standard_version: false,
         description: source_profile.description.clone(),
         norisk_information: source_profile.norisk_information.clone(),

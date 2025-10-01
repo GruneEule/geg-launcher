@@ -110,7 +110,7 @@ export function ProfileWizardV2({ onClose, onSave, defaultGroup }: ProfileWizard
     loaderVersion: string | null;
     memoryMaxMb: number;
     selectedNoriskPackId: string | null;
-    use_shared_minecraft_folder?: boolean;
+
   }) => {
     const { createProfile } = useProfileStore.getState();
 
@@ -120,7 +120,7 @@ export function ProfileWizardV2({ onClose, onSave, defaultGroup }: ProfileWizard
       loader: profileData.loader,
       loader_version: profileData.loaderVersion || undefined,
       selected_norisk_pack_id: profileData.selectedNoriskPackId || undefined,
-      use_shared_minecraft_folder: profileData.use_shared_minecraft_folder,
+
     };
 
     const creationPromise = async () => {

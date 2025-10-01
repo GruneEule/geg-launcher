@@ -61,23 +61,23 @@ export const refreshNrcDataOnMount = async (): Promise<void> => {
         console.error("Failed to load blocked mods config:", error);
       });
 
-    try {
-      await refreshNoriskPacks();
-      console.log("Norisk Packs updated successfully on mount!");
-      nrcPacksSuccess = true;
-    } catch (error) {
-      console.error("Failed to refresh Norisk Packs on mount:", error);
-    }
+    // try {
+    //   await refreshNoriskPacks();
+    //   console.log("Norisk Packs updated successfully on mount!");
+    //   nrcPacksSuccess = true;
+    // } catch (error) {
+    //   console.error("Failed to refresh Norisk Packs on mount:", error);
+    // }
 
-    try {
-      const standardProfiles = await refreshStandardVersions();
-      console.log("Standard Versions updated successfully on mount!");
-      // Store the standard profiles in the profile store
-      useProfileStore.setState({ standardProfiles });
-      standardVersionsSuccess = true;
-    } catch (error) {
-      console.error("Failed to refresh Standard Versions on mount:", error);
-    }
+    // try {
+    //   const standardProfiles = await refreshStandardVersions();
+    //   console.log("Standard Versions updated successfully on mount!");
+    //   // Store the standard profiles in the profile store
+    //   useProfileStore.setState({ standardProfiles });
+    //   standardVersionsSuccess = true;
+    // } catch (error) {
+    //   console.error("Failed to refresh Standard Versions on mount:", error);
+    // }
 
     // Fetch profiles from the store after NRC data is refreshed
     // This ensures the profile list (including standard versions) and last played are up-to-date.

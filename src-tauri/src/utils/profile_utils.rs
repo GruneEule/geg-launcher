@@ -982,7 +982,7 @@ pub async fn check_for_group_migration(profile_id: Uuid) -> Result<MigrationInfo
     let single_empty = is_directory_effectively_empty(&single_instance_dir).await?;
 
     // Check if profile should use shared minecraft folder
-    let use_shared = profile.should_use_shared_minecraft_folder();
+    let use_shared = false;
     log::debug!("Profile '{}' - Use shared minecraft folder: {}", profile.name, use_shared);
 
     // Determine migration direction and paths

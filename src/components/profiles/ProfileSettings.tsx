@@ -30,7 +30,6 @@ type SettingsTab =
   | "installation"
   | "java"
   | "window"
-  | "nrc"
   | "designer";
 
 const DESIGNER_FEATURE_FLAG_NAME = "show_keep_local_assets";
@@ -128,7 +127,6 @@ export function ProfileSettings({ profile, onClose }: ProfileSettingsProps) {
         clear_group: !editedProfile.group,
         description: editedProfile.description,
         norisk_information: editedProfile.norisk_information,
-        use_shared_minecraft_folder: editedProfile.use_shared_minecraft_folder,
       });
 
       toast.success("Profile saved successfully!");
@@ -175,7 +173,6 @@ export function ProfileSettings({ profile, onClose }: ProfileSettingsProps) {
     { id: "installation", label: "Installation", icon: "solar:download-bold" },
     { id: "java", label: "JAVA & Memory", icon: "solar:code-bold" },
     { id: "window", label: "Window", icon: "solar:widget-bold" },
-    { id: "nrc", label: "NRC", icon: "solar:gamepad-bold" },
   ];
 
   const tabConfig = showDesignerTab
@@ -230,16 +227,6 @@ export function ProfileSettings({ profile, onClose }: ProfileSettingsProps) {
             updateProfile={updateProfileData}
           />
         );
-      case "nrc":
-        return (
-          <NRCTab
-            profile={profile}
-            editedProfile={editedProfile}
-            updateProfile={updateProfileData}
-            onRefresh={handleRefresh}
-          />
-        );
-
       case "designer":
         if (showDesignerTab) {
           return (
