@@ -70,7 +70,7 @@ use commands::profile_command::{
 // Use statements for registered commands only
 use commands::curseforge_commands::{get_curseforge_mods_by_ids, import_curseforge_pack, download_and_install_curseforge_modpack_command, get_curseforge_file_changelog_command};
 
-use commands::modrinth_commands::{
+use commands::modrinth_commands::{get_organization_projects, 
     check_modrinth_updates, check_mod_updates_unified_command, download_and_install_modrinth_modpack,
     get_all_modrinth_versions_for_contexts, get_modrinth_categories_command,
     get_modrinth_game_versions_command, get_modrinth_loaders_command, get_modrinth_mod_versions,
@@ -447,6 +447,7 @@ async fn main() {
             commands::flagsmith_commands::refresh_blocked_mods_config,
             commands::nrc_commands::get_mobile_app_token,
             commands::nrc_commands::reset_mobile_app_token,
+            get_organization_projects,
             // get_capes_by_hashes entfernt
         ])
         .build(tauri::generate_context!()) 

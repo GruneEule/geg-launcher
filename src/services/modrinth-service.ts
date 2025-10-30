@@ -144,4 +144,12 @@ export class ModrinthService {
       params,
     });
   }
+
+  static async getOrganizationProjects(
+    organizationId: string,
+  ): Promise<ModrinthProject[]> {
+    return invoke<ModrinthProject[]>("get_organization_projects", {
+      organizationId,
+    });
+  }
 }

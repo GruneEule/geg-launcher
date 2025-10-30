@@ -1227,3 +1227,94 @@ pub async fn get_modrinth_game_versions() -> Result<Vec<ModrinthGameVersion>> {
     );
     Ok(game_versions)
 }
+
+/// Fetches projects for a specific organization from Modrinth.
+/// https://docs.modrinth.com/api/v2/tag/organizations/operation/getOrganizationProjects
+pub async fn get_organization_projects(organization_id: String) -> Result<Vec<ModrinthProject>> {
+    let client = reqwest::Client::new();
+    let url = format!(
+        "{}/organization/{}/projects",
+        MODRINTH_API_BASE_URL, organization_id
+    );
+
+    log::info!("Getting Modrinth projects for organization: {}", url);
+
+    let response = client
+        .get(url)
+        .header(
+            "User-Agent",
+            format!(
+                "NoRiskClient-Launcher/{} (contact@noriskclient.de)",
+                env!("CARGO_PKG_VERSION")
+            ),
+        )
+        .send()
+        .await
+        .map_err(|e| AppError::Other(format!("Modrinth API request failed: {}", e)))?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let error_text = response
+            .text()
+            .await
+            .unwrap_or_else(|_| "Failed to read error body".to_string());
+        log::error!("Modrinth API error ({}): {}", status, error_text);
+        return Err(AppError::Other(format!(
+            "Modrinth API returned error {}: {}",
+            status, error_text
+        )));
+    }
+
+    response
+        .json::<Vec<ModrinthProject>>()
+        .await
+        .map_err(|e| AppError::Other(format!("Failed to parse Modrinth response: {}", e)))
+}
+
+pub async fn search_projects_by_organization(
+    organization_id: String,
+) -> Result<ModrinthSearchResponse> {
+    let client = reqwest::Client::new();
+    let base_url = format!("{}/search", MODRINTH_API_BASE_URL);
+
+    let mut query_params: Vec<(String, String)> = Vec::new();
+
+    let facets = format!("[[\"author:{}\"]]", organization_id);
+    query_params.push(("facets".to_string(), facets));
+
+    let final_url = reqwest::Url::parse_with_params(&base_url, &query_params)
+        .map_err(|e| AppError::Other(format!("Failed to build Modrinth search URL: {}", e)))?;
+
+    log::info!("Searching Modrinth by organization: {}", final_url);
+
+    let response = client
+        .get(final_url)
+        .header(
+            "User-Agent",
+            format!(
+                "NoRiskClient-Launcher/{} (contact@noriskclient.de)",
+                env!("CARGO_PKG_VERSION")
+            ),
+        )
+        .send()
+        .await
+        .map_err(|e| AppError::Other(format!("Modrinth API request failed: {}", e)))?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let error_text = response
+            .text()
+            .await
+            .unwrap_or_else(|_| "Failed to read error body".to_string());
+        log::error!("Modrinth API error ({}): {}", status, error_text);
+        return Err(AppError::Other(format!(
+            "Modrinth API returned error {}: {}",
+            status, error_text
+        )));
+    }
+
+    response
+        .json::<ModrinthSearchResponse>()
+        .await
+        .map_err(|e| AppError::Other(format!("Failed to parse Modrinth response: {}", e)))
+}

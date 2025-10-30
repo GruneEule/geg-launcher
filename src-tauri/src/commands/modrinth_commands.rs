@@ -475,3 +475,20 @@ pub async fn switch_modpack_version_command(
 
     Ok(result)
 }
+
+/// Fetches projects for a specific organization from Modrinth.
+#[tauri::command]
+pub async fn get_organization_projects(
+    organization_id: String,
+) -> Result<Vec<modrinth::ModrinthProject>, CommandError> {
+    log::debug!(
+        "Received get_organization_projects command for organization ID: {}",
+        organization_id
+    );
+
+    let result = modrinth::get_organization_projects(organization_id)
+        .await
+        .map_err(CommandError::from)?;
+
+    Ok(result)
+}
