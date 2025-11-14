@@ -40,6 +40,7 @@ const navItems = [
   { id: "profiles", icon: "solar:user-id-bold", label: "Profiles" },
   { id: "mods", icon: "solar:widget-bold", label: "Mods" },
   { id: "skins", icon: "solar:emoji-funny-circle-bold", label: "Skins" },
+  { id: "geg", icon: "solar:shop-bold", label: "GEG" },
   { id: "settings", icon: "solar:settings-bold", label: "Settings" },
 ];
 

@@ -3,6 +3,7 @@ import { App } from "../App";
 import { PlayTab } from "../components/tabs/PlayTab";
 import { ProfilesTab } from "../components/tabs/ProfilesTab";
 import ModrinthTabV2 from "../components/tabs/ModrinthTabV2";
+import GEGTab from "../components/tabs/GEGTab";
 import { SkinsTab } from "../components/tabs/SkinsTab";
 import { StoreTab } from "../components/tabs/StoreTab";
 import { SettingsTab } from "../components/tabs/SettingsTab";
@@ -47,6 +48,10 @@ export const router = createHashRouter([
       {
         path: "mods",
         element: <ModrinthTabV2 />,
+      },
+      {
+        path: "geg",
+        element: <GEGTab />,
       },
       {
         path: "skins",

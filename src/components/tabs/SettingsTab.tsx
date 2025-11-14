@@ -30,7 +30,11 @@ import EffectPreviewCard from ".././EffectPreviewCard";
 import { RangeSlider } from ".././ui/RangeSlider";
 import { openExternalUrl } from "../../services/tauri-service";
 import { openLauncherDirectory } from "../../services/tauri-service";
-import { useFlags } from "flagsmith/react";
+// Avoid using flagsmith hook directly here because it may return
+// internal null values before initialization and cause runtime
+// errors (see bug where .getValue is called on null).
+// We'll rely on the local config values as the primary source of
+// truth for showing experimental UI in this tab.
 import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 import { useGlobalModal } from "../../hooks/useGlobalModal";
 import { ColorPickerModal } from "../modals/ColorPickerModal";
@@ -94,12 +98,11 @@ export function SettingsTab() {
   const { confirm, confirmDialog } = useConfirmDialog();
   const { showModal, hideModal } = useGlobalModal();
 
-  const EXPERIMENTAL_FEATURE_FLAG_NAME = "show_experimental_mode";
-  const experimentalFlags = useFlags([EXPERIMENTAL_FEATURE_FLAG_NAME]);
+  // Use config fields as the source of truth for experimental features
+  // in this tab to avoid crashes if the feature flag provider isn't
+  // ready yet.
   const canShowExperimental =
-    experimentalFlags[EXPERIMENTAL_FEATURE_FLAG_NAME]?.enabled === true ||
-    !!tempConfig?.is_experimental ||
-    !!config?.is_experimental;
+    !!tempConfig?.is_experimental || !!config?.is_experimental;
 
   const backgroundOptions = [
     {
