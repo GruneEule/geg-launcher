@@ -8,7 +8,7 @@ import { GeneralSettingsTab } from "./settings/GeneralSettingsTab";
 import { InstallationSettingsTab } from "./settings/InstallationSettingsTab";
 import { JavaSettingsTab } from "./settings/JavaSettingsTab";
 import { WindowSettingsTab } from "./settings/WindowSettingsTab";
-import { NRCTab } from "./settings/NRCTab";
+
 
 import { useProfileStore } from "../../store/profile-store";
 import * as ProfileService from "../../services/profile-service";
@@ -16,7 +16,7 @@ import { Modal } from "../ui/Modal";
 import { Button } from "../ui/buttons/Button";
 import { useThemeStore } from "../../store/useThemeStore";
 import { toast } from "react-hot-toast";
-import { useFlags } from 'flagsmith/react';
+// import { useFlags } from 'flagsmith/react';
 import { DesignerSettingsTab } from './settings/DesignerSettingsTab';
 import { cn } from "../../lib/utils";
 
@@ -51,8 +51,7 @@ export function ProfileSettings({ profile, onClose }: ProfileSettingsProps) {
     (state) => state.isBackgroundAnimationEnabled,
   );
 
-  const flags = useFlags([DESIGNER_FEATURE_FLAG_NAME]);
-  const showDesignerTab = flags[DESIGNER_FEATURE_FLAG_NAME]?.enabled === true;
+  const showDesignerTab = false;
   const [tempRamMb, setTempRamMb] = useState(profile.settings?.memory?.max ?? 3072);
 
   useEffect(() => {
@@ -128,7 +127,7 @@ export function ProfileSettings({ profile, onClose }: ProfileSettingsProps) {
         clear_group: !editedProfile.group,
         description: editedProfile.description,
         GEG_information: editedProfile.GEG_information,
-        use_shared_minecraft_folder: editedProfile.use_shared_minecraft_folder,
+        use_shared_minecraft_folder: false,
       });
 
       toast.success("Profile saved successfully!");
@@ -175,7 +174,6 @@ export function ProfileSettings({ profile, onClose }: ProfileSettingsProps) {
     { id: "installation", label: "Installation", icon: "solar:download-bold" },
     { id: "java", label: "JAVA & Memory", icon: "solar:code-bold" },
     { id: "window", label: "Window", icon: "solar:widget-bold" },
-    { id: "nrc", label: "NRC", icon: "solar:gamepad-bold" },
   ];
 
   const tabConfig = showDesignerTab
@@ -230,16 +228,6 @@ export function ProfileSettings({ profile, onClose }: ProfileSettingsProps) {
             updateProfile={updateProfileData}
           />
         );
-      case "nrc":
-        return (
-          <NRCTab
-            profile={profile}
-            editedProfile={editedProfile}
-            updateProfile={updateProfileData}
-            onRefresh={handleRefresh}
-          />
-        );
-
       case "designer":
         if (showDesignerTab) {
           return (

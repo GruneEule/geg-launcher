@@ -14,134 +14,113 @@ export type AccentColor = {
 };
 
 export const ACCENT_COLORS: Record<string, AccentColor> = {
-  cyan: {
-    name: "Cyan",
-    value: "#00B9E8",
-    hoverValue: "#0099CC",
-    shadowValue: "rgba(0, 185, 232, 0.5)",
-    light: "#22d3ee",
-    dark: "#0891b2",
+  // Deine gewünschten Farben
+  seagreen: {
+    name: "Sea Green",
+    value: "#2e8b57",
+    hoverValue: "#267349",
+    shadowValue: "rgba(46, 139, 87, 0.5)",
+    light: "#3da769",
+    dark: "#1e5631",
   },
-  blue: {
-    name: "Blue",
-    value: "#4f8eff",
-    hoverValue: "#3a7aff",
-    shadowValue: "rgba(79, 142, 255, 0.5)",
-    light: "#60a5fa",
-    dark: "#2563eb",
+  coral: {
+    name: "Coral",
+    value: "#ff7f50",
+    hoverValue: "#ff6b38",
+    shadowValue: "rgba(255, 127, 80, 0.5)",
+    light: "#ff9c7a",
+    dark: "#e65c2e",
   },
-  purple: {
-    name: "Purple",
-    value: "#9c5fff",
-    hoverValue: "#8a4aff",
-    shadowValue: "rgba(156, 95, 255, 0.5)",
-    light: "#a78bfa",
-    dark: "#7c3aed",
+  forest: {
+    name: "Forest",
+    value: "#1e5631",
+    hoverValue: "#164325",
+    shadowValue: "rgba(30, 86, 49, 0.5)",
+    light: "#267349",
+    dark: "#133820",
   },
-  violet: {
-    name: "Violet",
-    value: "#8b5cf6",
-    hoverValue: "#7c3aed",
-    shadowValue: "rgba(139, 92, 246, 0.5)",
-    light: "#a78bfa",
-    dark: "#6d28d9",
+  
+  // Weitere coole Farben
+  mint: {
+    name: "Mint",
+    value: "#00c9b1",
+    hoverValue: "#00b09a",
+    shadowValue: "rgba(0, 201, 177, 0.5)",
+    light: "#00e6cc",
+    dark: "#009c87",
   },
-  pink: {
-    name: "Pink",
-    value: "#ec4899",
-    hoverValue: "#db2777",
-    shadowValue: "rgba(236, 72, 153, 0.5)",
-    light: "#f472b6",
-    dark: "#be185d",
+  lavender: {
+    name: "Lavender",
+    value: "#9673e0",
+    hoverValue: "#845fd6",
+    shadowValue: "rgba(150, 115, 224, 0.5)",
+    light: "#ab8fe9",
+    dark: "#7a57c7",
   },
-  green: {
-    name: "Green",
-    value: "#10b981",
-    hoverValue: "#059669",
-    shadowValue: "rgba(16, 185, 129, 0.5)",
-    light: "#34d399",
-    dark: "#047857",
+  sunset: {
+    name: "Sunset",
+    value: "#ff6b6b",
+    hoverValue: "#ff5252",
+    shadowValue: "rgba(255, 107, 107, 0.5)",
+    light: "#ff8e8e",
+    dark: "#e84545",
   },
-  emerald: {
-    name: "Emerald",
-    value: "#059669",
-    hoverValue: "#047857",
-    shadowValue: "rgba(5, 150, 105, 0.5)",
-    light: "#10b981",
-    dark: "#065f46",
+  gold: {
+    name: "Gold",
+    value: "#ffd700",
+    hoverValue: "#e6c200",
+    shadowValue: "rgba(255, 215, 0, 0.5)",
+    light: "#ffe44d",
+    dark: "#ccac00",
   },
-  teal: {
-    name: "Teal",
-    value: "#14b8a6",
-    hoverValue: "#0d9488",
-    shadowValue: "rgba(20, 184, 166, 0.5)",
-    light: "#2dd4bf",
-    dark: "#0f766e",
+  ocean: {
+    name: "Ocean",
+    value: "#1e90ff",
+    hoverValue: "#0077e6",
+    shadowValue: "rgba(30, 144, 255, 0.5)",
+    light: "#4da6ff",
+    dark: "#0066cc",
   },
-  orange: {
-    name: "Orange",
-    value: "#f97316",
-    hoverValue: "#ea580c",
-    shadowValue: "rgba(249, 115, 22, 0.5)",
-    light: "#fb923c",
-    dark: "#c2410c",
-  },
-  amber: {
-    name: "Amber",
-    value: "#f59e0b",
-    hoverValue: "#d97706",
-    shadowValue: "rgba(245, 158, 11, 0.5)",
-    light: "#fbbf24",
-    dark: "#b45309",
-  },
-  red: {
-    name: "Red",
-    value: "#ef4444",
-    hoverValue: "#dc2626",
-    shadowValue: "rgba(239, 68, 68, 0.5)",
-    light: "#f87171",
-    dark: "#b91c1c",
-  },
-  rose: {
-    name: "Rose",
-    value: "#f43f5e",
-    hoverValue: "#e11d48",
-    shadowValue: "rgba(244, 63, 94, 0.5)",
-    light: "#fb7185",
-    dark: "#be123c",
-  },
-  indigo: {
-    name: "Indigo",
-    value: "#6366f1",
-    hoverValue: "#4f46e5",
-    shadowValue: "rgba(99, 102, 241, 0.5)",
-    light: "#818cf8",
-    dark: "#3730a3",
+  berry: {
+    name: "Berry",
+    value: "#c71585",
+    hoverValue: "#a8126f",
+    shadowValue: "rgba(199, 21, 133, 0.5)",
+    light: "#e6399c",
+    dark: "#8f0e5c",
   },
   slate: {
     name: "Slate",
-    value: "#64748b",
-    hoverValue: "#475569",
-    shadowValue: "rgba(100, 116, 139, 0.5)",
-    light: "#94a3b8",
-    dark: "#334155",
+    value: "#2f4f4f",
+    hoverValue: "#253d3d",
+    shadowValue: "rgba(47, 79, 79, 0.5)",
+    light: "#3a6363",
+    dark: "#1a2f2f",
   },
-  steel: {
-    name: "Steel",
-    value: "#8b9dc3",
-    hoverValue: "#6b7fa3",
-    shadowValue: "rgba(139, 157, 195, 0.5)",
-    light: "#a8b8d8",
-    dark: "#5a6b8a",
+  peach: {
+    name: "Peach",
+    value: "#ffb347",
+    hoverValue: "#ffa533",
+    shadowValue: "rgba(255, 179, 71, 0.5)",
+    light: "#ffc67a",
+    dark: "#e69a3e",
   },
-  charcoal: {
-    name: "Charcoal",
-    value: "#6b7280",
-    hoverValue: "#4b5563",
-    shadowValue: "rgba(107, 114, 128, 0.5)",
-    light: "#9ca3af",
-    dark: "#374151",
+  teal: {
+    name: "Teal",
+    value: "#008080",
+    hoverValue: "#006666",
+    shadowValue: "rgba(0, 128, 128, 0.5)",
+    light: "#00a3a3",
+    dark: "#005959",
   },
+  plum: {
+    name: "Plum",
+    value: "#8e4585",
+    hoverValue: "#773a6f",
+    shadowValue: "rgba(142, 69, 133, 0.5)",
+    light: "#a55c9c",
+    dark: "#6a3363",
+  }
 };
 
 const calculateColorVariants = (baseColor: string): Partial<AccentColor> => {
@@ -245,15 +224,12 @@ interface ThemeState {
   // News section width
   newsSectionWidth: number;
   setNewsSectionWidth: (width: number) => void;
-  // Featured profile mode
-  featureMode: boolean;
-  setFeatureMode: (enabled: boolean) => void;
 }
 
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set, get) => ({
-      accentColor: ACCENT_COLORS.blue,
+      accentColor: ACCENT_COLORS.seagreen, // Standardfarbe auf Sea Green geändert
       isBackgroundAnimationEnabled: false,
       isDetailViewSidebarOnLeft: true,
       profileGroupingCriterion: "group",
@@ -273,8 +249,6 @@ export const useThemeStore = create<ThemeState>()(
       modSource: ModPlatform.Modrinth,
       // News section width - defaults
       newsSectionWidth: 375,
-      // Featured profile mode - defaults
-      featureMode: false,
 
       setAccentColor: (color: AccentColor) => {
         set({ accentColor: color });
@@ -441,13 +415,8 @@ export const useThemeStore = create<ThemeState>()(
       setNewsSectionWidth: (width: number) => {
         set({ newsSectionWidth: width });
       },
-
-      // Featured profile mode
-      setFeatureMode: (enabled: boolean) => {
-        set({ featureMode: enabled });
-      },
     }),    {
-      name: "GEG-theme-storage",
+      name: "norisk-theme-storage",
       onRehydrateStorage: () => (state) => {
         if (state) {
           // Migration: Replace old "none" grouping criterion with "group"

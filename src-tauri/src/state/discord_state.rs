@@ -10,7 +10,7 @@ use tokio::sync::{Mutex, RwLock};
 use uuid::Uuid;
 
 // Discord application ID for GEG
-const DISCORD_APP_ID: &str = "1237087999104122981"; // Replace with actual Discord application ID
+const DISCORD_APP_ID: &str = "1422293493455388783"; // Replace with actual Discord application ID
 
 // Different states for Discord Rich Presence
 #[derive(Debug, Clone, PartialEq)]
@@ -240,7 +240,8 @@ impl DiscordManager {
         let icon = "icon_512px"; // Use a consistent icon name
 
         // TODO: Resolve button issue
-        let download_button = activity::Button::new("DOWNLOAD", "https://GEG.gg/");
+        let download_button =
+            activity::Button::new("Download", "https://grueneeule.de/gaming/launcher");
         let buttons = vec![download_button];
 
         debug!("Creating activity for Discord state: {:?}", state);
@@ -259,11 +260,7 @@ impl DiscordManager {
 
                 activity::Activity::new()
                     .state("Idling...")
-                    .assets(
-                        activity::Assets::new()
-                            .large_image(icon)
-                            .large_text("GEG"),
-                    )
+                    .assets(activity::Assets::new().large_image(icon).large_text("GEG"))
                     .timestamps(activity::Timestamps::new().start(start_time))
                     .buttons(buttons) // Include buttons here
             }

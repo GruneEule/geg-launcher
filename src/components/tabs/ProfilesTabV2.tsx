@@ -9,7 +9,6 @@ import { EmptyState } from "../ui/EmptyState";
 import { ProfileCardV2 } from "../profiles/ProfileCardV2";
 import { toast } from "react-hot-toast";
 import { SearchWithFilters } from "../ui/SearchWithFilters";
-import { GroupTabs, type GroupTab } from "../ui/GroupTabs";
 import { ActionButtons, type ActionButton } from "../ui/ActionButtons";
 import { useNavigate } from "react-router-dom";
 import { ProfileImport } from "../profiles/ProfileImport";
@@ -56,7 +55,6 @@ export function ProfilesTabV2() {
   const versionFilter = profilesTabVersionFilter;
   const layoutMode = profilesTabLayoutMode;
 
-  // Action buttons configuration
   const actionButtons: ActionButton[] = [
     {
       id: "import",
@@ -88,64 +86,12 @@ export function ProfilesTabV2() {
     },
   ];
   
-  // Get unique profile groups dynamically (normalized to lowercase)
-  const getUniqueProfileGroups = () => {
-    const uniqueGroups = new Set<string>();
-    profiles.forEach(profile => {
-      if (profile.group && profile.group.trim() !== "") {
-        // Normalize to lowercase to avoid duplicates like "Custom" and "CUSTOM"
-        uniqueGroups.add(profile.group.toLowerCase());
-      }
-    });
-    return Array.from(uniqueGroups).sort();
-  };
-
   // Helper function to check if a group belongs to NRC
   const isNrcGroup = (groupName: string | null): boolean => {
     if (!groupName) return false;
     const normalized = groupName.toLowerCase();
     return normalized === "nrc" || normalized === "GEG" || normalized === "GEG client";
   };
-
-  // Calculate group counts based on current search/filter
-  const getFilteredCountForGroup = (groupId: string) => {
-    if (groupId === "all") return profiles.length;
-    
-    // Handle default groups
-    if (groupId === "nrc") return profiles.filter(p => isNrcGroup(p.group)).length;
-    if (groupId === "server") return profiles.filter(p => p.group === "SERVER").length;
-    if (groupId === "modpacks") return profiles.filter(p => p.group === "MODPACKS").length;
-    
-    // Handle dynamic groups (groupId is normalized lowercase, compare with profile.group in lowercase)
-    return profiles.filter(p => p.group && p.group.toLowerCase() === groupId).length;
-  };
-
-  // Create groups array with default groups + dynamic groups
-  const createGroups = (): GroupTab[] => {
-    const defaultGroups: GroupTab[] = [
-      { id: "all", name: "All", count: getFilteredCountForGroup("all") },
-      { id: "nrc", name: "NRC", count: getFilteredCountForGroup("nrc") },
-      { id: "server", name: "SERVER", count: getFilteredCountForGroup("server") },
-      { id: "modpacks", name: "MODPACKS", count: getFilteredCountForGroup("modpacks") },
-    ];
-
-    // Get unique profile groups and convert to GroupTab format
-    const uniqueGroups = getUniqueProfileGroups();
-    const dynamicGroups: GroupTab[] = uniqueGroups
-      .filter(group => 
-        !["server", "modpacks"].includes(group) && // Exclude SERVER and MODPACKS (already normalized)
-        !isNrcGroup(group) // Exclude all NRC variations
-      )
-      .map(group => ({
-        id: group, // group is already lowercase from getUniqueProfileGroups
-        name: group, // group is already lowercase from getUniqueProfileGroups
-        count: getFilteredCountForGroup(group), // Use the updated function
-      }));
-
-    return [...defaultGroups, ...dynamicGroups];
-  };
-
-  const groups = createGroups();
 
   useEffect(() => {
     fetchProfiles();
@@ -305,13 +251,6 @@ export function ProfilesTabV2() {
   return (
     <div className="h-full flex flex-col overflow-hidden p-4 relative">
       <div className="flex-1 overflow-y-auto no-scrollbar">
-      {/* Group Tabs */}
-      <GroupTabs
-        groups={groups}
-        activeGroup={activeGroup}
-        onGroupChange={setProfilesTabActiveGroup}
-        showAddButton={false}
-      />
 
       {/* Search & Filter Header */}
       <div className="mb-6 pb-4 border-b border-white/10">
