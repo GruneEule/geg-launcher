@@ -34,6 +34,35 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
     >
       <div className="p-6">
         <div className="space-y-6">
+          {/* GrüneEule mit Eule */}
+          <div className="flex items-center justify-between p-4 rounded-lg bg-black/20 border-2 border-white/20 transition-colors">
+            <div className="flex items-center gap-4">
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: `${accentColor.value}40` }}
+              >
+                <span className="text-lg">🦉</span>
+              </div>
+              <div className="min-h-[3rem] flex flex-col justify-center">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-minecraft text-white lowercase tracking-wider">
+                    GrüneEule
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <IconButton
+                icon={<Icon icon="solar:global-bold" className="w-4 h-4" />}
+                onClick={() => handleOpenUrl("https://grueneeule.de")}
+                variant="default"
+                size="sm"
+                title="Visit grueneeule.de"
+              />
+            </div>
+          </div>
+
+          {/* JumpStone */}
           <div className="flex items-center justify-between p-4 rounded-lg bg-black/20 border-2 border-white/20 transition-colors">
             <div className="flex items-center gap-4">
               <div
@@ -49,10 +78,7 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
               <div className="min-h-[3rem] flex flex-col justify-center">
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl font-minecraft text-white lowercase tracking-wider">
-                    Deadmake
-                  </span>
-                  <span className="text-white/50 font-minecraft text-lg lowercase">
-                    aka Maggus
+                    JumpStone
                   </span>
                 </div>
               </div>
@@ -60,48 +86,39 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
             <div className="flex items-center gap-2">
               <div className="text-right mr-3">
                 <p className="text-white/80 font-minecraft text-lg lowercase tracking-wide" title="(sirknubble did it better)">
-                  UI & Frontend
+                  UI, Frontend, Design & Backend
                 </p>
               </div>
               <IconButton
                 icon={<Icon icon="solar:global-bold" className="w-4 h-4" />}
-                onClick={() => handleOpenUrl("https://deadmake.dev")}
+                onClick={() => handleOpenUrl("https://jumpow.de")}
                 variant="default"
                 size="sm"
-                title="Visit deadmake.dev"
-              />
-              <IconButton
-                icon={<span className="text-sm" style={{ transform: "translateY(2px)"}}>🍋</span>}
-                onClick={() => handleOpenUrl("https://fruity.dev")}
-                variant="default"
-                size="sm"
-                title="Visit fruity.dev"
+                title="Visit jumpow.de"
               />
             </div>
           </div>
-            <div className="flex items-center justify-between p-4 rounded-lg bg-black/20 border-2 border-white/20 transition-colors">
+
+          {/* Norisk ohne Icon */}
+          <div className="flex items-center justify-between p-4 rounded-lg bg-black/20 border-2 border-white/20 transition-colors">
             <div className="flex items-center gap-4">
               <div 
                 className="w-10 h-10 rounded-full flex items-center justify-center"
                 style={{ backgroundColor: `${accentColor.value}40` }}
               >
-                <Icon
-                  icon="solar:server-bold"
-                  className="w-5 h-5"
-                  style={{ color: accentColor.value }}
-                />
+                {/* Leer gelassen für Norisk */}
               </div>
               <div className="min-h-[3rem] flex flex-col justify-center">
                 <div className="flex items-baseline gap-2">
                   <h4 className="text-2xl font-minecraft text-white lowercase tracking-wider">
-                    GEG
+                    Norisk
                   </h4>
                 </div>
               </div>
             </div>
             <div className="text-right">
               <p className="text-white/80 font-minecraft text-lg lowercase tracking-wide">
-                Backend & Core
+                This Launcher was forked from Norisk Launcher
               </p>
             </div>
           </div>
@@ -111,10 +128,10 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
             <Button
               variant="ghost"
               className="flex items-center gap-2 px-6 py-3 border border-[#ffffff20] hover:bg-white/5 transition-colors"
-              onClick={() => handleOpenUrl("https://blog.GEG.gg/open-source-licenses/")}
+              onClick={() => handleOpenUrl("https://github.com/GruneEule/geg-launcher/blob/main/LICENSE")}
             >
               <Icon icon="solar:external-link-bold" className="w-5 h-5" />
-              <span className="font-minecraft text-lg lowercase">View Licenses</span>
+              <span className="font-minecraft text-lg lowercase">View License</span>
             </Button>
           </div>
         </div>

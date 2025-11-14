@@ -247,15 +247,6 @@ export function ProfilesTabV2() {
     );
   }
 
-  if (profiles.length === 0) {
-    return (
-      <EmptyState
-        icon="solar:widget-bold"
-        message="No profiles found"
-      />
-    );
-  }
-
   // Filter profiles based on search query, active group, and version filter
   const filteredProfiles = profiles.filter((profile) => {
     // Search filter
@@ -375,28 +366,33 @@ export function ProfilesTabV2() {
         </div>
       </div>
 
-      {/* Profile list */}
-      <div className={
-        layoutMode === "list" 
-          ? "space-y-3"
-          : layoutMode === "grid"
-          ? "grid grid-cols-2 gap-3" 
-          : "grid grid-cols-3 gap-3"
-      }>
-                 {sortedProfiles.map((profile) => (
-           <ProfileCardV2
-             key={profile.id}
-             profile={profile}
-             onSettings={handleSettings}
-             onMods={handleMods}
-             onDelete={handleDeleteProfile}
-             onOpenFolder={handleOpenFolder}
-             layoutMode={layoutMode}
-           />
-         ))}
-      </div>
-
-      {/* Bottom tip */}
+      {/* Profile list or Empty State */}
+      {sortedProfiles.length === 0 ? (
+        <EmptyState
+          icon="solar:widget-bold"
+          message="No profiles found"
+        />
+      ) : (
+        <div className={
+          layoutMode === "list" 
+            ? "space-y-3"
+            : layoutMode === "grid"
+            ? "grid grid-cols-2 gap-3" 
+            : "grid grid-cols-3 gap-3"
+        }>
+                   {sortedProfiles.map((profile) => (
+             <ProfileCardV2
+               key={profile.id}
+               profile={profile}
+               onSettings={handleSettings}
+               onMods={handleMods}
+               onDelete={handleDeleteProfile}
+               onOpenFolder={handleOpenFolder}
+               layoutMode={layoutMode}
+             />
+           ))}
+        </div>
+      )}
       </div>
 
       {/* Modals from ProfilesTab.tsx */}
