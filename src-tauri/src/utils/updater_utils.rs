@@ -12,6 +12,13 @@ pub struct UpdateInfo {
     pub macos: Option<String>,
 }
 
+/// New structure for multiple versions
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ReleasesResponse {
+    pub current: UpdateInfo,
+    pub versions: Vec<UpdateInfo>,
+}
+
 /// Checks if the application is running inside a Flatpak environment.
 pub fn is_flatpak() -> bool {
     let is_flatpak = std::env::var("FLATPAK_ID").is_ok();
@@ -63,10 +70,26 @@ pub async fn check_update_available(_app_handle: &AppHandle) -> AppResult<Option
         )));
     }
 
-    let update_info: UpdateInfo = response.json().await.map_err(|e| {
-        error!("[GEG Updater] Failed to parse JSON: {}", e);
-        AppError::ParseError(format!("Failed to parse update information: {}", e))
+    // Read the response bytes first to be able to parse multiple times
+    let response_bytes = response.bytes().await.map_err(|e| {
+        error!("[GEG Updater] Failed to read response: {}", e);
+        AppError::RequestError(format!("Failed to read response: {}", e))
     })?;
+
+    // Try to parse as new format first, fall back to old format
+    let update_info = match serde_json::from_slice::<ReleasesResponse>(&response_bytes) {
+        Ok(releases_response) => {
+            info!("[GEG Updater] Using multi-version format");
+            releases_response.current
+        }
+        Err(_) => {
+            info!("[GEG Updater] Using legacy single-version format");
+            serde_json::from_slice::<UpdateInfo>(&response_bytes).map_err(|e| {
+                error!("[GEG Updater] Failed to parse JSON: {}", e);
+                AppError::ParseError(format!("Failed to parse update information: {}", e))
+            })?
+        }
+    };
 
     let app_version = env!("CARGO_PKG_VERSION");
 

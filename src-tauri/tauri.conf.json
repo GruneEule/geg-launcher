@@ -12,7 +12,7 @@
   "plugins": {
     "minecraft_auth": {},
     "updater": {
-      "active": true,
+      "active": false,
       "endpoints": [],
       "dialog": false,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDk5QkZBNTBGNjhDQTBGOEYKUldTUEQ4cG9ENlcvbVpVTVdnVkNNSGlXWXVXRklqcGFxNnBuRW1LM3VDTXpKcXU2MmdCNVc5S2IK"
@@ -73,17 +73,34 @@
     }
   },
   "bundle": {
+    "active": true,
+    "targets": ["app", "dmg", "deb", "appimage", "nsis"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "createUpdaterArtifacts": false,
+    "fileAssociations": [
+      {
+        "ext": ["gegpack"],
+        "name": "GEG Pack File",
+        "description": "GEG Launcher Modpack File"
+      }
+    ],
     "windows": {
       "nsis": {
         "installerIcon": "icons/icon.ico"
       }
     },
     "macOS": {
-      "entitlements": "App.entitlements",
+      "entitlements": null,
       "exceptionDomain": "",
       "frameworks": [],
       "providerShortName": null,
-      "signingIdentity": "-",
+      "signingIdentity": null,
       "dmg": {
         "background": "dmg/background.png",
         "appPosition": {
@@ -99,23 +116,6 @@
           "width": 660
         }
       }
-    },
-    "active": true,
-    "targets": ["app", "dmg", "deb", "appimage", "nsis"],
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ],
-    "createUpdaterArtifacts": true,
-    "fileAssociations": [
-      {
-        "ext": ["gegpack"],
-        "name": "GEG Pack File",
-        "description": "GEG Launcher Modpack File"
-      }
-    ]
+    }
   }
 }
