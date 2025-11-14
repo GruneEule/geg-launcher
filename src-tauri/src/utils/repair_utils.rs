@@ -126,17 +126,17 @@ pub async fn repair_profile_mods(profile_id: Uuid) -> Result<()> {
             }
         }
 
-        // 3. Delete NoRisk pack mod files from cache
-        if let Some(pack_id) = &profile.selected_norisk_pack_id {
-            info!("Cleaning NoRisk pack mod cache for pack: {}", pack_id);
+        // 3. Delete GEG pack mod files from cache
+        if let Some(pack_id) = &profile.selected_GEG_pack_id {
+            info!("Cleaning GEG pack mod cache for pack: {}", pack_id);
             
-            let norisk_config = state.norisk_pack_manager.get_config().await;
-            match norisk_config.get_resolved_pack_definition(pack_id) {
+            let GEG_config = state.GEG_pack_manager.get_config().await;
+            match GEG_config.get_resolved_pack_definition(pack_id) {
                 Ok(resolved_pack) => {
-                    for norisk_mod in &resolved_pack.mods {
-                        // Get the cache path for this NoRisk mod
-                        match path_utils::get_norisk_mod_cache_path(
-                            norisk_mod,
+                    for GEG_mod in &resolved_pack.mods {
+                        // Get the cache path for this GEG mod
+                        match path_utils::get_GEG_mod_cache_path(
+                            GEG_mod,
                             &profile.game_version,
                             profile.loader.as_str(),
                         ) {
@@ -144,33 +144,33 @@ pub async fn repair_profile_mods(profile_id: Uuid) -> Result<()> {
                                 if cache_path.exists() {
                                     match fs::remove_file(&cache_path).await {
                                         Ok(_) => {
-                                            debug!("Removed NoRisk pack mod cache file: {:?}", cache_path);
+                                            debug!("Removed GEG pack mod cache file: {:?}", cache_path);
                                             cache_files_removed += 1;
                                         }
                                         Err(e) => {
-                                            warn!("Failed to remove NoRisk pack mod cache file {:?}: {}", cache_path, e);
+                                            warn!("Failed to remove GEG pack mod cache file {:?}: {}", cache_path, e);
                                             cache_errors += 1;
                                         }
                                     }
                                 } else {
-                                    debug!("NoRisk pack mod cache file does not exist: {:?}", cache_path);
+                                    debug!("GEG pack mod cache file does not exist: {:?}", cache_path);
                                 }
                             }
                             Err(e) => {
-                                warn!("Could not determine cache path for NoRisk pack mod {}: {}", 
-                                      norisk_mod.display_name.as_deref().unwrap_or(&norisk_mod.id), e);
+                                warn!("Could not determine cache path for GEG pack mod {}: {}", 
+                                      GEG_mod.display_name.as_deref().unwrap_or(&GEG_mod.id), e);
                                 cache_errors += 1;
                             }
                         }
                     }
                 }
                 Err(e) => {
-                    warn!("Failed to get NoRisk pack definition for {}: {}", pack_id, e);
+                    warn!("Failed to get GEG pack definition for {}: {}", pack_id, e);
                     cache_errors += 1;
                 }
             }
         } else {
-            debug!("Profile has no selected NoRisk pack, skipping NoRisk mod cache cleanup");
+            debug!("Profile has no selected GEG pack, skipping GEG mod cache cleanup");
         }
         
         info!("Cache cleanup completed: {} files removed, {} errors", cache_files_removed, cache_errors);

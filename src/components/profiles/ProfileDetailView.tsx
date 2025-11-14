@@ -29,13 +29,13 @@ interface ProfileDetailViewProps {
   screenshotListRefreshKey: number;
 }
 
-type MainTabType = "content" | "browse" | "worlds" | "logs" | "screenshots" | "modsv2" | "resourcepacksv2" | "noriskv2" | "datapacksv2" | "shaderpacksv2";
+type MainTabType = "content" | "browse" | "worlds" | "logs" | "screenshots" | "modsv2" | "resourcepacksv2" | "GEGv2" | "datapacksv2" | "shaderpacksv2";
 type ContentSubType =
   | "modsv2"
   | "resourcepacksv2"
   | "shaderpacksv2"
   | "datapacksv2"
-  | "noriskv2";
+  | "GEGv2";
 
 export function ProfileDetailView({
   profile,
@@ -208,8 +208,8 @@ export function ProfileDetailView({
       icon: "solar:database-bold",
     },
     {
-      id: "noriskv2" as ContentSubType,
-      label: "NoRisk Mods",
+      id: "GEGv2" as ContentSubType,
+      label: "GEG Mods",
       icon: "solar:shield-check-bold",
     },
   ];
@@ -475,14 +475,14 @@ export function ProfileDetailView({
                     onBrowseContentRequest={handleBrowseContent}
                   />
                 )}
-                  {activeContentType === "noriskv2" && (
+                  {activeContentType === "GEGv2" && (
                   <LocalContentTabV2<LocalContentItem>
                     profile={currentProfile}
-                    contentType="NoRiskMod"
+                    contentType="GEGMod"
                     getDisplayFileName={getGenericDisplayFileName}
-                    itemTypeName="NoRisk Mod"
-                    itemTypeNamePlural="NoRisk Mods"
-                    addContentButtonText="Add NoRisk Mods"
+                    itemTypeName="GEG Mod"
+                    itemTypeNamePlural="GEG Mods"
+                    addContentButtonText="Add GEG Mods"
                     emptyStateIconOverride="solar:shield-check-bold-duotone"
                     onRefreshRequired={handleRefresh}
                     onBrowseContentRequest={handleBrowseContent}

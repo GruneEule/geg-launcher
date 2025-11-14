@@ -36,7 +36,7 @@ pub enum ContentType {
     ShaderPack,
     DataPack,
     Mod,
-    NoRiskMod,
+    GEGMod,
 }
 
 impl Default for ContentType {
@@ -176,8 +176,8 @@ async fn get_content_directory(profile: &Profile, content_type: &ContentType) ->
                 .calculate_instance_path_for_profile(profile)?;
             Ok(instance_path.join("mods"))
         }
-        ContentType::NoRiskMod => {
-            // NoRiskMods don't have a physical directory but we return a path for consistency
+        ContentType::GEGMod => {
+            // GEGMods don't have a physical directory but we return a path for consistency
             let state = State::get().await?;
             let instance_path = state
                 .profile_manager
@@ -194,7 +194,7 @@ fn content_type_to_string(content_type: &ContentType) -> &'static str {
         ContentType::ShaderPack => "Shader Pack",
         ContentType::DataPack => "Data Pack",
         ContentType::Mod => "Mod",
-        ContentType::NoRiskMod => "NoRisk Mod",
+        ContentType::GEGMod => "GEG Mod",
     }
 }
 
@@ -254,26 +254,26 @@ pub struct FoundItemDetails {
     pub display_name: Option<String>, // Display name if available
 }
 
-/// Represents details about an item when it comes from a NoRisk Pack
+/// Represents details about an item when it comes from a GEG Pack
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct NoRiskPackItemDetails {
+pub struct GEGPackItemDetails {
     pub is_enabled: bool,
-    pub norisk_mod_identifier: Option<crate::state::profile_state::NoriskModIdentifier>,
+    pub GEG_mod_identifier: Option<crate::state::profile_state::GEGModIdentifier>,
 }
 
 #[derive(Serialize, Debug, Default, Clone, Deserialize)]
 pub struct ContentInstallStatus {
-    pub is_included_in_norisk_pack: bool,
+    pub is_included_in_GEG_pack: bool,
     pub is_installed: bool,
     pub is_specific_version_in_pack: bool,
     pub is_enabled: Option<bool>,
     pub found_item_details: Option<FoundItemDetails>,
-    pub norisk_pack_item_details: Option<NoRiskPackItemDetails>,
+    pub GEG_pack_item_details: Option<GEGPackItemDetails>,
 }
 
 /// Checks the installation status of a specific Modrinth content item within a profile's context.
 ///
-/// Returns a struct indicating if the content is defined in the selected Norisk Pack
+/// Returns a struct indicating if the content is defined in the selected GEG Pack
 /// and if it is currently installed in the profile.
 /// At least one identifier (project_id, version_id, file_hash_sha1, file_name) must be provided.
 ///
@@ -330,36 +330,36 @@ pub async fn check_content_installed(params: CheckContentParams) -> Result<Conte
         target_game_version, target_loader_str
     );
 
-    // --- Norisk Pack Check (if applicable) ---
-    if let Some(pack_id) = &profile.selected_norisk_pack_id {
+    // --- GEG Pack Check (if applicable) ---
+    if let Some(pack_id) = &profile.selected_GEG_pack_id {
         debug!(
-            "Profile {} has selected Norisk Pack: {}. Checking pack definition...",
+            "Profile {} has selected GEG Pack: {}. Checking pack definition...",
             params.profile_id, pack_id
         );
-        let config = state.norisk_pack_manager.get_config().await;
+        let config = state.GEG_pack_manager.get_config().await;
         match config.get_resolved_pack_definition(pack_id) {
             Ok(resolved_pack) => {
-                for norisk_mod in &resolved_pack.mods {
+                for GEG_mod in &resolved_pack.mods {
                     let mut is_potential_project_match = false;
                     if let (
                         Some(pid_arg),
-                        norisk_packs::NoriskModSourceDefinition::Modrinth {
-                            project_id: norisk_pid,
+                        norisk_packs::GEGModSourceDefinition::Modrinth {
+                            project_id: GEG_pid,
                             ..
                         },
-                    ) = (&params.project_id, &norisk_mod.source)
+                    ) = (&params.project_id, &GEG_mod.source)
                     {
-                        if pid_arg == norisk_pid {
+                        if pid_arg == GEG_pid {
                             is_potential_project_match = true;
                         }
                     }
                     // TODO: Add project matching for other source types if needed
 
                     if is_potential_project_match {
-                        if let Some(loader_map) = norisk_mod.compatibility.get(target_game_version)
+                        if let Some(loader_map) = GEG_mod.compatibility.get(target_game_version)
                         {
                             if let Some(target) = loader_map.get(target_loader_str) {
-                                status.is_included_in_norisk_pack = true;
+                                status.is_included_in_GEG_pack = true;
 
                                 // Check if the SPECIFIC version NUMBER requested matches the pack identifier
                                 if let Some(v_num_arg) = &params.pack_version_number {
@@ -371,12 +371,12 @@ pub async fn check_content_installed(params: CheckContentParams) -> Result<Conte
                                     }
                                 }
 
-                                // New addition: Add NoRiskPackItemDetails
-                                let mod_identifier = norisk_mod.id.clone();
+                                // New addition: Add GEGPackItemDetails
+                                let mod_identifier = GEG_mod.id.clone();
 
-                                // Create a proper NoriskModIdentifier
-                                let norisk_mod_identifier =
-                                    crate::state::profile_state::NoriskModIdentifier {
+                                // Create a proper GEGModIdentifier
+                                let GEG_mod_identifier =
+                                    crate::state::profile_state::GEGModIdentifier {
                                         pack_id: pack_id.clone(),
                                         mod_id: mod_identifier.clone(),
                                         game_version: target_game_version.to_string(),
@@ -388,12 +388,12 @@ pub async fn check_content_installed(params: CheckContentParams) -> Result<Conte
 
                                 // Check if it's disabled in the profile
                                 let is_pack_mod_enabled = !profile
-                                    .disabled_norisk_mods_detailed
-                                    .contains(&norisk_mod_identifier);
+                                    .disabled_GEG_mods_detailed
+                                    .contains(&GEG_mod_identifier);
 
-                                status.norisk_pack_item_details = Some(NoRiskPackItemDetails {
+                                status.GEG_pack_item_details = Some(GEGPackItemDetails {
                                     is_enabled: is_pack_mod_enabled,
-                                    norisk_mod_identifier: Some(norisk_mod_identifier),
+                                    GEG_mod_identifier: Some(GEG_mod_identifier),
                                 });
 
                                 if status.is_specific_version_in_pack {
@@ -406,17 +406,17 @@ pub async fn check_content_installed(params: CheckContentParams) -> Result<Conte
                         break; // Found specific version in pack
                     }
                 }
-                if status.is_included_in_norisk_pack {
-                    debug!("Found content (some version) in Norisk Pack definition.");
+                if status.is_included_in_GEG_pack {
+                    debug!("Found content (some version) in GEG Pack definition.");
                 } else {
                     debug!(
-                        "Content not found in the definition of Norisk Pack '{}' for MC {} / {}",
+                        "Content not found in the definition of GEG Pack '{}' for MC {} / {}",
                         pack_id, target_game_version, target_loader_str
                     );
                 }
             }
             Err(e) => {
-                warn!("Could not resolve Norisk Pack definition for pack ID '{}': {}. Skipping pack check.", pack_id, e);
+                warn!("Could not resolve GEG Pack definition for pack ID '{}': {}. Skipping pack check.", pack_id, e);
             }
         }
     }
@@ -1082,22 +1082,22 @@ pub async fn execute_group_migration(migration_info: MigrationInfo, profile_id: 
     }
 }
 
-/// Exports a profile to a `.noriskpack` file
+/// Exports a profile to a `.GEGpack` file
 ///
-/// This creates a zip archive with the .noriskpack extension that contains:
+/// This creates a zip archive with the .GEGpack extension that contains:
 /// - The profile data as JSON (sanitized to remove user-specific data)  
 /// - An "overrides" folder containing any files specified in `include_files`
 ///
 /// @param profile_id: UUID of the profile to export
-/// @param output_path: Optional path where the .noriskpack file should be saved
+/// @param output_path: Optional path where the .GEGpack file should be saved
 /// @param include_files: Optional list of files/directories to include in the overrides folder
-/// @return: Result containing the path to the created .noriskpack file
-pub async fn export_profile_to_noriskpack(
+/// @return: Result containing the path to the created .GEGpack file
+pub async fn export_profile_to_GEGpack(
     profile_id: Uuid,
     output_path: Option<PathBuf>,
     include_files: Option<Vec<PathBuf>>,
 ) -> Result<PathBuf> {
-    info!("Exporting profile {} to .noriskpack", profile_id);
+    info!("Exporting profile {} to .GEGpack", profile_id);
 
     // Get the profile and acquire semaphore for I/O limiting
     let state = crate::state::state_manager::State::get().await?;
@@ -1146,7 +1146,7 @@ pub async fn export_profile_to_noriskpack(
             // Generate a default output path
             let safe_name = profile.name.replace(" ", "_").to_lowercase();
             let default_name = format!(
-                "{}_v{}_{}.noriskpack",
+                "{}_v{}_{}.GEGpack",
                 safe_name,
                 profile.game_version,
                 profile.loader.as_str()
@@ -1168,7 +1168,7 @@ pub async fn export_profile_to_noriskpack(
         }
     }
 
-    info!("Creating .noriskpack archive at: {}", output_file.display());
+    info!("Creating .GEGpack archive at: {}", output_file.display());
 
     // Create zip file and writer - write directly to target file
     let mut file = fs::File::create(&output_file)
@@ -1255,9 +1255,9 @@ fn sanitize_profile_for_export(profile: &Profile) -> Profile {
     // Exported profiles should always be user profiles, not standard templates
     export_profile.is_standard_version = false;
 
-    // Change NORISK CLIENT group to CUSTOM for exports
+    // Change GEG CLIENT group to CUSTOM for exports
     if let Some(group) = &export_profile.group {
-        if group.eq_ignore_ascii_case("NORISK CLIENT") {
+        if group.eq_ignore_ascii_case("GEG CLIENT") {
             export_profile.group = Some("CUSTOM".to_string());
         }
     }
@@ -1590,9 +1590,9 @@ async fn process_mod_requests(
         }
     };
 
-    // For each request, we need to check both in NoRisk Pack and local installation
+    // For each request, we need to check both in GEG Pack and local installation
     for (request, idx) in requests {
-        // Convert to the old params format for reusing norisk pack check logic
+        // Convert to the old params format for reusing GEG pack check logic
         let old_params = CheckContentParams {
             profile_id: profile.id,
             project_id: request.project_id.clone(),
@@ -1623,32 +1623,32 @@ async fn process_mod_requests(
             }
         };
 
-        // Check if included in NoRisk Pack
-        if let Some(pack_id) = &profile.selected_norisk_pack_id {
+        // Check if included in GEG Pack
+        if let Some(pack_id) = &profile.selected_GEG_pack_id {
             let state = State::get().await?;
-            let config = state.norisk_pack_manager.get_config().await;
+            let config = state.GEG_pack_manager.get_config().await;
 
             if let Ok(resolved_pack) = config.get_resolved_pack_definition(pack_id) {
-                for norisk_mod in &resolved_pack.mods {
+                for GEG_mod in &resolved_pack.mods {
                     let mut is_potential_project_match = false;
                     if let (
                         Some(pid_arg),
-                        norisk_packs::NoriskModSourceDefinition::Modrinth {
-                            project_id: norisk_pid,
+                        norisk_packs::GEGModSourceDefinition::Modrinth {
+                            project_id: GEG_pid,
                             ..
                         },
-                    ) = (&request.project_id, &norisk_mod.source)
+                    ) = (&request.project_id, &GEG_mod.source)
                     {
-                        if pid_arg == norisk_pid {
+                        if pid_arg == GEG_pid {
                             is_potential_project_match = true;
                         }
                     }
 
                     if is_potential_project_match {
-                        if let Some(loader_map) = norisk_mod.compatibility.get(target_game_version)
+                        if let Some(loader_map) = GEG_mod.compatibility.get(target_game_version)
                         {
                             if let Some(target) = loader_map.get(target_loader_str) {
-                                status.is_included_in_norisk_pack = true;
+                                status.is_included_in_GEG_pack = true;
 
                                 // Check specific version match
                                 if let Some(v_num_arg) = &request.pack_version_number {
@@ -1657,11 +1657,11 @@ async fn process_mod_requests(
                                     }
                                 }
 
-                                // Add NoRiskPackItemDetails
-                                let mod_identifier = norisk_mod.id.clone();
+                                // Add GEGPackItemDetails
+                                let mod_identifier = GEG_mod.id.clone();
 
-                                let norisk_mod_identifier =
-                                    crate::state::profile_state::NoriskModIdentifier {
+                                let GEG_mod_identifier =
+                                    crate::state::profile_state::GEGModIdentifier {
                                         pack_id: pack_id.clone(),
                                         mod_id: mod_identifier.clone(),
                                         game_version: target_game_version.to_string(),
@@ -1672,12 +1672,12 @@ async fn process_mod_requests(
                                     };
 
                                 let is_pack_mod_enabled = !profile
-                                    .disabled_norisk_mods_detailed
-                                    .contains(&norisk_mod_identifier);
+                                    .disabled_GEG_mods_detailed
+                                    .contains(&GEG_mod_identifier);
 
-                                status.norisk_pack_item_details = Some(NoRiskPackItemDetails {
+                                status.GEG_pack_item_details = Some(GEGPackItemDetails {
                                     is_enabled: is_pack_mod_enabled,
-                                    norisk_mod_identifier: Some(norisk_mod_identifier),
+                                    GEG_mod_identifier: Some(GEG_mod_identifier),
                                 });
 
                                 if status.is_specific_version_in_pack {
@@ -1835,7 +1835,7 @@ async fn process_resourcepack_requests(
         // Initialize the status struct
         let mut status = ContentInstallStatus::default();
 
-        // Check NoRisk Pack - reuse old function for now
+        // Check GEG Pack - reuse old function for now
         let old_params = CheckContentParams {
             profile_id: profile.id,
             project_id: request.project_id.clone(),
@@ -1848,14 +1848,14 @@ async fn process_resourcepack_requests(
             pack_version_number: request.pack_version_number.clone(),
         };
 
-        // Check if in NoRisk Pack
-        if let Some(pack_id) = &profile.selected_norisk_pack_id {
+        // Check if in GEG Pack
+        if let Some(pack_id) = &profile.selected_GEG_pack_id {
             let state = State::get().await?;
-            let config = state.norisk_pack_manager.get_config().await;
+            let config = state.GEG_pack_manager.get_config().await;
 
             if let Ok(resolved_pack) = config.get_resolved_pack_definition(pack_id) {
                 // Check if the pack includes this resource pack
-                // (Note: This would need to be expanded if NoRisk Packs can contain resource packs)
+                // (Note: This would need to be expanded if GEG Packs can contain resource packs)
                 // For now, this is a placeholder as the original function doesn't handle this case specifically
             }
         }
@@ -1940,8 +1940,8 @@ async fn process_shaderpack_requests(
         // Initialize the status struct
         let mut status = ContentInstallStatus::default();
 
-        // Check if in NoRisk Pack - placeholder for future NoRisk Pack shader support
-        if let Some(pack_id) = &profile.selected_norisk_pack_id {
+        // Check if in GEG Pack - placeholder for future GEG Pack shader support
+        if let Some(pack_id) = &profile.selected_GEG_pack_id {
             // Placeholder for future implementation
         }
 
@@ -2022,8 +2022,8 @@ async fn process_datapack_requests(
         // Initialize the status struct
         let mut status = ContentInstallStatus::default();
 
-        // Check if in NoRisk Pack - placeholder for future NoRisk Pack datapack support
-        if let Some(pack_id) = &profile.selected_norisk_pack_id {
+        // Check if in GEG Pack - placeholder for future GEG Pack datapack support
+        if let Some(pack_id) = &profile.selected_GEG_pack_id {
             // Placeholder for future implementation
         }
 
@@ -2118,7 +2118,7 @@ pub struct LocalContentItem {
     pub curseforge_info: Option<GenericCurseForgeInfo>,
     pub platform: Option<crate::integrations::unified_mod::ModPlatform>, // Platform this mod came from
     pub source_type: Option<String>, // Zur Kennzeichnung von Custom Mods
-    pub norisk_info: Option<crate::state::profile_state::NoriskModIdentifier>, // Identifier für NoRiskMods
+    pub GEG_info: Option<crate::state::profile_state::GEGModIdentifier>, // Identifier für GEGMods
     pub fallback_version: Option<String>, // Fallback Version aus dem compatibility target
     pub id: Option<String>,               // Added optional ID field
     pub associated_loader: Option<crate::state::profile_state::ModLoader>, // Added associated_loader
@@ -2171,27 +2171,27 @@ impl LocalContentLoader {
                     instance_path.join("custom_mods"),
                 ]
             }
-            ContentType::NoRiskMod => {
-                // For NoRisk mods, handled differently (no physical directory scan)
+            ContentType::GEGMod => {
+                // For GEG mods, handled differently (no physical directory scan)
                 Vec::new()
             }
         };
 
         let mut preliminary_items: Vec<LocalContentItem> = Vec::new();
 
-        if params.content_type == ContentType::NoRiskMod {
-            // Special handling for NoRisk mods - fetch them from the NoRisk pack system
-            if let Some(pack_id) = &profile.selected_norisk_pack_id {
-                // Get the NoRisk pack manager from the state
+        if params.content_type == ContentType::GEGMod {
+            // Special handling for GEG mods - fetch them from the GEG pack system
+            if let Some(pack_id) = &profile.selected_GEG_pack_id {
+                // Get the GEG pack manager from the state
                 let state = State::get().await?;
-                let config = state.norisk_pack_manager.get_config().await;
+                let config = state.GEG_pack_manager.get_config().await;
 
                 // Get the resolved pack definition
                 match config.get_resolved_pack_definition(pack_id) {
                     Ok(pack_def) => {
-                        for norisk_mod in &pack_def.mods {
+                        for GEG_mod in &pack_def.mods {
                             // Extract fallback version from compatibility target at the beginning
-                            let fallback_version = norisk_mod
+                            let fallback_version = GEG_mod
                                 .compatibility
                                 .get(&profile.game_version)
                                 .and_then(|game_version_map| {
@@ -2204,33 +2204,33 @@ impl LocalContentLoader {
                                 continue;
                             }
 
-                            // Create a proper NoriskModIdentifier first so we can reuse it
-                            let norisk_mod_identifier =
-                                crate::state::profile_state::NoriskModIdentifier {
+                            // Create a proper GEGModIdentifier first so we can reuse it
+                            let GEG_mod_identifier =
+                                crate::state::profile_state::GEGModIdentifier {
                                     pack_id: pack_id.clone(),
-                                    mod_id: norisk_mod.id.clone(),
+                                    mod_id: GEG_mod.id.clone(),
                                     game_version: profile.game_version.clone(),
                                     loader: profile.loader.clone(),
                                 };
 
                             // Determine if the mod is enabled/disabled using the identifier
                             let is_disabled = profile
-                                .disabled_norisk_mods_detailed
+                                .disabled_GEG_mods_detailed
                                 .iter()
-                                .any(|disabled_mod| *disabled_mod == norisk_mod_identifier);
+                                .any(|disabled_mod| *disabled_mod == GEG_mod_identifier);
 
                             // Determine source type string
-                            let source_type_str = match &norisk_mod.source {
-                                crate::integrations::norisk_packs::NoriskModSourceDefinition::Modrinth { .. } => None,
-                                crate::integrations::norisk_packs::NoriskModSourceDefinition::Maven { .. } => Some("maven"),
-                                crate::integrations::norisk_packs::NoriskModSourceDefinition::Url { .. } => Some("url"),
-                                _ => Some("norisk"),
+                            let source_type_str = match &GEG_mod.source {
+                                crate::integrations::norisk_packs::GEGModSourceDefinition::Modrinth { .. } => None,
+                                crate::integrations::norisk_packs::GEGModSourceDefinition::Maven { .. } => Some("maven"),
+                                crate::integrations::norisk_packs::GEGModSourceDefinition::Url { .. } => Some("url"),
+                                _ => Some("GEG"),
                             };
 
                             // Extract Modrinth info if available
-                            let modrinth_info = if let crate::integrations::norisk_packs::NoriskModSourceDefinition::Modrinth { project_id, .. } = &norisk_mod.source {
+                            let modrinth_info = if let crate::integrations::norisk_packs::GEGModSourceDefinition::Modrinth { project_id, .. } = &GEG_mod.source {
                                 // For version info we need to look at compatibility
-                                let version_id = norisk_mod.compatibility
+                                let version_id = GEG_mod.compatibility
                                     .get(&profile.game_version)
                                     .and_then(|game_version_map| game_version_map.get(profile.loader.as_str()))
                                     .map(|loader_target| loader_target.identifier.clone())
@@ -2239,7 +2239,7 @@ impl LocalContentLoader {
                                 Some(GenericModrinthInfo {
                                     project_id: project_id.clone(),
                                     version_id,
-                                    name: norisk_mod.display_name.clone().unwrap_or_else(|| norisk_mod.id.clone()),
+                                    name: GEG_mod.display_name.clone().unwrap_or_else(|| GEG_mod.id.clone()),
                                     version_number: "".to_string(), // Not directly available
                                     download_url: None,
                                 })
@@ -2248,16 +2248,16 @@ impl LocalContentLoader {
                             };
 
                             // Use the path_utils function to get the mod cache path
-                            let path_str = match crate::utils::path_utils::get_norisk_mod_cache_path(
-                                norisk_mod,
+                            let path_str = match crate::utils::path_utils::get_GEG_mod_cache_path(
+                                GEG_mod,
                                 &profile.game_version,
                                 &profile.loader.as_str(),
                             ) {
                                 Ok(path) => path.to_string_lossy().to_string(),
                                 Err(e) => {
                                     warn!(
-                                        "Could not get cache path for NoRisk mod {}: {}",
-                                        norisk_mod.id, e
+                                        "Could not get cache path for GEG mod {}: {}",
+                                        GEG_mod.id, e
                                     );
                                     String::new() // Fallback if path can't be determined
                                 }
@@ -2265,28 +2265,28 @@ impl LocalContentLoader {
 
                             // Create LocalContentItem (using the identifier we created earlier)
                             preliminary_items.push(LocalContentItem {
-                                filename: norisk_mod.id.clone(),
+                                filename: GEG_mod.id.clone(),
                                 path_str,
                                 sha1_hash: None,
                                 file_size: 0,
                                 is_disabled,
                                 is_directory: false,
-                                content_type: ContentType::NoRiskMod,
+                                content_type: ContentType::GEGMod,
                                 modrinth_info,
                                 curseforge_info: None,
                                 platform: None,
                                 source_type: source_type_str.map(|s| s.to_string()),
-                                norisk_info: Some(norisk_mod_identifier),
+                                GEG_info: Some(GEG_mod_identifier),
                                 fallback_version: fallback_version,
                                 id: None,
                                 associated_loader: None,
-                                modpack_origin: None, // NoRisk mods kommen nicht aus ModPacks
+                                modpack_origin: None, // GEG mods kommen nicht aus ModPacks
                                 updates_enabled: None, // Default behavior
                             });
                         }
                     }
                     Err(e) => {
-                        warn!("Failed to get NoRisk pack definition: {}", e);
+                        warn!("Failed to get GEG pack definition: {}", e);
                     }
                 }
             }
@@ -2433,7 +2433,7 @@ impl LocalContentLoader {
                     curseforge_info,
                     platform,
                     source_type: None,
-                    norisk_info: None,
+                    GEG_info: None,
                     fallback_version: mod_item.version.clone(),
                     id: Some(mod_item.id.to_string()), // Set the ID from ModProfileEntry
                     associated_loader: mod_item.associated_loader.clone(), // Populate associated_loader
@@ -2496,7 +2496,7 @@ impl LocalContentLoader {
                             || file_name_str.ends_with(".jar.disabled"))
                             && !is_directory
                     }
-                    ContentType::NoRiskMod => false, // We handle NoRisk mods differently, not by scanning directories
+                    ContentType::GEGMod => false, // We handle GEG mods differently, not by scanning directories
                 };
 
                 if is_valid_item {
@@ -2555,7 +2555,7 @@ impl LocalContentLoader {
                     curseforge_info: None,
                     platform: None,
                     source_type,
-                    norisk_info: None,
+                    GEG_info: None,
                     fallback_version: None,
                     id: None,
                     associated_loader: None,
@@ -2567,8 +2567,8 @@ impl LocalContentLoader {
 
         let mut final_items = preliminary_items;
 
-        // If the content type is NoRiskMod, sort the items by filename for consistent ordering
-        if params.content_type == ContentType::NoRiskMod {
+        // If the content type is GEGMod, sort the items by filename for consistent ordering
+        if params.content_type == ContentType::GEGMod {
             final_items.sort_by(|a, b| a.filename.cmp(&b.filename));
         }
 
@@ -2767,7 +2767,7 @@ impl LocalContentLoader {
 
         for (idx, item) in final_items.iter().enumerate() {
             info!(
-                "Final item [{}]: filename='{}', path_str='{}', sha1_hash={:?}, file_size={}, is_disabled={}, is_directory={}, content_type={:?}, source_type={:?}, norisk_info={:?}, id={:?}, associated_loader={:?}, fallback_version={:?}, modrinth_info={:?}",
+                "Final item [{}]: filename='{}', path_str='{}', sha1_hash={:?}, file_size={}, is_disabled={}, is_directory={}, content_type={:?}, source_type={:?}, GEG_info={:?}, id={:?}, associated_loader={:?}, fallback_version={:?}, modrinth_info={:?}",
                 idx,
                 item.filename,
                 item.path_str,
@@ -2777,7 +2777,7 @@ impl LocalContentLoader {
                 item.is_directory,
                 item.content_type,
                 item.source_type,
-                item.norisk_info,
+                item.GEG_info,
                 item.id,
                 item.associated_loader,
                 item.fallback_version,

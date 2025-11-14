@@ -613,7 +613,7 @@ pub async fn emit_copy_progress(
     Ok(())
 }
 
-/// Copies StartUpHelper data from the noriskclient/new directory to a new profile's directory.
+/// Copies StartUpHelper data from the GEG/new directory to a new profile's directory.
 /// This runs only if the profile is a standard version and its directory is empty.
 /// This method is called BEFORE the standard Minecraft data copy.
 /// The source directory is determined relative to default_profile_path() for proper
@@ -621,7 +621,7 @@ pub async fn emit_copy_progress(
 pub async fn copy_startup_helper_data(
     profile: &crate::state::profile_state::Profile,
     profile_dir: &PathBuf,
-    norisk_pack: Option<&crate::integrations::norisk_packs::NoriskPackDefinition>,
+    GEG_pack: Option<&crate::integrations::norisk_packs::GEGPackDefinition>,
 ) -> Result<()> {
     let profile_id = profile.id;
     info!(
@@ -648,7 +648,7 @@ pub async fn copy_startup_helper_data(
     );
 
     // Copy StartUpHelper files
-    if let Err(e) = copy_startup_helper_files(profile, profile_dir, norisk_pack).await {
+    if let Err(e) = copy_startup_helper_files(profile, profile_dir, GEG_pack).await {
         warn!("Failed to copy StartUpHelper files: {}", e);
         // Don't fail the entire process if StartUpHelper copy fails
     }
@@ -673,7 +673,7 @@ pub async fn copy_initial_data_from_default_minecraft(
 
     // Condition 1: Check the copy_initial_mc_data flag.
     let should_copy = profile
-        .norisk_information
+        .GEG_information
         .as_ref()
         .map_or(true, |info| info.copy_initial_mc_data);
     if !should_copy {
@@ -855,7 +855,7 @@ pub async fn copy_initial_data_from_default_minecraft(
     Ok(())
 }
 
-/// Copies additional files specified in StartUpHelper from noriskclient/new/ directory
+/// Copies additional files specified in StartUpHelper from GEG/new/ directory
 /// to the profile directory. Only copies files that don't already exist.
 /// This runs BEFORE the standard Minecraft data copy to allow StartUpHelper files
 /// to be overridden by standard MC files if needed.
@@ -864,12 +864,12 @@ pub async fn copy_initial_data_from_default_minecraft(
 pub async fn copy_startup_helper_files(
     profile: &crate::state::profile_state::Profile,
     profile_dir: &PathBuf,
-    norisk_pack: Option<&crate::integrations::norisk_packs::NoriskPackDefinition>,
+    GEG_pack: Option<&crate::integrations::norisk_packs::GEGPackDefinition>,
 ) -> Result<()> {
     let profile_id = profile.id;
 
-    // Check if StartUpHelper is configured in NoriskPack
-    let startup_helper = match norisk_pack {
+    // Check if StartUpHelper is configured in GEGPack
+    let startup_helper = match GEG_pack {
         Some(pack) => match pack.startup_helper.as_ref() {
             Some(helper) => helper,
             None => {
@@ -878,7 +878,7 @@ pub async fn copy_startup_helper_files(
             }
         },
         None => {
-            debug!("[{}] No NoriskPack selected, skipping StartUpHelper.", profile_id);
+            debug!("[{}] No GEGPack selected, skipping StartUpHelper.", profile_id);
             return Ok(());
         }
     };
@@ -896,25 +896,25 @@ pub async fn copy_startup_helper_files(
         paths_count
     );
 
-    // Get the noriskclient/new directory path
+    // Get the GEG/new directory path
     let default_profile_path = crate::state::profile_state::default_profile_path();
-    let norisk_dir = default_profile_path
-        .join("noriskclient")
+    let GEG_dir = default_profile_path
+        .join("GEG")
         .join("new");
 
-    if !norisk_dir.exists() {
+    if !GEG_dir.exists() {
         info!(
-            "[{}] NoRiskClient new directory not found at: {}, skipping StartUpHelper.",
+            "[{}] GEG new directory not found at: {}, skipping StartUpHelper.",
             profile_id,
-            norisk_dir.display()
+            GEG_dir.display()
         );
         return Ok(());
     }
 
     info!(
-        "[{}] Found NoRiskClient new directory at: {}",
+        "[{}] Found GEG new directory at: {}",
         profile_id,
-        norisk_dir.display()
+        GEG_dir.display()
     );
 
     // Get state for progress reporting
@@ -951,7 +951,7 @@ pub async fn copy_startup_helper_files(
     let mut copy_tasks = Vec::new();
 
     for relative_path in &startup_helper.additional_paths {
-        let src_path = norisk_dir.join(relative_path);
+        let src_path = GEG_dir.join(relative_path);
         let dest_path = profile_dir.join(relative_path);
         let sem_clone = semaphore.clone();
 
@@ -1058,7 +1058,7 @@ pub async fn get_profile_worlds(profile_id: Uuid) -> Result<Vec<WorldInfo>> {
         Err(AppError::ProfileNotFound(_)) => {
             // Not a user profile, check if it's a standard version
             match state
-                .norisk_version_manager
+                .GEG_version_manager
                 .get_profile_by_id(profile_id)
                 .await
             {
@@ -1338,7 +1338,7 @@ pub async fn get_profile_servers(profile_id: Uuid) -> Result<Vec<ServerInfo>> {
         Err(AppError::ProfileNotFound(_)) => {
             // Not a user profile, check if it's a standard version
             match state
-                .norisk_version_manager
+                .GEG_version_manager
                 .get_profile_by_id(profile_id)
                 .await
             {

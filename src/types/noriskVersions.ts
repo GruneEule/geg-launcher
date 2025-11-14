@@ -1,5 +1,5 @@
 import type { Profile } from "./profile";
 
-export interface NoriskVersionsConfig {
+export interface GEGVersionsConfig {
     profiles: Profile[];
 } 

@@ -857,7 +857,7 @@ export function SettingsTab() {
               variant="ghost"
               size="sm"
               onClick={() => {
-                openExternalUrl("https://blog.norisk.gg/open-source-licenses/")
+                openExternalUrl("https://blog.GEG.gg/open-source-licenses/")
               }}
               icon={<Icon icon="solar:external-link-bold" className="w-5 h-5" />}
             >

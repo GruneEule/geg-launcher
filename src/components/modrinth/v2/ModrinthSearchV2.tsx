@@ -617,7 +617,7 @@ export function ModrinthSearchV2({
       // Create batch requests for all versions to check
       const requests: ContentCheckRequest[] = [];
       
-      // First request for just the project to check NoRisk pack status
+      // First request for just the project to check GEG pack status
       requests.push({
         project_id: projectId,
         project_type: projectType,
@@ -661,19 +661,19 @@ export function ModrinthSearchV2({
       // Process the results
       const newInstalledState: Record<string, ContentInstallStatus | null> = 
         installedVersions[selectedProfile.id] || {};
-      let projectInNoRiskStatus: ContentInstallStatus | null = null;
+      let projectInGEGStatus: ContentInstallStatus | null = null;
       
       batchResults.results.forEach(result => {
         if (result.request_id === `project-${projectId}`) {
-          // This is the project-level check for NoRisk pack
-          projectInNoRiskStatus = result.status;
+          // This is the project-level check for GEG pack
+          projectInGEGStatus = result.status;
         } else if (result.request_id) {
           // This is a version check
           newInstalledState[result.request_id] = {
             ...result.status,
-            // If project is in NoRisk pack, set is_included_in_norisk_pack based on version match
-            is_included_in_norisk_pack: 
-              projectInNoRiskStatus?.is_included_in_norisk_pack && result.status.is_specific_version_in_pack
+            // If project is in GEG pack, set is_included_in_GEG_pack based on version match
+            is_included_in_GEG_pack: 
+              projectInGEGStatus?.is_included_in_GEG_pack && result.status.is_specific_version_in_pack
           };
         }
       });
@@ -706,7 +706,7 @@ export function ModrinthSearchV2({
       
       // Fallback to original method if batch fails
       try {
-        const projectInNoRiskStatus = await ProfileService.isContentInstalled({
+        const projectInGEGStatus = await ProfileService.isContentInstalled({
           profile_id: selectedProfile.id,
           project_id: projectId,
           project_type: projectType
@@ -726,11 +726,11 @@ export function ModrinthSearchV2({
             if (!primaryFile) {
               newInstalledState[version.id] = {
                 is_installed: false,
-                is_included_in_norisk_pack: false,
+                is_included_in_GEG_pack: false,
                 is_specific_version_in_pack: false,
                 is_enabled: null,
                 found_item_details: null,
-                norisk_pack_item_details: null,
+                GEG_pack_item_details: null,
               };
               continue;
             }
@@ -749,21 +749,21 @@ export function ModrinthSearchV2({
             
             newInstalledState[version.id] = {
               is_installed: statusFromService.is_installed,
-              is_included_in_norisk_pack: projectInNoRiskStatus.is_included_in_norisk_pack && statusFromService.is_specific_version_in_pack,
+              is_included_in_GEG_pack: projectInGEGStatus.is_included_in_GEG_pack && statusFromService.is_specific_version_in_pack,
               is_specific_version_in_pack: statusFromService.is_specific_version_in_pack,
               is_enabled: statusFromService.is_enabled !== undefined ? statusFromService.is_enabled : null,
               found_item_details: statusFromService.found_item_details || null,
-              norisk_pack_item_details: statusFromService.norisk_pack_item_details || null,
+              GEG_pack_item_details: statusFromService.GEG_pack_item_details || null,
             };
           } catch (error) {
             console.error(`Failed to check status for version ${version.version_number}:`, error);
             newInstalledState[version.id] = {
               is_installed: false,
-              is_included_in_norisk_pack: false,
+              is_included_in_GEG_pack: false,
               is_specific_version_in_pack: false,
               is_enabled: null,
               found_item_details: null,
-              norisk_pack_item_details: null,
+              GEG_pack_item_details: null,
             };
           }
         }
@@ -2771,11 +2771,11 @@ export function ModrinthSearchV2({
             
             newState[profileId][version.id] = { // Use profileId
               is_installed: false,
-              is_included_in_norisk_pack: newState[profileId]?.[version.id]?.is_included_in_norisk_pack || false, // Use profileId
+              is_included_in_GEG_pack: newState[profileId]?.[version.id]?.is_included_in_GEG_pack || false, // Use profileId
               is_specific_version_in_pack: newState[profileId]?.[version.id]?.is_specific_version_in_pack || false, // Use profileId
               is_enabled: null,
               found_item_details: null,
-              norisk_pack_item_details: newState[profileId]?.[version.id]?.norisk_pack_item_details || null, // Use profileId
+              GEG_pack_item_details: newState[profileId]?.[version.id]?.GEG_pack_item_details || null, // Use profileId
             };
             
             return newState;
@@ -2814,11 +2814,11 @@ export function ModrinthSearchV2({
               ...prev,
               [project.project_id]: {
                 is_installed: false,
-                is_included_in_norisk_pack: prev[project.project_id]?.is_included_in_norisk_pack || false,
+                is_included_in_GEG_pack: prev[project.project_id]?.is_included_in_GEG_pack || false,
                 is_specific_version_in_pack: prev[project.project_id]?.is_specific_version_in_pack || false,
                 is_enabled: null,
                 found_item_details: null,
-                norisk_pack_item_details: prev[project.project_id]?.norisk_pack_item_details || null,
+                GEG_pack_item_details: prev[project.project_id]?.GEG_pack_item_details || null,
               }
             }));
           }
@@ -2882,9 +2882,9 @@ export function ModrinthSearchV2({
         console.warn("[ModrinthSearchV2] Unhandled project_type for NrContentType mapping in toggle:", project.project_type);
     }
 
-    // Check if this is a NoRisk Pack item
-    if (currentVersionStatus?.norisk_pack_item_details?.norisk_mod_identifier) {
-      const noriskIdentifier = currentVersionStatus.norisk_pack_item_details.norisk_mod_identifier;
+    // Check if this is a GEG Pack item
+    if (currentVersionStatus?.GEG_pack_item_details?.GEG_mod_identifier) {
+      const GEGIdentifier = currentVersionStatus.GEG_pack_item_details.GEG_mod_identifier;
       
       const toastMessage = newEnabledState ? "Enabling" : "Disabling";
       const successMessage = newEnabledState ? "enabled" : "disabled";
@@ -2894,9 +2894,9 @@ export function ModrinthSearchV2({
           const payload: ToggleContentPayload = {
             profile_id: profileId,
             enabled: newEnabledState,
-            norisk_mod_identifier: noriskIdentifier,
+            GEG_mod_identifier: GEGIdentifier,
             content_type: nrContentType, // Pass content_type here as well
-            // sha1_hash is not strictly needed for norisk_mod_identifier-based toggling by current backend logic,
+            // sha1_hash is not strictly needed for GEG_mod_identifier-based toggling by current backend logic,
             // but can be included for consistency if desired or if backend logic changes.
             sha1_hash: sha1Hash, 
           };
@@ -2914,8 +2914,8 @@ export function ModrinthSearchV2({
               newState[selectedProfile.id][version.id] = {
                 ...newState[selectedProfile.id][version.id]!,
                 is_enabled: newEnabledState,
-                norisk_pack_item_details: {
-                  ...newState[selectedProfile.id][version.id]!.norisk_pack_item_details!,
+                GEG_pack_item_details: {
+                  ...newState[selectedProfile.id][version.id]!.GEG_pack_item_details!,
                   is_enabled: newEnabledState
                 }
               };
@@ -2934,10 +2934,10 @@ export function ModrinthSearchV2({
                 [project.project_id]: {
                   ...currentProjectStatus,
                   is_enabled: newEnabledState, // Update top-level is_enabled for the project
-                  norisk_pack_item_details: {
+                  GEG_pack_item_details: {
                     // Ensure we spread existing details if they exist, or initialize if not
-                    ...(currentProjectStatus.norisk_pack_item_details || {}),
-                    // We might not have a full norisk_mod_identifier here at project level,
+                    ...(currentProjectStatus.GEG_pack_item_details || {}),
+                    // We might not have a full GEG_mod_identifier here at project level,
                     // but the key is to update its is_enabled state if these details are what project card uses.
                     is_enabled: newEnabledState 
                   }
@@ -2950,18 +2950,18 @@ export function ModrinthSearchV2({
           return { versionName: version.version_number };
         },
         {
-          loading: `${toastMessage} NoRisk Pack item: ${project.title} (${version.version_number})...`,
-          success: ({ versionName }) => `Successfully ${successMessage} NoRisk Pack item: ${project.title} (${versionName})`,
-          error: (err) => `Failed to ${toastMessage.toLowerCase()} NoRisk Pack item: ${err.message || String(err)}`
+          loading: `${toastMessage} GEG Pack item: ${project.title} (${version.version_number})...`,
+          success: ({ versionName }) => `Successfully ${successMessage} GEG Pack item: ${project.title} (${versionName})`,
+          error: (err) => `Failed to ${toastMessage.toLowerCase()} GEG Pack item: ${err.message || String(err)}`
         }
       ).catch(err => {
-        console.error(`Error ${toastMessage.toLowerCase()} NoRisk Pack item:`, err);
+        console.error(`Error ${toastMessage.toLowerCase()} GEG Pack item:`, err);
       });
       
-      return; // Exit after handling NoRisk pack item
+      return; // Exit after handling GEG pack item
     }
 
-    // Regular content toggle using SHA1 hash (for non-NoRisk pack items)
+    // Regular content toggle using SHA1 hash (for non-GEG pack items)
     if (!sha1Hash) {
       toast.error("Cannot enable/disable version: missing file hash");
       return;
@@ -2977,7 +2977,7 @@ export function ModrinthSearchV2({
           sha1_hash: sha1Hash,
           enabled: newEnabledState,
           content_type: nrContentType, // Add mapped content_type
-          norisk_mod_identifier: undefined, // Explicitly undefined for non-NoRisk items
+          GEG_mod_identifier: undefined, // Explicitly undefined for non-GEG items
         };
         
         await toggleContentFromProfile(payload);
@@ -3029,22 +3029,22 @@ export function ModrinthSearchV2({
   // Define helper objects/functions at the component scope
   const defaultErrorContentStatus: ContentInstallStatus = {
     is_installed: false,
-    is_included_in_norisk_pack: false,
+    is_included_in_GEG_pack: false,
     is_specific_version_in_pack: false,
     is_enabled: null,
     found_item_details: null,
-    norisk_pack_item_details: null,
+    GEG_pack_item_details: null,
   };
 
   const getStatusForNewInstall = (
     existingPreviousStatus?: ContentInstallStatus | null,
   ): ContentInstallStatus => ({
     is_installed: true,
-    is_included_in_norisk_pack: existingPreviousStatus?.is_included_in_norisk_pack || false,
+    is_included_in_GEG_pack: existingPreviousStatus?.is_included_in_GEG_pack || false,
     is_specific_version_in_pack: existingPreviousStatus?.is_specific_version_in_pack || false,
     is_enabled: true, 
     found_item_details: existingPreviousStatus?.found_item_details || null,
-    norisk_pack_item_details: existingPreviousStatus?.norisk_pack_item_details || null,
+    GEG_pack_item_details: existingPreviousStatus?.GEG_pack_item_details || null,
   });
 
   return (

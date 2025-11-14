@@ -20,21 +20,21 @@ export function TermsOfServiceModal({ isOpen }: TermsOfServiceModalProps) {
 
   const handleOpenPrivacyPolicy = async () => {
     try {
-      await openExternalUrl('https://blog.norisk.gg/en/privacy-policy/');
+      await openExternalUrl('https://blog.GEG.gg/en/privacy-policy/');
       toast.success("Privacy Policy opened in your browser!");
     } catch (error) {
       console.error("Failed to open Privacy Policy URL:", error);
-      toast.error("Could not open Privacy Policy. Please visit blog.norisk.gg/privacy-policy/ manually.");
+      toast.error("Could not open Privacy Policy. Please visit blog.GEG.gg/privacy-policy/ manually.");
     }
   };
 
   const handleOpenTerms = async () => {
     try {
-      await openExternalUrl('https://blog.norisk.gg/en/terms-of-use/');
+      await openExternalUrl('https://blog.GEG.gg/en/terms-of-use/');
       toast.success("Terms of Service opened in your browser!");
     } catch (error) {
       console.error("Failed to open Terms URL:", error);
-      toast.error("Could not open Terms. Please visit blog.norisk.gg/en/terms-of-use/ manually.");
+      toast.error("Could not open Terms. Please visit blog.GEG.gg/en/terms-of-use/ manually.");
     }
   };
 
@@ -66,7 +66,7 @@ export function TermsOfServiceModal({ isOpen }: TermsOfServiceModalProps) {
       <div className="p-6 space-y-6 text-white">
         <div className="text-center space-y-4">
           <h3 className="text-3xl font-minecraft text-blue-400 lowercase">
-            Welcome to NoRisk Launcher!
+            Welcome to GEG Launcher!
           </h3>
           <p className="text-lg font-minecraft-ten text-gray-300">
             Before you start using our launcher, please read and accept our Terms of Service.
@@ -115,7 +115,7 @@ export function TermsOfServiceModal({ isOpen }: TermsOfServiceModalProps) {
 
         <div className="text-center text-sm text-gray-400">
           <p>
-            You can withdraw your consent at any time. However, you must accept the terms to use NoRisk Client.
+            You can withdraw your consent at any time. However, you must accept the terms to use GEG Client.
           </p>
         </div>
       </div>

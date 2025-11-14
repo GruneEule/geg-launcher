@@ -10,11 +10,11 @@ interface CapeFavoritesState {
   removeFavorite: (capeId: string) => void;
   toggleFavorite: (capeId: string) => void;
   clearFavorites: () => void;
-  setFavoriteOptimistic: (capeId: string, favorite: boolean, noriskToken?: string) => Promise<void>;
-  toggleFavoriteOptimistic: (capeId: string, noriskToken?: string) => Promise<void>;
+  setFavoriteOptimistic: (capeId: string, favorite: boolean, GEGToken?: string) => Promise<void>;
+  toggleFavoriteOptimistic: (capeId: string, GEGToken?: string) => Promise<void>;
 }
 
-const STORAGE_KEY = "norisk-cape-favorites";
+const STORAGE_KEY = "GEG-cape-favorites";
 
 export const useCapeFavoritesStore = create<CapeFavoritesState>()(
   persist(
@@ -49,7 +49,7 @@ export const useCapeFavoritesStore = create<CapeFavoritesState>()(
 
       clearFavorites: () => set({ favoriteCapeIds: [] }),
 
-      setFavoriteOptimistic: async (capeId: string, favorite: boolean, noriskToken?: string) => {
+      setFavoriteOptimistic: async (capeId: string, favorite: boolean, GEGToken?: string) => {
         // Apply local change first and keep it regardless of server outcome
         const prev = get().favoriteCapeIds;
         const alreadyFavorite = prev.includes(capeId);
@@ -65,7 +65,7 @@ export const useCapeFavoritesStore = create<CapeFavoritesState>()(
 
         try {
           // Fire-and-forget server sync; do not overwrite local state with response
-          await setCapeFavorite(capeId, favorite, noriskToken);
+          await setCapeFavorite(capeId, favorite, GEGToken);
         } catch (err) {
           const message = err instanceof Error ? err.message : String((err as any)?.message ?? err);
           toast.error(`Failed to sync favorite: ${message}`);
@@ -73,9 +73,9 @@ export const useCapeFavoritesStore = create<CapeFavoritesState>()(
         }
       },
 
-      toggleFavoriteOptimistic: async (capeId: string, noriskToken?: string) => {
+      toggleFavoriteOptimistic: async (capeId: string, GEGToken?: string) => {
         const nextFavorite = !get().isFavorite(capeId);
-        await get().setFavoriteOptimistic(capeId, nextFavorite, noriskToken);
+        await get().setFavoriteOptimistic(capeId, nextFavorite, GEGToken);
       },
     }),
     {

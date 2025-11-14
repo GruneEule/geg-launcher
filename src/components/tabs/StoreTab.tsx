@@ -2,11 +2,16 @@
 
 import { TabHeader } from "../ui/TabHeader";
 import { TabContent } from "../ui/TabContent";
-// import { EmptyState } from "../ui/EmptyState"; // Replaced by CapeBrowser
-import { CapeBrowser } from '../capes/CapeBrowser';
 
 export function StoreTab() {
   return (
-    <CapeBrowser />
+    <div className="flex flex-col h-full">
+      <TabHeader title="Store" description="Cosmetics and capes system has been removed" />
+      <TabContent>
+        <div className="flex items-center justify-center h-full">
+          <p className="text-muted-foreground">This section has been removed in the GEG Launcher.</p>
+        </div>
+      </TabContent>
+    </div>
   );
 }

@@ -191,23 +191,23 @@ export function ProfilesTab() {
   initiallyFilteredProfiles.sort((a, b) => a.name.localeCompare(b.name));
 
   const groupedProfiles = (() => {
-    // Separate NoRisk Client profiles and all other profiles
-    const noriskClientProfiles = initiallyFilteredProfiles.filter(profile => 
-      profile.group === "NORISK CLIENT"
+    // Separate GEG Client profiles and all other profiles
+    const GEGProfiles = initiallyFilteredProfiles.filter(profile => 
+      profile.group === "GEG CLIENT"
     );
     const otherProfiles = initiallyFilteredProfiles.filter(profile => 
-      profile.group !== "NORISK CLIENT"
+      profile.group !== "GEG CLIENT"
     );
     
     // Sort both groups
-    noriskClientProfiles.sort((a, b) => a.name.localeCompare(b.name));
+    GEGProfiles.sort((a, b) => a.name.localeCompare(b.name));
     otherProfiles.sort((a, b) => a.name.localeCompare(b.name));
     
     const result: Record<string, Profile[]> = {};
     
-    // Always add NoRisk Client group first if there are profiles with that group
-    if (noriskClientProfiles.length > 0) {
-      result["NoRisk Client"] = noriskClientProfiles;
+    // Always add GEG Client group first if there are profiles with that group
+    if (GEGProfiles.length > 0) {
+      result["GEG Client"] = GEGProfiles;
     }
     
     // Group other profiles based on criterion
@@ -245,9 +245,9 @@ export function ProfilesTab() {
   };
 
   const sortedGroupKeys = Object.keys(groupedProfiles).sort((a, b) => {
-    // NoRisk Client should always be first
-    if (a === "NoRisk Client") return -1;
-    if (b === "NoRisk Client") return 1;
+    // GEG Client should always be first
+    if (a === "GEG Client") return -1;
+    if (b === "GEG Client") return 1;
     
     const specialKeys = [
       "All Profiles",

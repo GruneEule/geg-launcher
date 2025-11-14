@@ -9,7 +9,7 @@ import React, {
   ReactNode,
 } from "react";
 import { useInView } from "react-intersection-observer";
-import type { CosmeticCape } from "../../types/noriskCapes";
+import type { CosmeticCape } from "../../types/GEGCapes";
 import type { VanillaCape } from "../../types/vanillaCapes";
 import { EmptyState } from "../ui/EmptyState";
 import { Icon } from "@iconify/react";
@@ -72,7 +72,7 @@ function CapeItemDisplay({
       : undefined;
 
     const capeId = isVanilla ? (cape as VanillaCape).id : (cape as CosmeticCape)._id;
-    const capeUrl = isVanilla ? (cape as VanillaCape).url : `https://cdn.norisk.gg/capes/prod/${capeId}.png`;
+    const capeUrl = isVanilla ? (cape as VanillaCape).url : `https://cdn.GEG.gg/capes/prod/${capeId}.png`;
 
     showModal(`cape-preview-${capeId}`, (
       <Modal
@@ -99,7 +99,7 @@ function CapeItemDisplay({
   const [isHovered, setIsHovered] = useState(false);
   const accentColor = useThemeStore((state) => state.accentColor);
 
-  // Only use favorites for NoRisk capes
+  // Only use favorites for GEG capes
   const isFavorite = !isVanilla ? useCapeFavoritesStore((s) => s.isFavorite((cape as CosmeticCape)._id)) : false;
   const toggleFavoriteOptimistic = useCapeFavoritesStore((s) => s.toggleFavoriteOptimistic);
 
@@ -164,7 +164,7 @@ function CapeItemDisplay({
     >
       {/* Action buttons - top right */}
       <div className={`absolute top-3 right-3 z-20 flex flex-col gap-1`}>
-        {/* Favorite button (only for NoRisk capes) */}
+        {/* Favorite button (only for GEG capes) */}
         {!isVanilla && (
           <button
             onClick={(e) => {
@@ -279,7 +279,7 @@ function CapeItemDisplay({
             }
           </h3>
 
-          {/* Usage Stats (only for NoRisk capes) */}
+          {/* Usage Stats (only for GEG capes) */}
           {!isVanilla && (
             <div className="flex items-center justify-center gap-2 text-xs font-minecraft-ten">
               <div className="text-white/60 flex items-center gap-1">
@@ -609,7 +609,7 @@ export function CapeList({
             }}
           >
             {stableFavoriteCapes.map((cape) => {
-              const imageUrl = `https://cdn.norisk.gg/capes/prod/${cape._id}.png`;
+              const imageUrl = `https://cdn.GEG.gg/capes/prod/${cape._id}.png`;
               return (
                 <CapeItemDisplay
                   key={`fav-${cape._id}`}
@@ -645,7 +645,7 @@ export function CapeList({
           {itemsToRender.map((cape) => {
             const imageUrl = isVanilla
               ? (cape as VanillaCape).url
-              : `https://cdn.norisk.gg/capes/prod/${(cape as CosmeticCape)._id}.png`;
+              : `https://cdn.GEG.gg/capes/prod/${(cape as CosmeticCape)._id}.png`;
             const capeId = isVanilla ? (cape as VanillaCape).id : (cape as CosmeticCape)._id;
             const isEquipped = equippedCapeId === capeId;
             return (
@@ -727,7 +727,7 @@ function Cape3DPreviewWithToggle({
   const [showElytra, setShowElytra] = useState(false);
 
   // Verwende capeUrl falls übergeben, sonst CDN URL
-  const finalCapeUrl = capeUrl || `https://cdn.norisk.gg/capes/prod/${capeId}.png`;
+  const finalCapeUrl = capeUrl || `https://cdn.GEG.gg/capes/prod/${capeId}.png`;
 
   return (
     <div className="p-4">

@@ -1,6 +1,6 @@
 use crate::config::{ProjectDirsExt, LAUNCHER_DIRECTORY};
 use crate::error::{AppError, Result};
-use crate::integrations::norisk_packs::{self, NoriskModSourceDefinition, NoriskModpacksConfig};
+use crate::integrations::norisk_packs::{self, GEGModSourceDefinition, GEGModpacksConfig};
 use crate::utils::download_utils::{DownloadConfig, DownloadUtils};
 use futures::stream::{iter, StreamExt};
 use log::{error, info, warn};
@@ -29,17 +29,17 @@ impl NoriskPackDownloadService {
         }
     }
 
-    /// Downloads mods specified in a Norisk pack definition to the central mod cache.
+    /// Downloads mods specified in a GEG pack definition to the central mod cache.
     /// Requires the pack config, the ID of the pack to download, the target Minecraft version, and loader.
     pub async fn download_pack_mods_to_cache(
         &self,
-        config: &NoriskModpacksConfig,
+        config: &GEGModpacksConfig,
         pack_id: &str,
         minecraft_version: &str,
         loader: &str,
     ) -> Result<()> {
         info!(
-            "Checking/Downloading Norisk Pack mods to cache. Pack ID: '{}', MC: {}, Loader: {} (Concurrency: {})",
+            "Checking/Downloading GEG Pack mods to cache. Pack ID: '{}', MC: {}, Loader: {} (Concurrency: {})",
             pack_id, minecraft_version, loader, self.concurrent_downloads
         );
 
@@ -90,7 +90,7 @@ impl NoriskPackDownloadService {
 
                 // --- Determine filename using the effective source ---
                 let filename_result =
-                    norisk_packs::get_norisk_pack_mod_filename(effective_source, &target_clone, &mod_id);
+                    norisk_packs::get_GEG_pack_mod_filename(effective_source, &target_clone, &mod_id);
 
                 // Check if filename retrieval was successful
                 let filename = match filename_result {
@@ -105,7 +105,7 @@ impl NoriskPackDownloadService {
                 let target_path = cache_dir_clone.join(&filename);
 
                 match effective_source {
-                    NoriskModSourceDefinition::Modrinth {
+                    GEGModSourceDefinition::Modrinth {
                         project_id: _project_id,
                         project_slug,
                     } => {
@@ -130,7 +130,7 @@ impl NoriskPackDownloadService {
 
                         Ok(())
                     }
-                    NoriskModSourceDefinition::Maven {
+                    GEGModSourceDefinition::Maven {
                         repository_ref,
                         group_id,
                         artifact_id,
@@ -165,7 +165,7 @@ impl NoriskPackDownloadService {
 
                         Ok(())
                     }
-                    NoriskModSourceDefinition::Url => {
+                    GEGModSourceDefinition::Url => {
                         // For URL mods, use the identifier as direct URL
                         info!(
                             "Downloading URL mod for cache: {} ({}) from {}",
@@ -185,7 +185,7 @@ impl NoriskPackDownloadService {
         }
 
         info!(
-            "Executing {} Norisk pack mod cache tasks for pack '{}'...",
+            "Executing {} GEG pack mod cache tasks for pack '{}'...",
             download_futures.len(),
             pack_id
         );
@@ -203,13 +203,13 @@ impl NoriskPackDownloadService {
 
         if errors.is_empty() {
             info!(
-                "Norisk pack mod cache check/download process completed successfully for pack: '{}'",
+                "GEG pack mod cache check/download process completed successfully for pack: '{}'",
                 pack_id
             );
             Ok(())
         } else {
             error!(
-                "Norisk pack mod cache check/download process completed with {} errors for pack: '{}'",
+                "GEG pack mod cache check/download process completed with {} errors for pack: '{}'",
                 errors.len(), pack_id
             );
             Err(errors.remove(0))
@@ -262,6 +262,6 @@ impl NoriskPackDownloadService {
 
 // Note: Syncing logic (like `sync_mods_to_profile` from ModDownloadService)
 // is not included here as it depends on a specific Profile's mod list,
-// not directly on the Norisk Pack definition. Syncing would still use
+// not directly on the GEG Pack definition. Syncing would still use
 // ModDownloadService after the Profile's mod list has been potentially
-// updated based on a selected Norisk Pack.
+// updated based on a selected GEG Pack.

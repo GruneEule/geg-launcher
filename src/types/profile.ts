@@ -11,7 +11,7 @@ export type ProfileState =
 
 export type LoaderVersionReason = 
   | "profile_default"
-  | "norisk_pack"
+  | "GEG_pack"
   | "user_overwrite"
   | "not_resolved";
 
@@ -159,14 +159,14 @@ export interface Mod {
   updates_enabled: boolean;
 }
 
-export interface NoriskModIdentifier {
+export interface GEGModIdentifier {
   pack_id: string;
   mod_id: string;
   game_version: string;
   loader: ModLoader;
 }
 
-export interface NoriskInformation {
+export interface GEGInformation {
   keep_local_assets: boolean;
   is_experimental: boolean;
   is_main_version?: boolean;
@@ -195,8 +195,8 @@ export interface Profile {
   settings: ProfileSettings;
   state: ProfileState;
   mods: Mod[];
-  selected_norisk_pack_id: string | null;
-  disabled_norisk_mods_detailed: NoriskModIdentifier[];
+  selected_GEG_pack_id: string | null;
+  disabled_GEG_mods_detailed: GEGModIdentifier[];
   source_standard_profile_id: string | null;
   group: string | null;
   use_shared_minecraft_folder: boolean;
@@ -204,7 +204,7 @@ export interface Profile {
   description: string | null;
   banner: ProfileBanner | null;
   background: ProfileBanner | null;
-  norisk_information: NoriskInformation | null;
+  GEG_information: GEGInformation | null;
   modpack_info?: ModPackInfo | null;
 }
 
@@ -230,7 +230,7 @@ export interface CreateProfileParams {
   game_version: string;
   loader: string;
   loader_version?: string;
-  selected_norisk_pack_id?: string;
+  selected_GEG_pack_id?: string;
   use_shared_minecraft_folder?: boolean;
 }
 
@@ -240,15 +240,15 @@ export interface UpdateProfileParams {
   loader?: string;
   loader_version?: string;
   settings?: ProfileSettings;
-  selected_norisk_pack_id?: string;
+  selected_GEG_pack_id?: string;
   group?: string | null;
   clear_group?: boolean;
   use_shared_minecraft_folder?: boolean;
   description?: string | null;
-  clear_selected_norisk_pack?: boolean;
+  clear_selected_GEG_pack?: boolean;
   banner?: ProfileBanner | null;
   background?: ProfileBanner | null;
-  norisk_information?: NoriskInformation | null;
+  GEG_information?: GEGInformation | null;
 }
 
 export interface CopyProfileParams {
@@ -312,20 +312,20 @@ export interface FoundItemDetails {
 }
 
 /**
- * Details about an item when it comes from a NoRisk Pack
+ * Details about an item when it comes from a GEG Pack
  */
-export interface NoRiskPackItemDetails {
+export interface GEGPackItemDetails {
   is_enabled: boolean;
-  norisk_mod_identifier?: NoriskModIdentifier;
+  GEG_mod_identifier?: GEGModIdentifier;
 }
 
 export interface ContentInstallStatus {
-  is_included_in_norisk_pack: boolean;
+  is_included_in_GEG_pack: boolean;
   is_installed: boolean;
   is_specific_version_in_pack: boolean;
   is_enabled?: boolean;
   found_item_details?: FoundItemDetails;
-  norisk_pack_item_details?: NoRiskPackItemDetails;
+  GEG_pack_item_details?: GEGPackItemDetails;
 }
 
 /**
@@ -418,7 +418,7 @@ export interface LocalContentItem {
   curseforge_info?: GenericCurseForgeInfo | null;
   platform?: ModPlatform | null; // Platform this mod came from
   source_type?: string | null; // For identifying "custom" mods
-  norisk_info?: NoriskModIdentifier | null; // Identifier for NoRiskMods
+  GEG_info?: GEGModIdentifier | null; // Identifier for GEGMods
   fallback_version?: string | null; // Fallback version from compatibility target
   id?: string | null; // Added optional ID field from ModProfileEntry.id
   associated_loader?: ModLoader | null; // Added associated_loader from ModProfileEntry

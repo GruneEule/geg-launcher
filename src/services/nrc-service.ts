@@ -17,13 +17,13 @@ export const fetchNewsAndChangelogs = (): Promise<BlogPost[]> => {
 };
 
 /**
- * Triggers a refresh of the Norisk packs configuration from the backend.
+ * Triggers a refresh of the GEG packs configuration from the backend.
  *
  * @returns A promise that resolves when the refresh is complete.
  * @throws If the backend command fails.
  */
-export const refreshNoriskPacks = (): Promise<void> => {
-  return invoke('refresh_norisk_packs');
+export const refreshGEGPacks = (): Promise<void> => {
+  return invoke('refresh_GEG_packs');
 };
 
 /**
@@ -37,7 +37,7 @@ export const refreshStandardVersions = (): Promise<Profile[]> => {
 };
 
 /**
- * Refreshes both Norisk packs and standard versions configurations.
+ * Refreshes both GEG packs and standard versions configurations.
  * Logs success or errors to the console.
  */
 export const refreshNrcDataOnMount = async (): Promise<void> => {
@@ -63,11 +63,11 @@ export const refreshNrcDataOnMount = async (): Promise<void> => {
       });
 
     try {
-      await refreshNoriskPacks();
-      console.log("Norisk Packs updated successfully on mount!");
+      await refreshGEGPacks();
+      console.log("GEG Packs updated successfully on mount!");
       nrcPacksSuccess = true;
     } catch (error) {
-      console.error("Failed to refresh Norisk Packs on mount:", error);
+      console.error("Failed to refresh GEG Packs on mount:", error);
     }
 
     try {
@@ -95,7 +95,7 @@ export const refreshNrcDataOnMount = async (): Promise<void> => {
       }
     }
   } catch (error) {
-    // Dieser Catch fängt Fehler von refreshNoriskPacks, refreshStandardVersions
+    // Dieser Catch fängt Fehler von refreshGEGPacks, refreshStandardVersions
     // oder wenn fetchProfiles selbst einen Fehler wirft, der nicht intern zu loading:false führt.
     console.error("Error during NRC data refresh or profile fetching process:", error);
     useProfileStore.setState({
@@ -138,7 +138,7 @@ export const discordAuthUnlink = (): Promise<void> => {
 };
 
 /**
- * Gets the mobile app token for NoRisk mobile app linking.
+ * Gets the mobile app token for GEG mobile app linking.
  *
  * @returns A promise that resolves to the mobile app token string.
  * @throws If the backend command fails.
@@ -148,7 +148,7 @@ export const getMobileAppToken = (): Promise<string> => {
 };
 
 /**
- * Resets the mobile app token for NoRisk mobile app linking.
+ * Resets the mobile app token for GEG mobile app linking.
  *
  * @returns A promise that resolves to the new mobile app token string.
  * @throws If the backend command fails.

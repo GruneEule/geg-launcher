@@ -238,7 +238,7 @@ export function InstallationSettingsTab({
     }
 
     fetchResolvedLoaderVersion();
-  }, [editedProfile.id, editedProfile.game_version, editedProfile.loader, editedProfile.loader_version, editedProfile.settings.use_overwrite_loader_version, editedProfile.settings.overwrite_loader_version, editedProfile.selected_norisk_pack_id]);
+  }, [editedProfile.id, editedProfile.game_version, editedProfile.loader, editedProfile.loader_version, editedProfile.settings.use_overwrite_loader_version, editedProfile.settings.overwrite_loader_version, editedProfile.selected_GEG_pack_id]);
 
   // Separate function that can be called externally
   const fetchResolvedLoaderVersion = async () => {
@@ -379,8 +379,8 @@ export function InstallationSettingsTab({
 
   const getReasonText = (reason: string): string => {
     switch (reason) {
-      case "norisk_pack":
-        return "Forced by NoRisk Pack";
+      case "GEG_pack":
+        return "Forced by GEG Pack";
       case "user_overwrite":
         return "User Overwrite";
       case "profile_default":

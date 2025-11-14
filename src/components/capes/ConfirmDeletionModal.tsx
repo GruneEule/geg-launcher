@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Modal } from "../ui/Modal";
 import { Button } from "../ui/buttons/Button";
-import type { CosmeticCape } from "../../types/noriskCapes";
+import type { CosmeticCape } from "../../types/GEGCapes";
 
 interface ConfirmDeletionModalProps {
   capeToDelete: CosmeticCape;

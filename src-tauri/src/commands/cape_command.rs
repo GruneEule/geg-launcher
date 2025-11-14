@@ -17,7 +17,7 @@ pub struct BrowseCapesPayload {
     filter_has_elytra: Option<bool>,
     filter_creator: Option<String>,
     time_frame: Option<String>,
-    norisk_token: Option<String>,
+    GEG_token: Option<String>,
     request_uuid: Option<String>,
 }
 
@@ -46,16 +46,16 @@ pub async fn browse_capes(
         .await?
         .ok_or_else(|| CommandError::from(AppError::NoCredentialsError))?;
 
-    // Get the NoRisk token: prioritize passed token, otherwise get from active account
-    let token_to_use = match payload.norisk_token {
+    // Get the GEG token: prioritize passed token, otherwise get from active account
+    let token_to_use = match payload.GEG_token {
         Some(token) => {
-            debug!("Using provided NoRisk token.");
+            debug!("Using provided GEG token.");
             token
         }
         None => {
             debug!("No token provided, retrieving from active account.");
             active_account
-                .norisk_credentials
+                .GEG_credentials
                 .get_token_for_mode(is_experimental)?
         }
     };
@@ -123,7 +123,7 @@ pub async fn browse_capes(
 #[derive(Deserialize, Debug)]
 pub struct GetPlayerCapesPayload {
     pub player_identifier: String,
-    pub norisk_token: Option<String>,
+    pub GEG_token: Option<String>,
     pub request_uuid: Option<String>,
 }
 
@@ -132,7 +132,7 @@ pub struct GetPlayerCapesPayload {
 /// Parameters:
 /// - player_identifier: UUID or username of the player
 /// - request_uuid: UUID for tracking the request (optional)
-/// - norisk_token: Optional NoRisk token
+/// - GEG_token: Optional GEG token
 #[tauri::command]
 pub async fn get_player_capes(
     payload: GetPlayerCapesPayload,
@@ -194,18 +194,18 @@ pub async fn get_player_capes(
         player_uuid_to_use
     );
 
-    let token_to_use = match payload.norisk_token {
+    let token_to_use = match payload.GEG_token {
         Some(token) => {
-            debug!("[CMD get_player_capes] Using norisk_token from payload.");
+            debug!("[CMD get_player_capes] Using GEG_token from payload.");
             token
         }
         None => {
-            debug!("[CMD get_player_capes] No norisk_token in payload, attempting to use token from active account.");
+            debug!("[CMD get_player_capes] No GEG_token in payload, attempting to use token from active account.");
             let acc = active_account_opt.as_ref().ok_or_else(|| {
-                error!("[CMD get_player_capes] NoRisk token required (neither in payload nor from active account).");
+                error!("[CMD get_player_capes] GEG token required (neither in payload nor from active account).");
                 CommandError::from(AppError::NoCredentialsError)
             })?;
-            acc.norisk_credentials.get_token_for_mode(is_experimental)?
+            acc.GEG_credentials.get_token_for_mode(is_experimental)?
         }
     };
     debug!(
@@ -264,12 +264,12 @@ pub async fn get_player_capes(
 ///
 /// Parameters:
 /// - cape_hash: Hash of the cape to equip
-/// - norisk_token: Optional NoRisk token
+/// - GEG_token: Optional GEG token
 /// - player_uuid: Optional UUID of the player (defaults to active account)
 #[tauri::command]
 pub async fn equip_cape(
     cape_hash: String,
-    norisk_token: Option<String>,
+    GEG_token: Option<String>,
     player_uuid: Option<Uuid>,
 ) -> Result<(), CommandError> {
     debug!(
@@ -291,16 +291,16 @@ pub async fn equip_cape(
         .await?
         .ok_or_else(|| CommandError::from(AppError::NoCredentialsError))?;
 
-    // Get the NoRisk token: prioritize passed token, otherwise get from active account
-    let token_to_use = match norisk_token {
+    // Get the GEG token: prioritize passed token, otherwise get from active account
+    let token_to_use = match GEG_token {
         Some(token) => {
-            debug!("Using provided NoRisk token.");
+            debug!("Using provided GEG token.");
             token
         }
         None => {
             debug!("No token provided, retrieving from active account.");
             active_account
-                .norisk_credentials
+                .GEG_credentials
                 .get_token_for_mode(is_experimental)?
         }
     };
@@ -343,11 +343,11 @@ pub async fn equip_cape(
 ///
 /// Parameters:
 /// - cape_hash: Hash of the cape to favorite
-/// - norisk_token: Optional NoRisk token
+/// - GEG_token: Optional GEG token
 #[tauri::command]
 pub async fn add_favorite_cape(
     cape_hash: String,
-    norisk_token: Option<String>,
+    GEG_token: Option<String>,
 ) -> Result<Vec<String>, CommandError> {
     debug!(
         "Command called: add_favorite_cape for cape_hash: {}",
@@ -364,15 +364,15 @@ pub async fn add_favorite_cape(
         .await?
         .ok_or_else(|| CommandError::from(AppError::NoCredentialsError))?;
 
-    let token_to_use = match norisk_token {
+    let token_to_use = match GEG_token {
         Some(token) => {
-            debug!("Using provided NoRisk token.");
+            debug!("Using provided GEG token.");
             token
         }
         None => {
             debug!("No token provided, retrieving from active account.");
             active_account
-                .norisk_credentials
+                .GEG_credentials
                 .get_token_for_mode(is_experimental)?
         }
     };
@@ -392,7 +392,7 @@ pub async fn add_favorite_cape(
 #[tauri::command]
 pub async fn get_capes_by_hashes(
     hashes: Vec<String>,
-    norisk_token: Option<String>,
+    GEG_token: Option<String>,
 ) -> Result<Vec<CosmeticCape>, CommandError> {
     debug!(
         "Command called: get_capes_by_hashes (count={})",
@@ -409,15 +409,15 @@ pub async fn get_capes_by_hashes(
         .await?
         .ok_or_else(|| CommandError::from(AppError::NoCredentialsError))?;
 
-    let token_to_use = match norisk_token {
+    let token_to_use = match GEG_token {
         Some(token) => {
-            debug!("Using provided NoRisk token.");
+            debug!("Using provided GEG token.");
             token
         }
         None => {
             debug!("No token provided, retrieving from active account.");
             active_account
-                .norisk_credentials
+                .GEG_credentials
                 .get_token_for_mode(is_experimental)?
         }
     };
@@ -437,11 +437,11 @@ pub async fn get_capes_by_hashes(
 ///
 /// Parameters:
 /// - cape_hash: Hash of the cape to remove from favorites
-/// - norisk_token: Optional NoRisk token
+/// - GEG_token: Optional GEG token
 #[tauri::command]
 pub async fn remove_favorite_cape(
     cape_hash: String,
-    norisk_token: Option<String>,
+    GEG_token: Option<String>,
 ) -> Result<Vec<String>, CommandError> {
     debug!(
         "Command called: remove_favorite_cape for cape_hash: {}",
@@ -458,15 +458,15 @@ pub async fn remove_favorite_cape(
         .await?
         .ok_or_else(|| CommandError::from(AppError::NoCredentialsError))?;
 
-    let token_to_use = match norisk_token {
+    let token_to_use = match GEG_token {
         Some(token) => {
-            debug!("Using provided NoRisk token.");
+            debug!("Using provided GEG token.");
             token
         }
         None => {
             debug!("No token provided, retrieving from active account.");
             active_account
-                .norisk_credentials
+                .GEG_credentials
                 .get_token_for_mode(is_experimental)?
         }
     };
@@ -486,12 +486,12 @@ pub async fn remove_favorite_cape(
 ///
 /// Parameters:
 /// - cape_hash: Hash of the cape to delete
-/// - norisk_token: Optional NoRisk token
+/// - GEG_token: Optional GEG token
 /// - player_uuid: Optional UUID of the player (defaults to active account)
 #[tauri::command]
 pub async fn delete_cape(
     cape_hash: String,
-    norisk_token: Option<String>,
+    GEG_token: Option<String>,
     player_uuid: Option<Uuid>,
 ) -> Result<(), CommandError> {
     debug!(
@@ -513,16 +513,16 @@ pub async fn delete_cape(
         .await?
         .ok_or_else(|| CommandError::from(AppError::NoCredentialsError))?;
 
-    // Get the NoRisk token: prioritize passed token, otherwise get from active account
-    let token_to_use = match norisk_token {
+    // Get the GEG token: prioritize passed token, otherwise get from active account
+    let token_to_use = match GEG_token {
         Some(token) => {
-            debug!("Using provided NoRisk token.");
+            debug!("Using provided GEG token.");
             token
         }
         None => {
             debug!("No token provided, retrieving from active account.");
             active_account
-                .norisk_credentials
+                .GEG_credentials
                 .get_token_for_mode(is_experimental)?
         }
     };
@@ -565,12 +565,12 @@ pub async fn delete_cape(
 ///
 /// Parameters:
 /// - image_path: Path to the cape image file (PNG)
-/// - norisk_token: Optional NoRisk token
+/// - GEG_token: Optional GEG token
 /// - player_uuid: Optional UUID of the player (defaults to active account)
 #[tauri::command]
 pub async fn upload_cape(
     image_path: String,
-    norisk_token: Option<String>,
+    GEG_token: Option<String>,
     player_uuid: Option<Uuid>,
 ) -> Result<CapeUploadResponse, CommandError> {
     debug!(
@@ -592,16 +592,16 @@ pub async fn upload_cape(
         .await?
         .ok_or_else(|| CommandError::from(AppError::NoCredentialsError))?;
 
-    // Get the NoRisk token: prioritize passed token, otherwise get from active account
-    let token_to_use = match norisk_token {
+    // Get the GEG token: prioritize passed token, otherwise get from active account
+    let token_to_use = match GEG_token {
         Some(token) => {
-            debug!("Using provided NoRisk token.");
+            debug!("Using provided GEG token.");
             token
         }
         None => {
             debug!("No token provided, retrieving from active account.");
             active_account
-                .norisk_credentials
+                .GEG_credentials
                 .get_token_for_mode(is_experimental)?
         }
     };
@@ -647,11 +647,11 @@ pub async fn upload_cape(
 /// Unequip the currently equipped cape for the active player
 ///
 /// Parameters:
-/// - norisk_token: Optional NoRisk token
+/// - GEG_token: Optional GEG token
 /// - player_uuid: Optional UUID of the player (defaults to active account)
 #[tauri::command]
 pub async fn unequip_cape(
-    norisk_token: Option<String>,
+    GEG_token: Option<String>,
     player_uuid: Option<Uuid>,
 ) -> Result<(), CommandError> {
     debug!(
@@ -673,16 +673,16 @@ pub async fn unequip_cape(
         .await?
         .ok_or_else(|| CommandError::from(AppError::NoCredentialsError))?;
 
-    // Get the NoRisk token: prioritize passed token, otherwise get from active account
-    let token_to_use = match norisk_token {
+    // Get the GEG token: prioritize passed token, otherwise get from active account
+    let token_to_use = match GEG_token {
         Some(token) => {
-            debug!("Using provided NoRisk token.");
+            debug!("Using provided GEG token.");
             token
         }
         None => {
             debug!("No token provided, retrieving from active account.");
             active_account
-                .norisk_credentials
+                .GEG_credentials
                 .get_token_for_mode(is_experimental)?
         }
     };
@@ -739,9 +739,9 @@ pub async fn download_template_and_open_explorer(
 
     // Set template URL based on experimental mode
     let template_url = if is_experimental {
-        "https://cdn.norisk.gg/capes-staging/template.png"
+        "https://cdn.GEG.gg/capes-staging/template.png"
     } else {
-        "https://cdn.norisk.gg/capes/template.png"
+        "https://cdn.GEG.gg/capes/template.png"
     };
     debug!("Template URL: {}", template_url);
 

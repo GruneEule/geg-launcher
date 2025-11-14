@@ -8,39 +8,39 @@ use std::env;
 use std::path::PathBuf;
 use tokio::fs;
 
-const NORISK_API_BASE_URL: &str = "https://api.noriskclient.com/v1";
+const norisk_api_BASE_URL: &str = "https://api.GEG.com/v1";
 
 /// Helper to compute versions file path based on experimental flag
-fn norisk_versions_path_for(is_experimental: bool) -> PathBuf {
+fn GEG_versions_path_for(is_experimental: bool) -> PathBuf {
     let filename = if is_experimental {
-        "norisk_versions_exp.json"
+        "GEG_versions_exp.json"
     } else {
-        "norisk_versions.json"
+        "GEG_versions.json"
     };
     LAUNCHER_DIRECTORY.root_dir().join(filename)
 }
 
 /// Represents the overall structure of the standard profiles from the backend
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct NoriskVersionsConfig {
+pub struct GEGVersionsConfig {
     /// A list of standard profiles
     pub profiles: Vec<Profile>,
 }
 
-impl Default for NoriskVersionsConfig {
+impl Default for GEGVersionsConfig {
     fn default() -> Self {
         Self { profiles: vec![] }
     }
 }
 
-/// Loads standard profiles from the local `norisk_versions.json` file.
+/// Loads standard profiles from the local `GEG_versions.json` file.
 /// Returns an empty config if the file doesn't exist.
-pub async fn load_local_standard_profiles() -> Result<NoriskVersionsConfig> {
+pub async fn load_local_standard_profiles() -> Result<GEGVersionsConfig> {
     let file_path = if let Ok(state) = State::get().await {
         let is_exp = state.config_manager.is_experimental_mode().await;
-        norisk_versions_path_for(is_exp)
+        GEG_versions_path_for(is_exp)
     } else {
-        LAUNCHER_DIRECTORY.root_dir().join("norisk_versions.json")
+        LAUNCHER_DIRECTORY.root_dir().join("GEG_versions.json")
     };
 
     info!(
@@ -53,7 +53,7 @@ pub async fn load_local_standard_profiles() -> Result<NoriskVersionsConfig> {
             "Local standard profiles file not found at {:?}. Returning empty config.",
             file_path
         );
-        return Ok(NoriskVersionsConfig { profiles: vec![] });
+        return Ok(GEGVersionsConfig { profiles: vec![] });
     }
 
     let data = fs::read_to_string(&file_path).await.map_err(|e| {
@@ -64,12 +64,12 @@ pub async fn load_local_standard_profiles() -> Result<NoriskVersionsConfig> {
         AppError::Io(e)
     })?;
 
-    let profiles_config: NoriskVersionsConfig = serde_json::from_str(&data).map_err(|e| {
+    let profiles_config: GEGVersionsConfig = serde_json::from_str(&data).map_err(|e| {
         error!(
             "Failed to parse local standard profiles file {:?}: {}",
             file_path, e
         );
-        AppError::ParseError(format!("Failed to parse norisk_versions.json: {}", e))
+        AppError::ParseError(format!("Failed to parse GEG_versions.json: {}", e))
     })?;
 
     info!(
@@ -80,7 +80,7 @@ pub async fn load_local_standard_profiles() -> Result<NoriskVersionsConfig> {
     Ok(profiles_config)
 }
 
-/// Copies a dummy/default `norisk_versions.json` from the project's source directory
+/// Copies a dummy/default `GEG_versions.json` from the project's source directory
 /// (assuming a development environment structure) to the launcher's root directory
 /// if it doesn't already exist.
 ///
@@ -91,9 +91,9 @@ pub async fn load_dummy_versions() -> Result<()> {
     // Choose target file based on experimental mode when available
     let target_file = if let Ok(state) = State::get().await {
         let is_exp = state.config_manager.is_experimental_mode().await;
-        norisk_versions_path_for(is_exp)
+        GEG_versions_path_for(is_exp)
     } else {
-        target_dir.join("norisk_versions.json")
+        target_dir.join("GEG_versions.json")
     };
 
     if target_file.exists() {
@@ -108,7 +108,7 @@ pub async fn load_dummy_versions() -> Result<()> {
         AppError::Other("Failed to get parent directory of CARGO_MANIFEST_DIR".to_string())
     })?;
 
-    let source_path = project_root.join("minecraft-data/nrc/norisk_versions.json");
+    let source_path = project_root.join("minecraft-data/nrc/GEG_versions.json");
     // --- End path resolution ---
 
     if source_path.exists() {

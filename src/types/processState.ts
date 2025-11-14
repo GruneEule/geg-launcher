@@ -28,7 +28,7 @@ export interface ProcessMetadata {
   minecraft_version?: string | null;
   modloader?: string | null;
   modloader_version?: string | null;
-  norisk_pack?: string | null;
+  GEG_pack?: string | null;
   profile_name?: string | null;
   profile_image_url?: string | null;
 }

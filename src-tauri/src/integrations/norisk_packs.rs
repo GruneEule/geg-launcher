@@ -20,18 +20,18 @@ use tokio_util::compat::FuturesAsyncReadCompatExt;
 use url;
 use uuid::Uuid; // Added for env! macro // Added for URL parsing
 
-/// Represents the overall structure of the norisk_modpacks.json file.
+/// Represents the overall structure of the GEG_modpacks.json file.
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct NoriskModpacksConfig {
-    /// A map where the key is the pack ID (e.g., "norisk-prod") and the value is the pack definition.
-    pub packs: HashMap<String, NoriskPackDefinition>,
+pub struct GEGModpacksConfig {
+    /// A map where the key is the pack ID (e.g., "GEG-prod") and the value is the pack definition.
+    pub packs: HashMap<String, GEGPackDefinition>,
     /// A map defining Maven repositories used by mods with source type "maven".
-    /// Key is a reference name (e.g., "noriskproduction"), value is the repository URL.
+    /// Key is a reference name (e.g., "GEGproduction"), value is the repository URL.
     #[serde(default)] // Allow missing repositories section if no maven mods are used
     pub repositories: HashMap<String, String>,
 }
 
-impl Default for NoriskModpacksConfig {
+impl Default for GEGModpacksConfig {
     fn default() -> Self {
         Self {
             packs: HashMap::new(),
@@ -40,9 +40,9 @@ impl Default for NoriskModpacksConfig {
     }
 }
 
-/// Defines a single Norisk modpack variant (e.g., production, development).
+/// Defines a single GEG modpack variant (e.g., production, development).
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct NoriskPackDefinition {
+pub struct GEGPackDefinition {
     #[serde(rename = "displayName")]
     pub display_name: String,
     pub description: String,
@@ -69,17 +69,17 @@ pub struct NoriskPackDefinition {
     pub startup_helper: Option<StartUpHelper>,
 }
 
-/// Configuration for copying additional files from the noriskclient/new directory
+/// Configuration for copying additional files from the GEG/new directory
 /// to new profiles when using this modpack.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct StartUpHelper {
-    /// List of relative paths to copy from noriskclient/new/ to the profile directory.
+    /// List of relative paths to copy from GEG/new/ to the profile directory.
     /// Only files/directories that don't already exist in the target are copied.
     /// Supports both files (e.g., "options.txt") and directories (e.g., "saves").
     pub additional_paths: Vec<String>,
 }
 
-/// Defines a single mod entry within a Norisk pack definition.
+/// Defines a single mod entry within a GEG pack definition.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct NoriskModEntryDefinition {
     /// Unique internal identifier for the mod (e.g., "sodium"). Should be consistent across packs.
@@ -88,16 +88,16 @@ pub struct NoriskModEntryDefinition {
     #[serde(rename = "displayName")]
     pub display_name: Option<String>,
     /// Defines the general source type and information needed to locate the mod.
-    pub source: NoriskModSourceDefinition,
+    pub source: GEGModSourceDefinition,
     /// Defines which specific version of the mod to use based on Minecraft version and loader.
     /// The value format depends on the `source.type`.
     pub compatibility: CompatibilityMap,
 }
 
-/// Defines the general source of a Norisk mod.
+/// Defines the general source of a GEG mod.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(tag = "type", rename_all = "lowercase")]
-pub enum NoriskModSourceDefinition {
+pub enum GEGModSourceDefinition {
     Modrinth {
         /// The stable, unique, often alphanumeric Modrinth project ID (e.g., "AANobbMI"). Used for API calls and matching.
         #[serde(rename = "projectId")]
@@ -130,7 +130,7 @@ pub struct CompatibilityTarget {
     /// Optional: Complete source definition to override the default source for this specific version.
     /// This allows specifying different source types and parameters per version/loader combination.
     #[serde(rename = "source", default)]
-    pub source: Option<NoriskModSourceDefinition>,
+    pub source: Option<GEGModSourceDefinition>,
 }
 
 /// Type alias for the compatibility map: McVersion -> Loader -> CompatibilityTarget
@@ -169,11 +169,11 @@ pub struct LoaderSpec {
     pub strategy: Option<LoaderStrategy>,
 }
 
-/// Helper function to determine the definitive filename for a mod defined within a Norisk Pack.
+/// Helper function to determine the definitive filename for a mod defined within a GEG Pack.
 /// Prioritizes the filename specified in the compatibility target, otherwise derives it for known types.
 /// Returns an error if the filename cannot be determined (e.g., missing in target for URL mods).
-pub fn get_norisk_pack_mod_filename(
-    source: &NoriskModSourceDefinition,
+pub fn get_GEG_pack_mod_filename(
+    source: &GEGModSourceDefinition,
     target: &CompatibilityTarget,
     mod_id_for_log: &str, // For better error messages
 ) -> crate::error::Result<String> {
@@ -183,13 +183,13 @@ pub fn get_norisk_pack_mod_filename(
         None => {
             // Derive filename if not provided
             match source {
-                NoriskModSourceDefinition::Modrinth { project_slug, .. } => {
+                GEGModSourceDefinition::Modrinth { project_slug, .. } => {
                     Ok(format!("{}-{}.jar", project_slug, target.identifier))
                 }
-                NoriskModSourceDefinition::Maven { artifact_id, .. } => {
+                GEGModSourceDefinition::Maven { artifact_id, .. } => {
                     Ok(format!("{}-{}.jar", artifact_id, target.identifier))
                 }
-                NoriskModSourceDefinition::Url { .. } => {
+                GEGModSourceDefinition::Url { .. } => {
                     // Require filename for URL mods in pack definition
                     Err(crate::error::AppError::Other(format!(
                         "Filename missing in pack definition compatibility target for URL mod '{}'",
@@ -201,15 +201,15 @@ pub fn get_norisk_pack_mod_filename(
     }
 }
 
-/// Imports a profile from a .noriskpack file.
+/// Imports a profile from a .GEGpack file.
 /// This function reads profile.json, creates a new profile, and extracts overrides concurrently.
-pub async fn import_noriskpack_as_profile(pack_path: PathBuf) -> Result<Uuid> {
-    info!("Starting import process for noriskpack: {:?}", pack_path);
+pub async fn import_GEGpack_as_profile(pack_path: PathBuf) -> Result<Uuid> {
+    info!("Starting import process for GEGpack: {:?}", pack_path);
 
     // 1. Open the file and create a reader for profile.json initially
     let profile_json_file = File::open(&pack_path).await.map_err(|e| {
         error!(
-            "Failed to open noriskpack file for profile.json {:?}: {}",
+            "Failed to open GEGpack file for profile.json {:?}: {}",
             pack_path, e
         );
         AppError::Io(e)
@@ -220,9 +220,9 @@ pub async fn import_noriskpack_as_profile(pack_path: PathBuf) -> Result<Uuid> {
     let mut zip_for_profile_json = ZipFileReader::with_tokio(&mut profile_json_buf_reader)
         .await
         .map_err(|e| {
-            error!("Failed to read noriskpack as ZIP for profile.json: {}", e);
+            error!("Failed to read GEGpack as ZIP for profile.json: {}", e);
             AppError::Other(format!(
-                "Failed to read noriskpack zip for profile.json: {}",
+                "Failed to read GEGpack zip for profile.json: {}",
                 e
             ))
         })?;
@@ -276,7 +276,7 @@ pub async fn import_noriskpack_as_profile(pack_path: PathBuf) -> Result<Uuid> {
 
     // 5. Use the filename as the profile name if available
     if let Some(file_name) = pack_path.file_stem().and_then(|s| s.to_str()) {
-        info!("Using noriskpack filename as profile name: {}", file_name);
+        info!("Using GEGpack filename as profile name: {}", file_name);
         exported_profile.name = file_name.to_string();
     }
 
@@ -289,7 +289,7 @@ pub async fn import_noriskpack_as_profile(pack_path: PathBuf) -> Result<Uuid> {
     let base_profiles_dir = crate::state::profile_state::default_profile_path();
     let sanitized_base_name = sanitize(&exported_profile.name);
     let final_profile_name = if sanitized_base_name.is_empty() {
-        let default_name = format!("imported-noriskpack-{}", Utc::now().timestamp_millis());
+        let default_name = format!("imported-GEGpack-{}", Utc::now().timestamp_millis());
         warn!(
             "Profile name '{}' became empty after sanitization. Using default: {}",
             exported_profile.name, default_name
@@ -338,7 +338,7 @@ pub async fn import_noriskpack_as_profile(pack_path: PathBuf) -> Result<Uuid> {
     // Open the zip file again for listing entries for override extraction
     let overrides_file_for_listing = File::open(&pack_path).await.map_err(|e| {
         error!(
-            "Failed to open noriskpack file for overrides listing {:?}: {}",
+            "Failed to open GEGpack file for overrides listing {:?}: {}",
             pack_path, e
         );
         AppError::Io(e)
@@ -348,18 +348,18 @@ pub async fn import_noriskpack_as_profile(pack_path: PathBuf) -> Result<Uuid> {
         .await
         .map_err(|e| {
         error!(
-            "Failed to read noriskpack as ZIP for overrides listing: {}",
+            "Failed to read GEGpack as ZIP for overrides listing: {}",
             e
         );
         AppError::Other(format!(
-            "Failed to read noriskpack zip for overrides: {}",
+            "Failed to read GEGpack zip for overrides: {}",
             e
         ))
     })?;
 
     let num_entries = zip_lister_for_overrides.file().entries().len();
     info!(
-        "Found {} entries in noriskpack. Preparing concurrent streaming for overrides...",
+        "Found {} entries in GEGpack. Preparing concurrent streaming for overrides...",
         num_entries
     );
 
@@ -397,7 +397,7 @@ pub async fn import_noriskpack_as_profile(pack_path: PathBuf) -> Result<Uuid> {
             entry_uncompressed_size = entry.uncompressed_size();
         }
 
-        // Only process the "overrides/" directory for .noriskpack files
+        // Only process the "overrides/" directory for .GEGpack files
         if entry_filename_str.starts_with("overrides/") {
             let path_after_strip_str = match entry_filename_str.strip_prefix("overrides/") {
                 Some(p_str) if !p_str.is_empty() => p_str,
@@ -417,7 +417,7 @@ pub async fn import_noriskpack_as_profile(pack_path: PathBuf) -> Result<Uuid> {
                         }
                     }
                     std::path::Component::ParentDir => {
-                        warn!("Parent directory component '..' found and removed in noriskpack override path: {}", path_after_strip_str);
+                        warn!("Parent directory component '..' found and removed in GEGpack override path: {}", path_after_strip_str);
                         None 
                     }
                     std::path::Component::CurDir => None,
@@ -429,7 +429,7 @@ pub async fn import_noriskpack_as_profile(pack_path: PathBuf) -> Result<Uuid> {
             // If sanitization results in an empty path (e.g., path was only ".." or similar), skip it.
             if sanitized_relative_path_buf.as_os_str().is_empty() {
                 warn!(
-                    "Skipping empty sanitized relative path for noriskpack override entry: {} (original relative: {})",
+                    "Skipping empty sanitized relative path for GEGpack override entry: {} (original relative: {})",
                     entry_filename_str, path_after_strip_str
                 );
                 continue;
@@ -587,11 +587,11 @@ pub async fn import_noriskpack_as_profile(pack_path: PathBuf) -> Result<Uuid> {
         );
         let results = try_join_all(extraction_tasks).await.map_err(|e| {
             error!(
-                "Error joining override extraction tasks for noriskpack: {}",
+                "Error joining override extraction tasks for GEGpack: {}",
                 e
             );
             AppError::Other(format!(
-                "Noriskpack override extraction tasks panicked: {}",
+                "GEGpack override extraction tasks panicked: {}",
                 e
             ))
         })?;
@@ -599,9 +599,9 @@ pub async fn import_noriskpack_as_profile(pack_path: PathBuf) -> Result<Uuid> {
         for result in results {
             result?;
         }
-        info!("Successfully extracted all queued overrides for noriskpack.");
+        info!("Successfully extracted all queued overrides for GEGpack.");
     } else {
-        info!("No override files found or queued for extraction in noriskpack.");
+        info!("No override files found or queued for extraction in GEGpack.");
     }
 
     // 9. Save the profile using ProfileManager
@@ -618,13 +618,13 @@ pub async fn import_noriskpack_as_profile(pack_path: PathBuf) -> Result<Uuid> {
     Ok(profile_id)
 }
 
-/// Handles the opening of a .noriskpack file, either on app startup or second instance.
+/// Handles the opening of a .GEGpack file, either on app startup or second instance.
 /// It will call the `import_profile` command if a valid file path is found in the arguments.
-pub async fn handle_noriskpack_file_paths<R: tauri::Runtime>(
+pub async fn handle_GEGpack_file_paths<R: tauri::Runtime>(
     app_handle: &tauri::AppHandle<R>,
     args: Vec<String>, // Changed from Vec<PathBuf>
 ) {
-    let mut noriskpack_to_import: Option<PathBuf> = None;
+    let mut GEGpack_to_import: Option<PathBuf> = None;
 
     // Iterate over string arguments. Skip the first one if these are direct command line args.
     // For single-instance plugin, all args might be relevant, but filtering by extension handles it.
@@ -649,16 +649,16 @@ pub async fn handle_noriskpack_file_paths<R: tauri::Runtime>(
         };
 
         if let Some(path) = path_candidate {
-            if path.is_file() && path.extension().and_then(|ext| ext.to_str()) == Some("noriskpack")
+            if path.is_file() && path.extension().and_then(|ext| ext.to_str()) == Some("GEGpack")
             {
-                info!("Found .noriskpack file to process: {}", path.display());
-                noriskpack_to_import = Some(path);
-                break; // Handle the first .noriskpack file found
+                info!("Found .GEGpack file to process: {}", path.display());
+                GEGpack_to_import = Some(path);
+                break; // Handle the first .GEGpack file found
             }
         }
     }
 
-    if let Some(file_path_to_import) = noriskpack_to_import {
+    if let Some(file_path_to_import) = GEGpack_to_import {
         if let Some(file_path_str) = file_path_to_import.to_str() {
             info!("Attempting to import profile from path: {}", file_path_str);
             let import_app_handle = app_handle.clone();
@@ -691,7 +691,7 @@ pub async fn handle_noriskpack_file_paths<R: tauri::Runtime>(
                         // Optionally, send an event to the frontend to show an error toast/dialog
                         if let Some(window) = import_app_handle.get_webview_window("main") {
                             let error_message = format!(
-                                "Failed to import noriskpack ({}): {:?}",
+                                "Failed to import GEGpack ({}): {:?}",
                                 file_path_to_import.display(),
                                 e
                             );
@@ -708,16 +708,16 @@ pub async fn handle_noriskpack_file_paths<R: tauri::Runtime>(
             });
         } else {
             error!(
-                "Failed to convert .noriskpack path to string: {}",
+                "Failed to convert .GEGpack path to string: {}",
                 file_path_to_import.display()
             );
         }
     } else {
-        info!("No .noriskpack file found in the provided paths.");
+        info!("No .GEGpack file found in the provided paths.");
     }
 }
 
-impl NoriskModpacksConfig {
+impl GEGModpacksConfig {
     pub fn resolve_pack_mods(
         &self,
         pack_id: &str,
@@ -868,7 +868,7 @@ impl NoriskModpacksConfig {
 
     // Helper function to get a fully resolved pack definition (including mods)
     // This combines the base definition with the resolved mods.
-    pub fn get_resolved_pack_definition(&self, pack_id: &str) -> Result<NoriskPackDefinition> {
+    pub fn get_resolved_pack_definition(&self, pack_id: &str) -> Result<GEGPackDefinition> {
         let base_definition = self.packs.get(pack_id).ok_or_else(|| {
             error!("Pack ID '{}' not found in configuration.", pack_id);
             AppError::Other(format!("Pack ID '{}' not found", pack_id))
@@ -881,7 +881,7 @@ impl NoriskModpacksConfig {
         let resolved_loader_policy =
             self.resolve_loader_policy_for_pack(pack_id, &mut visited_lp)?;
 
-        Ok(NoriskPackDefinition {
+        Ok(GEGPackDefinition {
             display_name: base_definition.display_name.clone(),
             description: base_definition.description.clone(),
             inherits_from: base_definition.inherits_from.clone(), // Keep original inheritance info
@@ -944,15 +944,15 @@ impl NoriskModpacksConfig {
     }
 }
 
-/// Copies a dummy/test `test_norisk_modpacks.json` from the project's source directory
+/// Copies a dummy/test `test_GEG_modpacks.json` from the project's source directory
 /// (assuming a development environment structure) to the launcher's root directory
-/// as `norisk_modpacks.json` if it doesn't already exist.
+/// as `GEG_modpacks.json` if it doesn't already exist.
 ///
 /// Note: This path resolution using CARGO_MANIFEST_DIR might not work correctly
 /// in a packaged production build. Consider using Tauri's resource resolver for that.
 pub async fn load_dummy_modpacks() -> Result<()> {
     let target_dir = LAUNCHER_DIRECTORY.root_dir();
-    let target_file = target_dir.join("norisk_modpacks.json");
+    let target_file = target_dir.join("GEG_modpacks.json");
 
     // Only copy if the target file doesn't exist
     if target_file.exists() {
@@ -968,7 +968,7 @@ pub async fn load_dummy_modpacks() -> Result<()> {
     })?;
 
     // Use the test file as the source
-    let source_path = project_root.join("minecraft-data/nrc/norisk_modpacks.json");
+    let source_path = project_root.join("minecraft-data/nrc/GEG_modpacks.json");
     // --- End path resolution ---
 
     if source_path.exists() {

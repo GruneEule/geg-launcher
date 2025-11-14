@@ -1,5 +1,3 @@
-import flagsmith from 'flagsmith';
-import { invoke } from '@tauri-apps/api/core';
 import { log } from '../utils/logging-utils';
 
 /**
@@ -13,36 +11,27 @@ export interface BlockedModsConfig {
   description: string;
 }
 
-// Initialize flagsmith with the same configuration as in App.tsx
-const FLAGSMITH_ENVIRONMENT_ID = "eNSibjDaDW2nNJQvJnjj9y";
+/**
+ * STUB IMPLEMENTATION: Flagsmith has been disabled for the GEG Launcher.
+ * This returns an empty configuration (no mods are blocked).
+ */
 
-let flagsmithInitialized = false;
 let cachedBlockedModsConfig: BlockedModsConfig | null = null;
 let configFetchPromise: Promise<BlockedModsConfig> | null = null;
 
-const initializeFlagsmith = async () => {
-  try {
-    log('info', 'Initializing Flagsmith service...');
-    await flagsmith.init({
-      environmentID: FLAGSMITH_ENVIRONMENT_ID,
-      api: 'https://flagsmith-staging.norisk.gg/api/v1/',
-    });
-    flagsmithInitialized = true;
-    log('info', 'Flagsmith service initialized successfully');
-  } catch (error) {
-    log('error', `Failed to initialize Flagsmith service: ${error}`);
-    throw error;
-  }
-};
-
-// Initialize flagsmith when the module is loaded
-const initPromise = initializeFlagsmith();
+const getDefaultConfig = (): BlockedModsConfig => ({
+  exact_filenames: [],
+  filename_patterns: [],
+  mod_ids: [],
+  modrinth_project_ids: [],
+  description: 'Feature flags disabled - no mods blocked',
+});
 
 /**
- * Fetches the blocked mods configuration from Flagsmith.
+ * Fetches the blocked mods configuration.
+ * Stub implementation returns empty config (no blocked mods).
  *
  * @returns A promise that resolves to the BlockedModsConfig object.
- * @throws If the flag is not available or parsing fails.
  */
 export const getBlockedModsConfig = async (): Promise<BlockedModsConfig> => {
   if (cachedBlockedModsConfig) {
@@ -55,93 +44,83 @@ export const getBlockedModsConfig = async (): Promise<BlockedModsConfig> => {
 
   configFetchPromise = (async () => {
     try {
-      // Wait for initialization if not done yet
-      if (!flagsmithInitialized) {
-        log('info', 'Waiting for Flagsmith initialization...');
-        await initPromise;
-      }
-
-      log('debug', 'Attempting to get blocked_mods_config flag...');
-      const flagValue = flagsmith.getValue('blocked_mods_config');
-      
-      log('debug', `Raw flag value: ${flagValue}`);
-      
-      if (!flagValue) {
-        // Log all available flags for debugging
-        const allFlags = flagsmith.getAllFlags();
-        log('debug', `Available flags: ${JSON.stringify(allFlags)}`);
-        throw new Error('blocked_mods_config flag not found');
-      }
-
-      // Parse the JSON value
-      const config: BlockedModsConfig = JSON.parse(flagValue as string);
-      log('info', `Parsed blocked mods config: ${JSON.stringify(config)}`);
-      
+      log('info', 'Fetching blocked mods configuration (stub implementation)...');
+      const config = getDefaultConfig();
       cachedBlockedModsConfig = config;
-
-      // Send the config to Rust backend for caching
-      try {
-        await invoke('set_blocked_mods_config', { config });
-        log('info', 'Successfully sent blocked mods config to Rust backend');
-      } catch (error) {
-        log('error', `Failed to send blocked mods config to Rust backend: ${error}`);
-        // Don't throw here - the config is still valid for frontend use
-      }
-      
+      log('info', 'Blocked mods configuration loaded (empty - no mods blocked)');
       return config;
     } catch (error) {
-      log('error', `Failed to fetch blocked mods config from Flagsmith: ${error}`);
-      configFetchPromise = null; // Allow retries
-      throw error;
+      log('error', `Failed to fetch blocked mods configuration: ${error}`);
+      // Return empty config on error
+      return getDefaultConfig();
+    } finally {
+      configFetchPromise = null;
     }
   })();
-  
+
   return configFetchPromise;
 };
 
 /**
- * Checks if a mod is blocked by the NoRisk client configuration based on the cached config.
- * Assumes getBlockedModsConfig() has been called at least once.
+ * Refreshes the cached blocked mods configuration.
+ * Stub implementation - does nothing.
+ */
+export const refreshBlockedModsConfig = async (): Promise<void> => {
+  log('info', 'Refreshing blocked mods configuration (stub)...');
+  cachedBlockedModsConfig = null;
+  configFetchPromise = null;
+  // Re-fetch the config
+  await getBlockedModsConfig();
+};
+
+/**
+ * Checks if a specific filename is blocked.
+ * Stub implementation - always returns false.
+ *
+ * @param filename - The filename to check
+ * @returns False (no files are blocked)
+ */
+export const isFilenameBlocked = async (filename: string): Promise<boolean> => {
+  // Stub: no filenames are blocked
+  return false;
+};
+
+/**
+ * Checks if a specific mod ID is blocked.
+ * Stub implementation - always returns false.
+ *
+ * @param modId - The mod ID to check
+ * @returns False (no mods are blocked)
+ */
+export const isModIdBlocked = async (modId: string): Promise<boolean> => {
+  // Stub: no mod IDs are blocked
+  return false;
+};
+
+/**
+ * Checks if a specific Modrinth project ID is blocked.
+ * Stub implementation - always returns false.
+ *
+ * @param modrinthProjectId - The Modrinth project ID to check
+ * @returns False (no projects are blocked)
+ */
+export const isModrinthProjectIdBlocked = async (modrinthProjectId: string): Promise<boolean> => {
+  // Stub: no project IDs are blocked
+  return false;
+};
+
+/**
+ * Checks if a mod is blocked by the GEG client configuration.
+ * Stub implementation - always returns false (no mods blocked).
  *
  * @param filename The filename of the mod.
  * @param modrinthProjectId The Modrinth project ID, if available.
- * @returns `true` if the mod is blocked, otherwise `false`.
+ * @returns `false` (no mods are blocked)
  */
-export const isModBlockedByNoRisk = (
+export const isModBlockedByGEG = (
   filename: string,
   modrinthProjectId?: string | null,
 ): boolean => {
-  if (!cachedBlockedModsConfig) {
-    // Silently return false if config is not loaded. The UI should trigger the load.
-    return false;
-  }
-
-  const config = cachedBlockedModsConfig;
-
-  // 1. Check exact filename match
-  if (config.exact_filenames?.includes(filename)) {
-    return true;
-  }
-
-  // 2. Check Modrinth project ID
-  if (modrinthProjectId && config.modrinth_project_ids?.includes(modrinthProjectId)) {
-    return true;
-  }
-
-  // 3. Check filename patterns (they are full regex)
-  if (config.filename_patterns) {
-    for (const pattern of config.filename_patterns) {
-      try {
-        // The pattern from Flagsmith is already a complete regex.
-        const regex = new RegExp(pattern);
-        if (regex.test(filename)) {
-          return true;
-        }
-      } catch (e) {
-        log('error', `Invalid regex pattern in blocked_mods_config: ${pattern}`);
-      }
-    }
-  }
-
+  // Stub: no mods are blocked
   return false;
-}; 
+};

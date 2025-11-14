@@ -28,10 +28,10 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::config::{ProjectDirsExt, HTTP_CLIENT, LAUNCHER_DIRECTORY};
-use crate::minecraft::api::NoRiskApi;
+use crate::minecraft::api::NoriskApi;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct NoRiskTokenClaims {
+pub struct GEGTokenClaims {
     exp: usize,
     username: String,
 }
@@ -43,23 +43,23 @@ pub struct Credentials {
     pub access_token: String,
     pub refresh_token: String,
     pub expires: DateTime<Utc>,
-    pub norisk_credentials: NoRiskCredentials,
+    pub GEG_credentials: GEGCredentials,
     pub active: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct NoRiskCredentials {
-    pub production: Option<NoRiskToken>,
-    pub experimental: Option<NoRiskToken>,
+pub struct GEGCredentials {
+    pub production: Option<GEGToken>,
+    pub experimental: Option<GEGToken>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct NoRiskToken {
+pub struct GEGToken {
     pub value: String,
     //TODO habs nichts hinbekommen jetzt erstmal bei jedem restart, pub expires: DateTime<Utc>,
 }
 
-impl NoRiskCredentials {
+impl GEGCredentials {
     pub async fn get_token(&self) -> Result<String> {
         Ok(self
             .production
@@ -69,7 +69,7 @@ impl NoRiskCredentials {
             .clone())
     }
 
-    /// Gets the appropriate NoRisk token based on the experimental mode setting.
+    /// Gets the appropriate GEG token based on the experimental mode setting.
     ///
     /// # Arguments
     /// * `is_experimental` - Whether to retrieve the experimental token.
@@ -88,7 +88,7 @@ impl NoRiskCredentials {
             .map(|token| token.value.clone())
             .ok_or_else(|| {
                 error!(
-                    "No NoRisk token found for {} mode.",
+                    "No GEG token found for {} mode.",
                     if is_experimental {
                         "experimental"
                     } else {
@@ -488,9 +488,9 @@ impl MinecraftAuthStore {
             access_token: minecraft_token.access_token,
             refresh_token: oauth_token.value.refresh_token,
             expires: oauth_token.date + Duration::seconds(oauth_token.value.expires_in as i64),
-            norisk_credentials: match existing_account {
-                Some(account) => account.norisk_credentials.clone(),
-                None => NoRiskCredentials {
+            GEG_credentials: match existing_account {
+                Some(account) => account.GEG_credentials.clone(),
+                None => GEGCredentials {
                     production: None,
                     experimental: None,
                 },
@@ -507,14 +507,14 @@ impl MinecraftAuthStore {
         Ok(credentials)
     }
 
-    pub(crate) async fn refresh_norisk_token_if_necessary(
+    pub(crate) async fn refresh_GEG_token_if_necessary(
         &self,
         creds: &Credentials,
         force_update: bool,
         experimental_mode: bool,
     ) -> Result<Credentials> {
         info!(
-            "[Token Refresh] Starting NoRisk token refresh check for user: {}",
+            "[Token Refresh] Starting GEG token refresh check for user: {}",
             creds.username
         );
         let mut maybe_update = false;
@@ -522,16 +522,16 @@ impl MinecraftAuthStore {
         if !force_update {
             // Choose token based on experimental mode
             let token_ref = if experimental_mode {
-                &creds.norisk_credentials.experimental
+                &creds.GEG_credentials.experimental
             } else {
-                &creds.norisk_credentials.production
+                &creds.GEG_credentials.production
             };
 
             if let Some(token) = token_ref {
                 let key = DecodingKey::from_secret(&[]);
                 let mut validation = Validation::new(Algorithm::HS256);
                 validation.insecure_disable_signature_validation();
-                match decode::<NoRiskTokenClaims>(&token.value, &key, &validation) {
+                match decode::<GEGTokenClaims>(&token.value, &key, &validation) {
                     Ok(data) => {
                         info!(
                             "[Token Refresh] Token expiration check - Expires at: {}",
@@ -567,7 +567,7 @@ impl MinecraftAuthStore {
             // Create deterministic hash by combining salt with HWID
             use sha2::{Sha256, Digest};
             let mut hasher = Sha256::new();
-            hasher.update(b"norisk-device-salt");
+            hasher.update(b"GEG-device-salt");
             hasher.update(&hwid);
             let system_id = format!("{:x}", hasher.finalize());
 
@@ -576,12 +576,12 @@ impl MinecraftAuthStore {
                 force_update, maybe_update, system_id
             );
 
-            // Use NoRiskApi for token refresh with proper error handling
-            info!("[NoRisk Token] Starting token refresh using NoRiskApi");
+            // Use NoriskApi for token refresh with proper error handling
+            info!("[GEG Token] Starting token refresh using NoriskApi");
 
             // Use the experimental_mode parameter instead of hardcoded value
             info!(
-                "[NoRisk Token] Mode: {}",
+                "[GEG Token] Mode: {}",
                 if experimental_mode {
                     "Experimental"
                 } else {
@@ -589,7 +589,7 @@ impl MinecraftAuthStore {
                 }
             );
 
-            match NoRiskApi::refresh_norisk_token_v3(
+            match NoriskApi::refresh_GEG_token_v3(
                 &system_id,
                 &creds.username,
                 &creds.access_token,
@@ -599,28 +599,28 @@ impl MinecraftAuthStore {
             )
             .await
             {
-                Ok(norisk_token) => {
-                    info!("[NoRisk Token] Successfully refreshed token");
+                Ok(GEG_token) => {
+                    info!("[GEG Token] Successfully refreshed token");
                     let mut copied_credentials = creds.clone();
 
                     if experimental_mode {
-                        info!("[NoRisk Token] Storing token in experimental credentials");
-                        copied_credentials.norisk_credentials.experimental = Some(norisk_token);
+                        info!("[GEG Token] Storing token in experimental credentials");
+                        copied_credentials.GEG_credentials.experimental = Some(GEG_token);
                     } else {
-                        info!("[NoRisk Token] Storing token in production credentials");
-                        copied_credentials.norisk_credentials.production = Some(norisk_token);
+                        info!("[GEG Token] Storing token in production credentials");
+                        copied_credentials.GEG_credentials.production = Some(GEG_token);
                     }
 
                     // Update the account in storage
-                    info!("[NoRisk Token] Updating account in storage");
+                    info!("[GEG Token] Updating account in storage");
                     self.update_or_insert(copied_credentials.clone()).await?;
 
                     info!("[Token Refresh] Token refresh completed successfully");
                     Ok(copied_credentials)
                 }
                 Err(e) => {
-                    info!("[NoRisk Token] Token refresh failed: {:?}", e);
-                    info!("[NoRisk Token] Falling back to original credentials");
+                    info!("[GEG Token] Token refresh failed: {:?}", e);
+                    info!("[GEG Token] Falling back to original credentials");
                     // Return the original credentials if token refresh fails
                     Ok(creds.clone())
                 }
@@ -676,7 +676,7 @@ impl MinecraftAuthStore {
             access_token: minecraft_token.access_token,
             refresh_token: oauth_token.value.refresh_token,
             expires: oauth_token.date + Duration::seconds(oauth_token.value.expires_in as i64),
-            norisk_credentials: creds.clone().norisk_credentials,
+            GEG_credentials: creds.clone().GEG_credentials,
             active: creds.clone().active,
         };
 
@@ -720,7 +720,7 @@ impl MinecraftAuthStore {
         Ok(())
     }
 
-    pub async fn update_norisk_and_microsoft_token(
+    pub async fn update_GEG_and_microsoft_token(
         &self,
         creds: &Credentials,
         experimental_mode: bool,
@@ -745,7 +745,7 @@ impl MinecraftAuthStore {
                     return if val.is_some() {
                         info!("[Token Check] Successfully refreshed Microsoft token");
                         Ok(Some(
-                            self.refresh_norisk_token_if_necessary(
+                            self.refresh_GEG_token_if_necessary(
                                 &val.unwrap().clone(),
                                 false,
                                 experimental_mode,
@@ -773,9 +773,9 @@ impl MinecraftAuthStore {
             }
         } else {
             info!("[Token Check] Microsoft token is still valid");
-            info!("[Token Check] Checking NoRisk token status");
+            info!("[Token Check] Checking GEG token status");
             Ok(Some(
-                self.refresh_norisk_token_if_necessary(&creds.clone(), false, experimental_mode)
+                self.refresh_GEG_token_if_necessary(&creds.clone(), false, experimental_mode)
                     .await?,
             ))
         }
@@ -812,7 +812,7 @@ impl MinecraftAuthStore {
             );
             // Refresh credentials if needed
             let updated_account = self
-                .update_norisk_and_microsoft_token(&account, is_experimental)
+                .update_GEG_and_microsoft_token(&account, is_experimental)
                 .await?;
 
             if let Some(updated) = updated_account {

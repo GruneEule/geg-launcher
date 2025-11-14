@@ -94,7 +94,7 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
               <div className="min-h-[3rem] flex flex-col justify-center">
                 <div className="flex items-baseline gap-2">
                   <h4 className="text-2xl font-minecraft text-white lowercase tracking-wider">
-                    NoRisk
+                    GEG
                   </h4>
                 </div>
               </div>
@@ -111,7 +111,7 @@ export function CreditsModal({ isOpen, onClose }: CreditsModalProps) {
             <Button
               variant="ghost"
               className="flex items-center gap-2 px-6 py-3 border border-[#ffffff20] hover:bg-white/5 transition-colors"
-              onClick={() => handleOpenUrl("https://blog.norisk.gg/open-source-licenses/")}
+              onClick={() => handleOpenUrl("https://blog.GEG.gg/open-source-licenses/")}
             >
               <Icon icon="solar:external-link-bold" className="w-5 h-5" />
               <span className="font-minecraft text-lg lowercase">View Licenses</span>

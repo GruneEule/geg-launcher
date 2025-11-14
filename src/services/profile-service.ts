@@ -23,7 +23,7 @@ import type {
   ResourcePackInfo,
   ShaderPackInfo,
 } from "../types/modrinth";
-import { NoriskVersionsConfig } from "../types/noriskVersions";
+import { GEGVersionsConfig } from "../types/GEGVersions";
 import { FileNode } from "../types/fileSystem";
 
 export async function listProfiles(): Promise<Profile[]> {
@@ -207,7 +207,7 @@ export async function getProfileDirectoryStructure(
   return invoke<FileNode>("get_profile_directory_structure", { profileId });
 }
 
-export async function setNoriskModStatus(
+export async function setGEGModStatus(
   profileId: string,
   packId: string,
   modId: string,
@@ -215,7 +215,7 @@ export async function setNoriskModStatus(
   loader: string,
   disabled: boolean,
 ): Promise<void> {
-  return invoke<void>("set_norisk_mod_status", {
+  return invoke<void>("set_GEG_mod_status", {
     profileId,
     packId,
     modId,
@@ -297,20 +297,20 @@ export async function batchCheckContentInstalled(
   return invoke<BatchContentInstallStatus>("batch_check_content_installed", { params });
 }
 
-export async function getNoriskPacks(): Promise<any> {
-  return invoke<any>("get_norisk_packs");
+export async function getGEGPacks(): Promise<any> {
+  return invoke<any>("get_GEG_packs");
 }
 
-export async function getNoriskPacksResolved(): Promise<any> {
-  return invoke<any>("get_norisk_packs_resolved");
+export async function getGEGPacksResolved(): Promise<any> {
+  return invoke<any>("get_GEG_packs_resolved");
 }
 
-export async function getStandardProfiles(): Promise<NoriskVersionsConfig> {
-  return invoke<NoriskVersionsConfig>("get_standard_profiles");
+export async function getStandardProfiles(): Promise<GEGVersionsConfig> {
+  return invoke<GEGVersionsConfig>("get_standard_profiles");
 }
 
-export async function refreshNoriskPacks(): Promise<void> {
-  return invoke<void>("refresh_norisk_packs");
+export async function refreshGEGPacks(): Promise<void> {
+  return invoke<void>("refresh_GEG_packs");
 }
 
 export async function refreshStandardVersions(): Promise<void> {

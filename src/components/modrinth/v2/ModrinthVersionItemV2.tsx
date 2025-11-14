@@ -178,7 +178,7 @@ export const ModrinthVersionItemV2 = React.memo<ModrinthVersionItemV2Props>(
     };
 
     const handleToggleEnableButtonClick = () => {
-      if (versionStatus?.norisk_pack_item_details?.norisk_mod_identifier) {
+      if (versionStatus?.GEG_pack_item_details?.GEG_mod_identifier) {
         if (onToggleEnableClick && !isModpack && selectedProfileId) {
           onToggleEnableClick(
             selectedProfileId,
@@ -236,7 +236,7 @@ export const ModrinthVersionItemV2 = React.memo<ModrinthVersionItemV2Props>(
       buttonVariant = "secondary";
       buttonDisabled = true;
     } else if (versionStatus && versionStatus.is_installed) {
-      if (versionStatus?.is_included_in_norisk_pack && !isModpack) {
+      if (versionStatus?.is_included_in_GEG_pack && !isModpack) {
         buttonText = "In Pack";
         buttonVariant = "secondary";
         buttonDisabled = true;
@@ -252,7 +252,7 @@ export const ModrinthVersionItemV2 = React.memo<ModrinthVersionItemV2Props>(
     const showInstallBorder =
       selectedProfileId &&
       (versionStatus?.is_installed ||
-        versionStatus?.is_included_in_norisk_pack);
+        versionStatus?.is_included_in_GEG_pack);
 
     return (
       <div
@@ -268,7 +268,7 @@ export const ModrinthVersionItemV2 = React.memo<ModrinthVersionItemV2Props>(
             "border-l-green-500 border-l-4",
           showInstallBorder &&
             !versionStatus?.is_installed &&
-            versionStatus?.is_included_in_norisk_pack &&
+            versionStatus?.is_included_in_GEG_pack &&
             "border-l-blue-500 border-l-4",
         )}
         style={{
@@ -331,7 +331,7 @@ export const ModrinthVersionItemV2 = React.memo<ModrinthVersionItemV2Props>(
                     </TagBadge>
                   )}
                 {selectedProfileId &&
-                  versionStatus?.is_included_in_norisk_pack && (
+                  versionStatus?.is_included_in_GEG_pack && (
                     <TagBadge
                       variant={versionStatus?.is_enabled ? "info" : "inactive"}
                       className="flex-shrink-0"
@@ -340,7 +340,7 @@ export const ModrinthVersionItemV2 = React.memo<ModrinthVersionItemV2Props>(
                         icon="solar:bolt-circle-bold"
                         className="w-3 h-3 mr-0.5"
                       />
-                      In NoRisk Pack
+                      In GEG Pack
                     </TagBadge>
                   )}
                 <TagBadge className="flex-shrink-0">
@@ -372,8 +372,8 @@ export const ModrinthVersionItemV2 = React.memo<ModrinthVersionItemV2Props>(
                     !isModpack &&
                     typeof versionStatus.is_enabled === "boolean" &&
                     onToggleEnableClick) ||
-                    (versionStatus?.is_included_in_norisk_pack &&
-                      versionStatus?.norisk_pack_item_details &&
+                    (versionStatus?.is_included_in_GEG_pack &&
+                      versionStatus?.GEG_pack_item_details &&
                       onToggleEnableClick)) && (
                     <ActionButton
                       onClick={handleToggleEnableButtonClick}

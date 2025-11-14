@@ -58,7 +58,7 @@ pub struct ProcessMetadata {
     pub minecraft_version: Option<String>,
     pub modloader: Option<String>,
     pub modloader_version: Option<String>,
-    pub norisk_pack: Option<String>,
+    pub GEG_pack: Option<String>,
     pub profile_name: Option<String>,
     pub post_exit_hook: Option<String>,
 }
@@ -518,7 +518,7 @@ impl ProcessManager {
         minecraft_version: Option<String>,
         modloader: Option<String>,
         modloader_version: Option<String>,
-        norisk_pack: Option<String>,
+        GEG_pack: Option<String>,
         profile_name: Option<String>,
         post_exit_hook: Option<String>,
     ) -> Result<Uuid> {
@@ -568,7 +568,7 @@ impl ProcessManager {
             minecraft_version,
             modloader,
             modloader_version,
-            norisk_pack,
+            GEG_pack,
             profile_name: profile_name.clone(),
             post_exit_hook,
         };

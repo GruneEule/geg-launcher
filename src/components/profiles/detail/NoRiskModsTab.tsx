@@ -13,19 +13,19 @@ import { ToggleSwitch } from "../../ui/ToggleSwitch";
 import { Checkbox } from "../../ui/Checkbox";
 import { Button } from "../../ui/buttons/Button";
 import {
-  getNoriskPacks,
-  getNoriskPacksResolved,
-  refreshNoriskPacks,
+  getGEGPacks,
+  getGEGPacksResolved,
+  refreshGEGPacks,
 } from "../../../services/profile-service";
 import type { Profile } from "../../../types/profile";
-import type { NoriskModpacksConfig } from "../../../types/noriskPacks";
+import type { GEGModpacksConfig } from "../../../types/GEGPacks";
 import { useThemeStore } from "../../../store/useThemeStore";
 import { Logo } from "../../ui/Logo";
 import { Label } from "../../ui/Label";
 import { gsap } from "gsap";
 import { ErrorMessage } from "../../ui/ErrorMessage";
 
-interface NoRiskMod {
+interface GEGMod {
   id: string;
   display_name: string;
   description?: string;
@@ -35,28 +35,28 @@ interface NoRiskMod {
   path?: string;
 }
 
-interface NoRiskModsTabProps {
+interface GEGModsTabProps {
   profile: Profile;
   onRefresh?: () => void;
   isActive?: boolean;
   searchQuery?: string;
 }
 
-export function NoRiskModsTab({
+export function GEGModsTab({
   profile,
   onRefresh,
   isActive = false,
   searchQuery = "",
-}: NoRiskModsTabProps) {
-  const [noriskMods, setNoriskMods] = useState<NoRiskMod[]>([]);
+}: GEGModsTabProps) {
+  const [GEGMods, setGEGMods] = useState<GEGMod[]>([]);
   const [selectedMods, setSelectedMods] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [localSearchQuery, setLocalSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "enabled" | "version">("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [error, setError] = useState<string | null>(null);
-  const [noriskPacksConfig, setNoriskPacksConfig] =
-    useState<NoriskModpacksConfig | null>(null);
+  const [GEGPacksConfig, setGEGPacksConfig] =
+    useState<GEGModpacksConfig | null>(null);
   const [localIcons, setLocalIcons] = useState<Record<string, string | null>>(
     {},
   );
@@ -95,7 +95,7 @@ export function NoRiskModsTab({
         if (payload.event_type === "trigger_profile_update") {
           const profileId = payload.target_id;
           if (profileId === profile.id) {
-            fetchNoriskMods();
+            fetchGEGMods();
           }
         }
       });
@@ -109,11 +109,11 @@ export function NoRiskModsTab({
       setError(null);
 
       try {
-        await fetchNoriskPacks();
+        await fetchGEGPacks();
 
         try {
-          await refreshNoriskPacks();
-          await fetchNoriskPacks();
+          await refreshGEGPacks();
+          await fetchGEGPacks();
         } catch (refreshError) {}
 
         await setupEventListeners();
@@ -136,35 +136,35 @@ export function NoRiskModsTab({
   }, []);
 
   useEffect(() => {
-    if (profile.selected_norisk_pack_id && noriskPacksConfig) {
-      fetchNoriskMods();
+    if (profile.selected_GEG_pack_id && GEGPacksConfig) {
+      fetchGEGMods();
     } else {
-      setNoriskMods([]);
+      setGEGMods([]);
       setIsLoading(false);
     }
-  }, [profile.id, profile.selected_norisk_pack_id, noriskPacksConfig]);
+  }, [profile.id, profile.selected_GEG_pack_id, GEGPacksConfig]);
 
-  const fetchNoriskPacks = async () => {
+  const fetchGEGPacks = async () => {
     try {
       setError(null);
 
       try {
-        const result = await getNoriskPacksResolved();
-        setNoriskPacksConfig(result);
+        const result = await getGEGPacksResolved();
+        setGEGPacksConfig(result);
       } catch (resolvedError) {
-        const basicResult = await getNoriskPacks();
-        setNoriskPacksConfig(basicResult);
+        const basicResult = await getGEGPacks();
+        setGEGPacksConfig(basicResult);
       }
     } catch (error) {
       setError(
-        `Failed to load NoRisk packs: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to load GEG packs: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   };
 
-  const fetchNoriskMods = async () => {
-    if (!profile.selected_norisk_pack_id) {
-      setNoriskMods([]);
+  const fetchGEGMods = async () => {
+    if (!profile.selected_GEG_pack_id) {
+      setGEGMods([]);
       setIsLoading(false);
       return;
     }
@@ -174,8 +174,8 @@ export function NoRiskModsTab({
 
     try {
       try {
-        const modsResult = await invoke<any>("get_norisk_pack_mods", {
-          packId: profile.selected_norisk_pack_id,
+        const modsResult = await invoke<any>("get_GEG_pack_mods", {
+          packId: profile.selected_GEG_pack_id,
           gameVersion: profile.game_version,
           loader: profile.loader,
         });
@@ -193,10 +193,10 @@ export function NoRiskModsTab({
         }
       } catch (directError) {
         const packDef =
-          noriskPacksConfig?.packs[profile.selected_norisk_pack_id];
+          GEGPacksConfig?.packs[profile.selected_GEG_pack_id];
         if (!packDef) {
           setError(
-            `NoRisk pack "${profile.selected_norisk_pack_id}" not found. Try refreshing the packs.`,
+            `GEG pack "${profile.selected_GEG_pack_id}" not found. Try refreshing the packs.`,
           );
           setIsLoading(false);
           return;
@@ -208,7 +208,7 @@ export function NoRiskModsTab({
           packDef.mods.length === 0
         ) {
           try {
-            const lastResortResult = await invoke<any>("list_norisk_mods", {
+            const lastResortResult = await invoke<any>("list_GEG_mods", {
               profileId: profile.id,
             });
 
@@ -222,19 +222,19 @@ export function NoRiskModsTab({
               processFetchedMods(lastResortResult.mods);
             } else {
               setError(
-                "Could not load NoRisk mods. No mods found in pack definition.",
+                "Could not load GEG mods. No mods found in pack definition.",
               );
-              setNoriskMods([]);
+              setGEGMods([]);
             }
           } catch (lastResortError) {
             setError(
-              `Failed to load NoRisk mods: ${
+              `Failed to load GEG mods: ${
                 lastResortError instanceof Error
                   ? lastResortError.message
                   : String(lastResortError)
               }`,
             );
-            setNoriskMods([]);
+            setGEGMods([]);
           }
         } else {
           processFetchedMods(packDef.mods);
@@ -242,24 +242,24 @@ export function NoRiskModsTab({
       }
     } catch (error) {
       setError(
-        `Failed to load NoRisk mods: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to load GEG mods: ${error instanceof Error ? error.message : String(error)}`,
       );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const isNoriskModDisabled = (packModId: string): boolean => {
+  const isGEGModDisabled = (packModId: string): boolean => {
     if (
-      !profile.selected_norisk_pack_id ||
-      !profile.disabled_norisk_mods_detailed
+      !profile.selected_GEG_pack_id ||
+      !profile.disabled_GEG_mods_detailed
     ) {
       return false;
     }
 
-    return profile.disabled_norisk_mods_detailed.some(
+    return profile.disabled_GEG_mods_detailed.some(
       (identifier) =>
-        identifier.pack_id === profile.selected_norisk_pack_id &&
+        identifier.pack_id === profile.selected_GEG_pack_id &&
         identifier.mod_id === packModId &&
         identifier.game_version === profile.game_version &&
         identifier.loader === profile.loader,
@@ -283,7 +283,7 @@ export function NoRiskModsTab({
       }
 
       const modsWithStatus = compatibleMods.map((mod) => {
-        const isDisabled = isNoriskModDisabled(mod.id);
+        const isDisabled = isGEGModDisabled(mod.id);
 
         return {
           id: mod.id,
@@ -296,7 +296,7 @@ export function NoRiskModsTab({
         };
       });
 
-      setNoriskMods(modsWithStatus);
+      setGEGMods(modsWithStatus);
 
       if (compatibleMods.length > 0) {
         fetchModIcons(compatibleMods);
@@ -313,7 +313,7 @@ export function NoRiskModsTab({
       if (compatibleMods.length === 0) return;
 
       const iconsResult = await invoke<Record<string, string | null>>(
-        "get_icons_for_norisk_mods",
+        "get_icons_for_GEG_mods",
         {
           mods: compatibleMods,
           minecraftVersion: profile.game_version,
@@ -330,25 +330,25 @@ export function NoRiskModsTab({
   };
 
   const handleToggleMod = async (modId: string) => {
-    if (!profile.selected_norisk_pack_id) return;
+    if (!profile.selected_GEG_pack_id) return;
 
     try {
-      const mod = noriskMods.find((m) => m.id === modId);
+      const mod = GEGMods.find((m) => m.id === modId);
       if (!mod) return;
 
       const newEnabledState = !mod.enabled;
 
-      await invoke("set_norisk_mod_status", {
+      await invoke("set_GEG_mod_status", {
         profileId: profile.id,
-        packId: profile.selected_norisk_pack_id,
+        packId: profile.selected_GEG_pack_id,
         modId: modId,
         gameVersion: profile.game_version,
         loaderStr: profile.loader,
         disabled: !newEnabledState,
       });
 
-      setNoriskMods(
-        noriskMods.map((m) =>
+      setGEGMods(
+        GEGMods.map((m) =>
           m.id === modId ? { ...m, enabled: newEnabledState } : m,
         ),
       );
@@ -391,13 +391,13 @@ export function NoRiskModsTab({
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      await refreshNoriskPacks();
-      await fetchNoriskPacks();
-      await fetchNoriskMods();
+      await refreshGEGPacks();
+      await fetchGEGPacks();
+      await fetchGEGMods();
       if (onRefresh) onRefresh();
     } catch (error) {
       setError(
-        `Failed to refresh NoRisk packs: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to refresh GEG packs: ${error instanceof Error ? error.message : String(error)}`,
       );
     } finally {
       setRefreshing(false);
@@ -406,7 +406,7 @@ export function NoRiskModsTab({
 
   const effectiveSearchQuery = searchQuery || localSearchQuery;
 
-  const filteredMods = noriskMods.filter(
+  const filteredMods = GEGMods.filter(
     (mod) =>
       mod.display_name
         .toLowerCase()
@@ -432,13 +432,13 @@ export function NoRiskModsTab({
     return sortDirection === "asc" ? comparison : -comparison;
   });
 
-  const currentPackName = profile.selected_norisk_pack_id
-    ? noriskPacksConfig?.packs[profile.selected_norisk_pack_id]?.displayName ||
+  const currentPackName = profile.selected_GEG_pack_id
+    ? GEGPacksConfig?.packs[profile.selected_GEG_pack_id]?.displayName ||
       "Unknown Pack"
     : "No Pack Selected";
 
-  const isExperimental = profile.selected_norisk_pack_id
-    ? noriskPacksConfig?.packs[profile.selected_norisk_pack_id]
+  const isExperimental = profile.selected_GEG_pack_id
+    ? GEGPacksConfig?.packs[profile.selected_GEG_pack_id]
         ?.isExperimental || false
     : false;
 
@@ -458,7 +458,7 @@ export function NoRiskModsTab({
             <SearchInput
               value={localSearchQuery}
               onChange={setLocalSearchQuery}
-              placeholder="search norisk mods..."
+              placeholder="search GEG mods..."
             />
           </div>
         )}
@@ -516,20 +516,20 @@ export function NoRiskModsTab({
           borderColor: `${accentColor.value}20`,
         }}
       >
-        {!profile.selected_norisk_pack_id ? (
+        {!profile.selected_GEG_pack_id ? (
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
               <Logo size="md" className="mx-auto mb-4" />
               <p className="text-white/60 font-minecraft text-xl tracking-wide lowercase select-none">
-                no norisk pack selected
+                no GEG pack selected
               </p>
               <p className="text-white/40 font-minecraft text-sm mt-2 tracking-wide lowercase select-none">
-                select a norisk pack in profile settings
+                select a GEG pack in profile settings
               </p>
             </div>
           </div>
         ) : isLoading ? (
-          <LoadingState message="loading norisk mods..." />
+          <LoadingState message="loading GEG mods..." />
         ) : error ? (
           <ErrorMessage message={error} />
         ) : (
@@ -537,7 +537,7 @@ export function NoRiskModsTab({
             headers={[
               {
                 key: "name",
-                label: "norisk mod name",
+                label: "GEG mod name",
                 sortable: true,
                 width: "flex-1",
                 className: "px-3",
@@ -554,16 +554,16 @@ export function NoRiskModsTab({
             sortDirection={sortDirection}
             onSort={handleSort}
             selectedCount={selectedMods.size}
-            totalCount={noriskMods.length}
+            totalCount={GEGMods.length}
             filteredCount={filteredMods.length}
             enabledCount={filteredMods.filter((m) => m.enabled).length}
             onSelectAll={handleSelectAll}
-            contentType="norisk mod"
+            contentType="GEG mod"
             searchQuery={effectiveSearchQuery}
           >
             {sortedMods.length > 0 ? (
               sortedMods.map((mod) => (
-                <NoRiskModRow
+                <GEGModRow
                   key={mod.id}
                   mod={mod}
                   isSelected={selectedMods.has(mod.id)}
@@ -578,9 +578,9 @@ export function NoRiskModsTab({
                 message={
                   effectiveSearchQuery
                     ? "no mods match your search"
-                    : "no norisk mods available"
+                    : "no GEG mods available"
                 }
-                description="NoRisk mods are automatically managed by the launcher"
+                description="GEG mods are automatically managed by the launcher"
               />
             )}
           </ContentTable>
@@ -590,21 +590,21 @@ export function NoRiskModsTab({
   );
 }
 
-interface NoRiskModRowProps {
-  mod: NoRiskMod;
+interface GEGModRowProps {
+  mod: GEGMod;
   isSelected: boolean;
   onSelect: () => void;
   onToggle: () => void;
   localIcon?: string | null;
 }
 
-function NoRiskModRow({
+function GEGModRow({
   mod,
   isSelected,
   onSelect,
   onToggle,
   localIcon,
-}: NoRiskModRowProps) {
+}: GEGModRowProps) {
   const [isHovered, setIsHovered] = useState(false);
   const accentColor = useThemeStore((state) => state.accentColor);
   const rowRef = useRef<HTMLDivElement>(null);

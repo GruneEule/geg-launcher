@@ -6,7 +6,7 @@ pub mod quilt_installer;
 use crate::config::ProjectDirsExt;
 use crate::error::Result;
 use crate::state::profile_state::{ModLoader, Profile};
-use crate::integrations::norisk_packs::NoriskModpacksConfig;
+use crate::integrations::norisk_packs::GEGModpacksConfig;
 use async_trait::async_trait;
 use fabric_installer::FabricInstaller;
 use forge_installer::ForgeInstaller;
@@ -25,7 +25,7 @@ pub struct ResolvedLoaderVersion {
 #[serde(rename_all = "snake_case")]
 pub enum LoaderVersionReason {
     ProfileDefault,
-    NoriskPack,
+    GEGPack,
     UserOverwrite,
     NotResolved,
 }
@@ -33,11 +33,11 @@ pub enum LoaderVersionReason {
 pub struct ModloaderFactory;
 
 impl ModloaderFactory {
-    /// Resolves the loader version to use for a profile, considering Norisk pack policies and user overrides
+    /// Resolves the loader version to use for a profile, considering GEG pack policies and user overrides
     pub async fn resolve_loader_version(
         profile: &Profile,
         minecraft_version: &str,
-        norisk_pack_config: Option<&NoriskModpacksConfig>,
+        GEG_pack_config: Option<&GEGModpacksConfig>,
     ) -> ResolvedLoaderVersion {
         if profile.loader == ModLoader::Vanilla {
             return ResolvedLoaderVersion {
@@ -58,9 +58,9 @@ impl ModloaderFactory {
             }
         }
 
-        // 2. Check for Norisk pack policy
-        if let Some(selected_pack_id) = &profile.selected_norisk_pack_id {
-            if let Some(config) = norisk_pack_config {
+        // 2. Check for GEG pack policy
+        if let Some(selected_pack_id) = &profile.selected_GEG_pack_id {
+            if let Some(config) = GEG_pack_config {
                 if let Ok(resolved_pack) = config.get_resolved_pack_definition(selected_pack_id) {
                     if let Some(policy) = &resolved_pack.loader_policy {
                         let loader_key = profile.loader.as_str();
@@ -110,7 +110,7 @@ impl ModloaderFactory {
                         if let Some(version) = resolved_version {
                             return ResolvedLoaderVersion {
                                 version: Some(version),
-                                reason: LoaderVersionReason::NoriskPack,
+                                reason: LoaderVersionReason::GEGPack,
                             };
                         }
                     }

@@ -9,7 +9,7 @@ use tauri::Manager; // Keep for app_handle.state()
 use tokio::sync::{Mutex, RwLock};
 use uuid::Uuid;
 
-// Discord application ID for NoRiskClient
+// Discord application ID for GEG
 const DISCORD_APP_ID: &str = "1237087999104122981"; // Replace with actual Discord application ID
 
 // Different states for Discord Rich Presence
@@ -240,7 +240,7 @@ impl DiscordManager {
         let icon = "icon_512px"; // Use a consistent icon name
 
         // TODO: Resolve button issue
-        let download_button = activity::Button::new("DOWNLOAD", "https://norisk.gg/");
+        let download_button = activity::Button::new("DOWNLOAD", "https://GEG.gg/");
         let buttons = vec![download_button];
 
         debug!("Creating activity for Discord state: {:?}", state);
@@ -262,7 +262,7 @@ impl DiscordManager {
                     .assets(
                         activity::Assets::new()
                             .large_image(icon)
-                            .large_text("NoRiskClient"),
+                            .large_text("GEG"),
                     )
                     .timestamps(activity::Timestamps::new().start(start_time))
                     .buttons(buttons) // Include buttons here

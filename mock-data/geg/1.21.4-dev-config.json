@@ -1,21 +1,21 @@
 {
     "build": {
-        "branch": "1.21.5",
+        "branch": "GEG-dev-2",
         "jre_version": 21,
-        "mc_version": "1.21.5",
+        "mc_version": "1.21.4",
         "fabric_loader_version": "0.16.10"
     },
-    "devOnly": true,
+    "devOnly": false,
     "server": "",
     "autoUpdate": true,
-    "subTitle": "[1.21.5 BETA]",
+    "subTitle": "[1.21.4 TESTS]",
     "mods": [
         {
             "default": true,
             "name": "Fabric API",
             "required": true,
             "source": {
-                "artifact": "maven.modrinth:fabric-api:0.123.2+1.21.5",
+                "artifact": "maven.modrinth:fabric-api:0.115.1+1.21.4",
                 "repository": "modrinth",
                 "type": "repository"
             }
@@ -25,7 +25,7 @@
             "name": "Fabric Kotlin",
             "required": true,
             "source": {
-                "artifact": "net.fabricmc:fabric-language-kotlin:1.13.2+kotlin.2.1.20",
+                "artifact": "net.fabricmc:fabric-language-kotlin:1.13.1+kotlin.2.1.10",
                 "repository": "fabric",
                 "type": "repository"
             }
@@ -35,7 +35,7 @@
             "name": "Sodium",
             "required": true,
             "source": {
-                "artifact": "maven.modrinth:sodium:mc1.21.5-0.6.13-fabric",
+                "artifact": "maven.modrinth:sodium:mc1.21.4-0.6.10-fabric",
                 "repository": "modrinth",
                 "type": "repository"
             }
@@ -45,7 +45,7 @@
             "name": "Silk",
             "required": true,
             "source": {
-                "artifact": "maven.modrinth:silk:1.11.1",
+                "artifact": "maven.modrinth:silk:1.11.0",
                 "repository": "modrinth",
                 "type": "repository"
             }
@@ -55,7 +55,7 @@
             "name": "Lithium",
             "required": true,
             "source": {
-                "artifact": "maven.modrinth:lithium:mc1.21.5-0.16.2-fabric",
+                "artifact": "maven.modrinth:lithium:mc1.21.4-0.14.7-fabric",
                 "repository": "modrinth",
                 "type": "repository"
             }
@@ -65,7 +65,7 @@
             "name": "ModMenu",
             "required": true,
             "source": {
-                "artifact": "maven.modrinth:modmenu:14.0.0-rc.2",
+                "artifact": "maven.modrinth:modmenu:13.0.1",
                 "repository": "modrinth",
                 "type": "repository"
             }
@@ -75,7 +75,7 @@
             "name": "ImmediatelyFast",
             "required": false,
             "source": {
-                "artifact": "maven.modrinth:immediatelyfast:1.9.3+1.21.5-fabric",
+                "artifact": "maven.modrinth:immediatelyfast:1.8.0+1.21.4-fabric",
                 "repository": "modrinth",
                 "type": "repository"
             }
@@ -85,7 +85,7 @@
             "name": "3dskinlayers",
             "required": false,
             "source": {
-                "artifact": "maven.modrinth:3dskinlayers:qFwcwulG",
+                "artifact": "maven.modrinth:3dskinlayers:D5GmlSf8",
                 "repository": "modrinth",
                 "type": "repository"
             }
@@ -95,7 +95,7 @@
             "name": "shulkerboxtooltip",
             "required": false,
             "source": {
-                "artifact": "maven.modrinth:shulkerboxtooltip:5.2.5+1.21.5-fabric",
+                "artifact": "maven.modrinth:shulkerboxtooltip:5.2.4+1.21.4-fabric",
                 "repository": "modrinth",
                 "type": "repository"
             }
@@ -105,7 +105,7 @@
             "name": "AppleSkin",
             "required": false,
             "source": {
-                "artifact": "maven.modrinth:appleskin:VfjnbBAT",
+                "artifact": "maven.modrinth:appleskin:cHQjeYVS",
                 "repository": "modrinth",
                 "type": "repository"
             }
@@ -115,7 +115,7 @@
             "name": "FerriteCore",
             "required": false,
             "source": {
-                "artifact": "maven.modrinth:ferrite-core:8.0.0-fabric",
+                "artifact": "maven.modrinth:ferrite-core:7.1.1-fabric",
                 "repository": "modrinth",
                 "type": "repository"
             }
@@ -125,7 +125,7 @@
             "name": "GeckoLib",
             "required": true,
             "source": {
-                "artifact": "maven.modrinth:geckolib:5.0",
+                "artifact": "maven.modrinth:geckolib:4.8.2-fabric",
                 "repository": "modrinth",
                 "type": "repository"
             }
@@ -135,7 +135,7 @@
             "name": "owo-lib",
             "required": true,
             "source": {
-                "artifact": "maven.modrinth:owo-lib:0.12.20+1.21.5",
+                "artifact": "maven.modrinth:owo-lib:0.12.20+1.21.4",
                 "repository": "modrinth",
                 "type": "repository"
             }
@@ -145,7 +145,17 @@
             "name": "EntityCulling",
             "required": true,
             "source": {
-                "artifact": "maven.modrinth:entityculling:29GV7fju",
+                "artifact": "maven.modrinth:entityculling:NkBXk0Ye",
+                "repository": "modrinth",
+                "type": "repository"
+            }
+        },
+        {
+            "default": true,
+            "name": "ModernFix",
+            "required": false,
+            "source": {
+                "artifact": "maven.modrinth:modernfix:5.20.2+mc1.21.4",
                 "repository": "modrinth",
                 "type": "repository"
             }
@@ -155,7 +165,7 @@
             "name": "Cloth-Config",
             "required": false,
             "source": {
-                "artifact": "maven.modrinth:cloth-config:18.0.145+fabric",
+                "artifact": "maven.modrinth:cloth-config:17.0.144+fabric",
                 "repository": "modrinth",
                 "type": "repository"
             }
@@ -165,7 +175,7 @@
             "name": "MoreCulling",
             "required": false,
             "source": {
-                "artifact": "maven.modrinth:moreculling:MDkI6Huh",
+                "artifact": "maven.modrinth:moreculling:kELp84IT",
                 "repository": "modrinth",
                 "type": "repository"
             }
@@ -175,7 +185,7 @@
             "name": "WaveyCapes",
             "required": false,
             "source": {
-                "artifact": "maven.modrinth:wavey-capes:A8HBEAVx",
+                "artifact": "maven.modrinth:wavey-capes:xWqFqiiF",
                 "repository": "modrinth",
                 "type": "repository"
             }
@@ -195,78 +205,78 @@
             "name": "ukulib",
             "required": false,
             "source": {
-                "artifact": "maven.modrinth:ukulib:1.7.1+1.21.5",
+                "artifact": "maven.modrinth:ukulib:1.6.0+1.21.4",
                 "repository": "modrinth",
                 "type": "repository"
             }
         },
         {
             "default": true,
-            "name": "NoRiskClient-Fabric-Utils",
+            "name": "GEG-Fabric-Utils",
             "required": true,
             "source": {
-                "artifact": "gg.norisk:noriskclient-fabric-utils:1.21.5-2.2.37",
-                "repository": "noriskproduction",
+                "artifact": "gg.GEG:GEG-fabric-utils:1.21.4-2.2.33",
+                "repository": "GEGproduction",
                 "type": "repository"
             }
         },
         {
             "default": true,
-            "name": "NoRiskClient-UI",
+            "name": "GEG-UI",
             "required": true,
             "source": {
-                "artifact": "gg.norisk:ui:1.21.5-2.2.129",
-                "repository": "noriskproduction",
+                "artifact": "gg.GEG:ui:1.21.4-2.2.116",
+                "repository": "GEGproduction",
                 "type": "repository"
             }
         },
         {
             "default": true,
-            "name": "NoRiskClient-Client",
+            "name": "GEG-Client",
             "required": true,
             "source": {
-                "artifact": "gg.norisk:client:1.21.5-2.1.30",
-                "repository": "noriskproduction",
+                "artifact": "gg.GEG:client:1.21.4-2.1.12",
+                "repository": "GEGproduction",
                 "type": "repository"
             }
         },
         {
             "default": true,
-            "name": "NoRiskClient-Cosmetics",
+            "name": "GEG-Cosmetics",
             "required": true,
             "source": {
-                "artifact": "gg.norisk:cosmetics:1.21.5-2.2.66",
-                "repository": "noriskproduction",
+                "artifact": "gg.GEG:cosmetics:1.21.4-2.2.57",
+                "repository": "GEGproduction",
                 "type": "repository"
             }
         },
         {
             "default": true,
-            "name": "NoRiskClient-Friends",
+            "name": "GEG-Friends",
             "required": true,
             "source": {
-                "artifact": "gg.norisk:friends:1.21.5-2.2.92",
-                "repository": "noriskproduction",
+                "artifact": "gg.GEG:friends:1.21.4-2.2.86",
+                "repository": "GEGproduction",
                 "type": "repository"
             }
         },
         {
             "default": true,
-            "name": "NoRiskClient-McReal",
+            "name": "GEG-McReal",
             "required": true,
             "source": {
-                "artifact": "gg.norisk:mcreal:1.21.5-2.0.59",
-                "repository": "noriskproduction",
+                "artifact": "gg.GEG:mcreal:1.21.4-2.0.52",
+                "repository": "GEGproduction",
                 "type": "repository"
             }
         },
         {
             "default": true,
-            "name": "NoRiskClient-Minigames",
+            "name": "GEG-Minigames",
             "required": true,
             "source": {
-                "artifact": "gg.norisk:minigames:1.21.5-2.1.26",
-                "repository": "noriskproduction",
+                "artifact": "gg.GEG:minigames:1.21.4-2.1.26",
+                "repository": "GEGproduction",
                 "type": "repository"
             }
         },
@@ -275,8 +285,8 @@
             "name": "owoplus",
             "required": false,
             "source": {
-                "artifact": "gg.norisk:owoplus:1.21.5-1.0.27",
-                "repository": "noriskproduction",
+                "artifact": "gg.GEG:owoplus:1.21.4-1.0.26",
+                "repository": "GEGproduction",
                 "type": "repository"
             }
         },
@@ -285,8 +295,8 @@
             "name": "Emotes",
             "required": true,
             "source": {
-                "artifact": "gg.norisk:emote-lib:1.21.5-1.1.26",
-                "repository": "noriskproduction",
+                "artifact": "gg.GEG:emote-lib:1.21.4-1.1.26",
+                "repository": "GEGproduction",
                 "type": "repository"
             }
         },
@@ -295,8 +305,8 @@
             "name": "voicechat-client",
             "required": false,
             "source": {
-                "artifact": "gg.norisk:voicechat-client:1.21.5-1.1.31",
-                "repository": "noriskproduction",
+                "artifact": "gg.GEG:voicechat-client:1.21.4-1.1.31",
+                "repository": "GEGproduction",
                 "type": "repository"
             }
         },
@@ -305,8 +315,18 @@
             "name": "simple-voice-chat",
             "required": false,
             "source": {
-                "artifact": "maven.modrinth:simple-voice-chat:fabric-1.21.5-2.5.30",
+                "artifact": "maven.modrinth:simple-voice-chat:fabric-1.21.4-2.5.27",
                 "repository": "modrinth",
+                "type": "repository"
+            }
+        },
+        {
+            "default": true,
+            "name": "datatracker",
+            "required": true,
+            "source": {
+                "artifact": "gg.GEG:datatracker:1.21.4-1.0.18",
+                "repository": "GEGproduction",
                 "type": "repository"
             }
         }
@@ -318,10 +338,10 @@
         "modrinth": "https://api.modrinth.com/maven/",
         "terraformersmc": "https://maven.terraformersmc.com/",
         "viaversion": "https://repo.viaversion.com/",
-        "norisk": "https://dl.norisk.gg/",
+        "GEG": "https://dl.GEG.gg/",
         "geckolib": "https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/",
-        "noriskproduction": "https://maven.norisk.gg/repository/norisk-production/",
-        "norisksnapshots": "https://maven.norisk.gg/repository/norisk-snapshots/",
+        "GEGproduction": "https://maven.GEG.gg/repository/GEG-production/",
+        "GEGsnapshots": "https://maven.GEG.gg/repository/GEG-snapshots/",
         "kosmx": "https://maven.kosmx.dev/",
         "wispforest": "https://maven.wispforest.io/"
     },

@@ -106,8 +106,8 @@ pub enum AppError {
     #[error("Invalid Mod Loader: {0}")]
     InvalidModLoader(String),
 
-    #[error("Norisk Pack not found: {0}")]
-    NoriskPackNotFound(String),
+    #[error("GEG Pack not found: {0}")]
+    GEGPackNotFound(String),
 
     #[error("Failed to resolve mod: {0}")]
     ModResolutionFailed(String),

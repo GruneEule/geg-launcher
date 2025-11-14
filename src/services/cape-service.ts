@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { CapesBrowseResponse, BrowseCapesOptions, GetPlayerCapesPayloadOptions, CosmeticCape } from '../types/noriskCapes';
+import type { CapesBrowseResponse, BrowseCapesOptions, GetPlayerCapesPayloadOptions, CosmeticCape } from '../types/GEGCapes';
 import type { MinecraftProfile } from '../types/minecraft';
 
 /**
@@ -37,18 +37,18 @@ export const getPlayerCapes = (
  * Equip a specific cape for a player
  * 
  * @param capeHash Hash of the cape to equip
- * @param noriskToken Optional NoRisk token
+ * @param GEGToken Optional GEG token
  * @param playerUuid Optional UUID of the player (defaults to active account)
  * @returns A promise that resolves when the cape is equipped
  */
 export const equipCape = (
   capeHash: string,
-  noriskToken?: string,
+  GEGToken?: string,
   playerUuid?: string
 ): Promise<void> => {
   return invoke('equip_cape', {
      capeHash,
-     noriskToken,
+     GEGToken,
      playerUuid
   });
 };
@@ -57,18 +57,18 @@ export const equipCape = (
  * Delete a specific cape owned by the player
  * 
  * @param capeHash Hash of the cape to delete
- * @param noriskToken Optional NoRisk token
+ * @param GEGToken Optional GEG token
  * @param playerUuid Optional UUID of the player (defaults to active account)
  * @returns A promise that resolves when the cape is deleted
  */
 export const deleteCape = (
   capeHash: string,
-  noriskToken?: string,
+  GEGToken?: string,
   playerUuid?: string
 ): Promise<void> => {
   return invoke('delete_cape', {
     capeHash,
-    noriskToken,
+    GEGToken,
     playerUuid
   });
 };
@@ -89,18 +89,18 @@ export interface CapeUploadResponse {
  * Upload a new cape image for the active player
  *
  * @param imagePath Path to the cape image file (PNG)
- * @param noriskToken Optional NoRisk token
+ * @param GEGToken Optional GEG token
  * @param playerUuid Optional UUID of the player (defaults to active account)
  * @returns A promise that resolves to the cape upload response with hash and resize info
  */
 export const uploadCape = (
   imagePath: string,
-  noriskToken?: string,
+  GEGToken?: string,
   playerUuid?: string
 ): Promise<CapeUploadResponse> => {
   return invoke('upload_cape', {
     imagePath,
-    noriskToken,
+    GEGToken,
     playerUuid
   });
 };
@@ -108,16 +108,16 @@ export const uploadCape = (
 /**
  * Unequip the currently equipped cape for the active player
  * 
- * @param noriskToken Optional NoRisk token
+ * @param GEGToken Optional GEG token
  * @param playerUuid Optional UUID of the player (defaults to active account)
  * @returns A promise that resolves when the cape is unequipped
  */
 export const unequipCape = (
-  noriskToken?: string,
+  GEGToken?: string,
   playerUuid?: string
 ): Promise<void> => {
   return invoke('unequip_cape', {
-    noriskToken,
+    GEGToken,
     playerUuid
   });
 };
@@ -150,9 +150,9 @@ export const getPlayerProfileByUuidOrName = (nameOrUuidQuery: string): Promise<M
  */
 export const addFavoriteCape = (
   capeHash: string,
-  noriskToken?: string,
+  GEGToken?: string,
 ): Promise<string[]> => {
-  return invoke('add_favorite_cape', { capeHash, noriskToken });
+  return invoke('add_favorite_cape', { capeHash, GEGToken });
 };
 
 /**
@@ -161,9 +161,9 @@ export const addFavoriteCape = (
  */
 export const removeFavoriteCape = (
   capeHash: string,
-  noriskToken?: string,
+  GEGToken?: string,
 ): Promise<string[]> => {
-  return invoke('remove_favorite_cape', { capeHash, noriskToken });
+  return invoke('remove_favorite_cape', { capeHash, GEGToken });
 };
 
 /**
@@ -173,12 +173,12 @@ export const removeFavoriteCape = (
 export const setCapeFavorite = async (
   capeHash: string,
   favorite: boolean,
-  noriskToken?: string,
+  GEGToken?: string,
 ): Promise<string[]> => {
   if (favorite) {
-    return addFavoriteCape(capeHash, noriskToken);
+    return addFavoriteCape(capeHash, GEGToken);
   }
-  return removeFavoriteCape(capeHash, noriskToken);
+  return removeFavoriteCape(capeHash, GEGToken);
 };
 
 /**
@@ -187,9 +187,9 @@ export const setCapeFavorite = async (
 export const toggleCapeFavorite = async (
   capeHash: string,
   isCurrentlyFavorite: boolean,
-  noriskToken?: string,
+  GEGToken?: string,
 ): Promise<string[]> => {
-  return setCapeFavorite(capeHash, !isCurrentlyFavorite, noriskToken);
+  return setCapeFavorite(capeHash, !isCurrentlyFavorite, GEGToken);
 }; 
 
 /**
@@ -197,7 +197,7 @@ export const toggleCapeFavorite = async (
  */
 export const getCapesByHashes = (
   hashes: string[],
-  noriskToken?: string,
+  GEGToken?: string,
 ): Promise<CosmeticCape[]> => {
-  return invoke('get_capes_by_hashes', { hashes, noriskToken });
+  return invoke('get_capes_by_hashes', { hashes, GEGToken });
 }; 

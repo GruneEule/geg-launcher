@@ -3,6 +3,6 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct NoriskAssets {
+pub struct GEGAssets {
     pub objects: HashMap<String, AssetObject>,
 }

@@ -149,7 +149,7 @@ export function SocialsModal() {
     const confirmed = await confirm({
       title: "Show QR Code",
       message:
-        "This QR code contains your norisk token. Do not share it on stream or with others as it could compromise your account security.",
+        "This QR code contains your GEG token. Do not share it on stream or with others as it could compromise your account security.",
       confirmText: "Show QR Code",
       cancelText: "Cancel",
       type: "warning",
@@ -207,7 +207,7 @@ export function SocialsModal() {
       key: "discord",
       name: "Discord",
       icon: "ic:baseline-discord",
-      visitUrl: "https://discord.norisk.gg",
+      visitUrl: "https://discord.GEG.gg",
       isImplemented: true,
       fetchStatus: fetchDiscordStatus,
       handleLink: handleDiscordLink,
@@ -217,28 +217,28 @@ export function SocialsModal() {
       key: "youtube",
       name: "YouTube",
       icon: "mdi:youtube",
-      visitUrl: "https://youtube.norisk.gg",
+      visitUrl: "https://youtube.GEG.gg",
       isImplemented: false,
     },
     {
       key: "x",
       name: "X (Twitter)",
       icon: "simple-icons:x",
-      visitUrl: "https://twitter.norisk.gg",
+      visitUrl: "https://twitter.GEG.gg",
       isImplemented: false,
     },
     {
       key: "tiktok",
       name: "TikTok",
       icon: "ic:baseline-tiktok",
-      visitUrl: "https://tiktok.norisk.gg",
+      visitUrl: "https://tiktok.GEG.gg",
       isImplemented: false,
     },
     {
       key: "twitch",
       name: "Twitch",
       icon: "mdi:twitch",
-      visitUrl: "https://twitch.norisk.gg",
+      visitUrl: "https://twitch.GEG.gg",
       isImplemented: false,
     },
   ];
@@ -315,7 +315,7 @@ export function SocialsModal() {
             <div className="flex justify-center p-3 bg-black/10 rounded-md">
               <div className="text-center space-y-2">
                 <p className="text-white/70 font-minecraft-ten text-xs">
-                  Scan with NoRisk Client mobile App
+                  Scan with GEG Client mobile App
                 </p>
                 <img
                   src={generateQrCodeUrl()}

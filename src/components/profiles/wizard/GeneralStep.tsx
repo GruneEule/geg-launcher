@@ -18,7 +18,7 @@ interface GeneralStepProps {
   systemRamMb: number;
 }
 
-interface NoriskPack {
+interface GEGPack {
   displayName: string;
   description: string;
   isExperimental?: boolean;
@@ -30,7 +30,7 @@ export function GeneralStep({
   systemRamMb,
 }: GeneralStepProps) {
   const [nameError, setNameError] = useState<string | null>(null);
-  const [noriskPacks, setNoriskPacks] = useState<Record<string, NoriskPack>>(
+  const [GEGPacks, setGEGPacks] = useState<Record<string, GEGPack>>(
     {},
   );
   const [loading, setLoading] = useState(false);
@@ -63,23 +63,23 @@ export function GeneralStep({
       );
     }
 
-    const loadNoriskPacks = async () => {
+    const loadGEGPacks = async () => {
       try {
         setLoading(true);
-        const packsData = await invoke<{ packs: Record<string, NoriskPack> }>(
-          "get_norisk_packs",
+        const packsData = await invoke<{ packs: Record<string, GEGPack> }>(
+          "get_GEG_packs",
         ).catch(() => ({
           packs: {},
         }));
-        setNoriskPacks(packsData.packs);
+        setGEGPacks(packsData.packs);
       } catch (err) {
-        console.error("Failed to load NoRisk packs:", err);
+        console.error("Failed to load GEG packs:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    loadNoriskPacks();
+    loadGEGPacks();
   }, [isBackgroundAnimationEnabled]);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,7 +106,7 @@ export function GeneralStep({
     });
   };
 
-  const noriskPackOptions = Object.entries(noriskPacks).map(
+  const GEGPackOptions = Object.entries(GEGPacks).map(
     ([packId, packDef]) => ({
       value: packId,
       label: `${packDef.displayName} ${packDef.isExperimental ? "(experimental)" : ""}`,
@@ -193,7 +193,7 @@ export function GeneralStep({
 
         <div>
           <label className="block text-2xl font-minecraft text-white mb-2 lowercase">
-            norisk client pack
+            GEG client pack
           </label>
           {loading ? (
             <div className="flex items-center gap-2 text-white/70">
@@ -202,31 +202,31 @@ export function GeneralStep({
                 className="w-5 h-5 animate-spin"
               />
               <span className="font-minecraft text-xl">
-                Loading NoRisk packs...
+                Loading GEG packs...
               </span>
             </div>
           ) : (
             <>
               <Select
-                value={profile.selected_norisk_pack_id || ""}
+                value={profile.selected_GEG_pack_id || ""}
                 onChange={(value) =>
                   updateProfile({
-                    selected_norisk_pack_id: value === "" ? null : value,
+                    selected_GEG_pack_id: value === "" ? null : value,
                   })
                 }
                 options={[
                   { value: "", label: "None (Optional)" },
-                  ...noriskPackOptions,
+                  ...GEGPackOptions,
                 ]}
               />
-              {profile.selected_norisk_pack_id &&
-                noriskPacks[profile.selected_norisk_pack_id] && (
+              {profile.selected_GEG_pack_id &&
+                GEGPacks[profile.selected_GEG_pack_id] && (
                   <Card
                     variant="flat"
                     className="mt-4 p-4 bg-black/20 border border-white/10"
                   >
                     <p className="text-xs text-white/80 font-minecraft-ten tracking-wide">
-                      {noriskPacks[profile.selected_norisk_pack_id].description}
+                      {GEGPacks[profile.selected_GEG_pack_id].description}
                     </p>
                   </Card>
                 )}

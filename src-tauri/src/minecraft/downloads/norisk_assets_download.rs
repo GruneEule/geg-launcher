@@ -1,8 +1,8 @@
 use crate::config::{ProjectDirsExt, HTTP_CLIENT, LAUNCHER_DIRECTORY};
 use crate::error::{AppError, Result};
-use crate::minecraft::api::NoRiskApi;
+use crate::minecraft::api::NoriskApi;
 use crate::minecraft::auth::minecraft_auth::Credentials;
-use crate::minecraft::dto::norisk_meta::NoriskAssets;
+use crate::minecraft::dto::norisk_meta::GEGAssets;
 use crate::minecraft::dto::piston_meta::AssetObject;
 use crate::state::event_state::{EventPayload, EventType};
 use crate::state::profile_state::Profile;
@@ -18,15 +18,15 @@ use tokio::io::AsyncWriteExt;
 use uuid::Uuid;
 
 const ASSETS_DIR: &str = "assets";
-const NORISK_ASSETS_DIR: &str = "noriskclient";
+const GEG_ASSETS_DIR: &str = "GEG";
 const DEFAULT_CONCURRENT_DOWNLOADS: usize = 12;
 
-pub struct NoriskClientAssetsDownloadService {
+pub struct NoriskAssetsDownloadService {
     base_path: PathBuf,
     concurrent_downloads: usize,
 }
 
-impl NoriskClientAssetsDownloadService {
+impl NoriskAssetsDownloadService {
     pub fn new() -> Self {
         let base_path = LAUNCHER_DIRECTORY.meta_dir().join(ASSETS_DIR);
         info!(
@@ -45,7 +45,7 @@ impl NoriskClientAssetsDownloadService {
         self
     }
 
-    /// Downloads NoRisk client assets for a specific profile, processing the main pack
+    /// Downloads GEG client assets for a specific profile, processing the main pack
     /// and any additional asset groups defined in the pack configuration.
     pub async fn download_nrc_assets_for_profile(
         &self,
@@ -59,7 +59,7 @@ impl NoriskClientAssetsDownloadService {
             .calculate_instance_path_for_profile(profile)?;
 
         let keep_local_assets = profile
-            .norisk_information
+            .GEG_information
             .as_ref()
             .map(|info| info.keep_local_assets)
             .unwrap_or(false);
@@ -69,7 +69,7 @@ impl NoriskClientAssetsDownloadService {
         }
 
         // Use profile's selected pack as the *main* pack ID
-        let main_pack_id = match &profile.selected_norisk_pack_id {
+        let main_pack_id = match &profile.selected_GEG_pack_id {
             Some(pack_id) if !pack_id.is_empty() => {
                 info!(
                     "[NRC Assets Download] Using main pack ID from profile: {}",
@@ -95,16 +95,16 @@ impl NoriskClientAssetsDownloadService {
 
         let token_ref = if is_experimental {
             info!("[NRC Assets Download] Using experimental token");
-            &creds.norisk_credentials.experimental
+            &creds.GEG_credentials.experimental
         } else {
             info!("[NRC Assets Download] Using production token");
-            &creds.norisk_credentials.production
+            &creds.GEG_credentials.production
         };
 
-        let norisk_token = match token_ref {
+        let GEG_token = match token_ref {
             Some(token) => token.value.clone(),
             None => {
-                warn!("[NRC Assets Download] No valid NoRisk token found for {} mode, skipping asset download",
+                warn!("[NRC Assets Download] No valid GEG token found for {} mode, skipping asset download",
                       if is_experimental { "experimental" } else { "production" });
                 return Ok(());
             }
@@ -117,14 +117,14 @@ impl NoriskClientAssetsDownloadService {
         );
 
         // --- Get Resolved Pack Definition ---
-        info!("[NRC Assets Download] Getting Norisk packs config...");
-        let norisk_packs_config = state.norisk_pack_manager.get_config().await;
+        info!("[NRC Assets Download] Getting GEG packs config...");
+        let GEG_packs_config = state.GEG_pack_manager.get_config().await;
 
         info!(
             "[NRC Assets Download] Resolving pack definition for main pack: {}",
             main_pack_id
         );
-        let resolved_pack_definition = norisk_packs_config
+        let resolved_pack_definition = GEG_packs_config
             .get_resolved_pack_definition(&main_pack_id)
             .map_err(|e| {
                 error!(
@@ -153,13 +153,13 @@ impl NoriskClientAssetsDownloadService {
             unique_asset_ids
         );
         let total_groups = unique_asset_ids.len();
-        let target_base_dir = game_directory.join("NoRiskClient").join("assets");
+        let target_base_dir = game_directory.join("GEG").join("assets");
 
         self.emit_progress_event(
             &state,
             profile.id,
             &format!(
-                "Starting NoRiskClient asset processing for {} groups...",
+                "Starting GEG asset processing for {} groups...",
                 total_groups
             ),
             0.01,
@@ -186,7 +186,7 @@ impl NoriskClientAssetsDownloadService {
                     &state,
                     profile.id,
                     asset_id,
-                    &norisk_token,
+                    &GEG_token,
                     &request_uuid,
                     is_experimental,
                     keep_local_assets,
@@ -266,7 +266,7 @@ impl NoriskClientAssetsDownloadService {
         self.emit_progress_event(
             &state,
             profile.id,
-            "NoRiskClient assets processing completed!",
+            "GEG assets processing completed!",
             1.0,
             None,
         )
@@ -282,7 +282,7 @@ impl NoriskClientAssetsDownloadService {
         state: &State,
         profile_id: Uuid,
         asset_id: &str,
-        norisk_token: &str,
+        GEG_token: &str,
         request_uuid: &str,
         is_experimental: bool,
         keep_local_assets: bool,
@@ -291,7 +291,7 @@ impl NoriskClientAssetsDownloadService {
         progress_end: f64,
     ) -> Result<HashSet<PathBuf>> {
         let progress_range = progress_end - progress_start;
-        let target_base_dir = game_directory.join("NoRiskClient").join("assets");
+        let target_base_dir = game_directory.join("GEG").join("assets");
 
         // 1. Fetch assets
         self.emit_progress_event(
@@ -304,7 +304,7 @@ impl NoriskClientAssetsDownloadService {
         .await?;
 
         let assets =
-            match NoRiskApi::norisk_assets(asset_id, norisk_token, request_uuid, is_experimental)
+            match NoriskApi::GEG_assets(asset_id, GEG_token, request_uuid, is_experimental)
                 .await
             {
                 Ok(fetched_assets) => {
@@ -402,7 +402,7 @@ impl NoriskClientAssetsDownloadService {
                 asset_id,
                 &assets,
                 is_experimental,
-                norisk_token,
+                GEG_token,
                 Some(profile_id),
             )
             .await
@@ -470,20 +470,20 @@ impl NoriskClientAssetsDownloadService {
         Ok(expected_paths_for_group)
     }
 
-    /// Downloads NoRisk client assets for a specific asset ID (pack or asset group).
+    /// Downloads GEG client assets for a specific asset ID (pack or asset group).
     async fn download_nrc_assets(
         &self,
         asset_id: &str,
-        assets: &NoriskAssets,
+        assets: &GEGAssets,
         is_experimental: bool,
-        norisk_token: &str,
+        GEG_token: &str,
         profile_id: Option<Uuid>,
     ) -> Result<()> {
         trace!(
             "[NRC Assets Download '{}'] Starting download process",
             asset_id
         );
-        let assets_path = self.base_path.join(NORISK_ASSETS_DIR).join(asset_id);
+        let assets_path = self.base_path.join(GEG_ASSETS_DIR).join(asset_id);
         if !fs::try_exists(&assets_path).await? {
             fs::create_dir_all(&assets_path).await?;
             info!(
@@ -533,7 +533,7 @@ impl NoriskClientAssetsDownloadService {
             let completed_counter_clone = Arc::clone(&completed_counter);
             let total_to_download_clone = Arc::clone(&total_to_download);
             let asset_id_clone = asset_id.to_string();
-            let norisk_token_clone = norisk_token.to_string();
+            let GEG_token_clone = GEG_token.to_string();
 
             // Hash-based check - if hash file exists, content is guaranteed correct
             if fs::try_exists(&target_path).await? {
@@ -555,11 +555,11 @@ impl NoriskClientAssetsDownloadService {
                 // Use updated URL format from user edit
                 let url = format!(
                     "{}/{}/assets/{}",
-                    "https://cdn.norisk.gg/assets", asset_id_clone, name_clone
+                    "https://cdn.GEG.gg/assets", asset_id_clone, name_clone
                 );
 
                 let mut request = HTTP_CLIENT.get(&url);
-                request = request.header("Authorization", format!("Bearer {}", norisk_token_clone));
+                request = request.header("Authorization", format!("Bearer {}", GEG_token_clone));
 
                 let response = match request.send().await {
                     Ok(resp) => resp,
@@ -665,7 +665,7 @@ impl NoriskClientAssetsDownloadService {
                                     let event_id = Uuid::new_v4();
                                     if let Err(e) = state.emit_event(EventPayload {
                                         event_id,
-                                        event_type: EventType::DownloadingNoRiskClientAssets,
+                                        event_type: EventType::DownloadingGEGAssets,
                                         target_id: Some(profile_id),
                                         message,
                                         progress: Some(progress_within_download),
@@ -747,7 +747,7 @@ impl NoriskClientAssetsDownloadService {
         state
             .emit_event(EventPayload {
                 event_id,
-                event_type: EventType::DownloadingNoRiskClientAssets,
+                event_type: EventType::DownloadingGEGAssets,
                 target_id: Some(profile_id),
                 message: message.to_string(),
                 progress: Some(progress.clamp(0.0, 1.0)),
@@ -761,13 +761,13 @@ impl NoriskClientAssetsDownloadService {
     async fn copy_assets_to_game_dir(
         &self,
         asset_id: &str,
-        assets: &NoriskAssets,
+        assets: &GEGAssets,
         keep_local_assets: bool,
         target_base_dir: &Path,
         minecraft_dir: &Path,
         profile_id: Option<Uuid>,
     ) -> Result<()> {
-        let source_dir = self.base_path.join(NORISK_ASSETS_DIR).join(asset_id);
+        let source_dir = self.base_path.join(GEG_ASSETS_DIR).join(asset_id);
         // target_base_dir is now passed in
 
         info!(
@@ -982,7 +982,7 @@ impl NoriskClientAssetsDownloadService {
         state
             .emit_event(EventPayload {
                 event_id,
-                event_type: EventType::CopyingNoRiskClientAssets,
+                event_type: EventType::CopyingGEGAssets,
                 target_id: Some(profile_id),
                 message: message.to_string(),
                 progress: Some(progress.clamp(0.0, 1.0)),

@@ -147,7 +147,7 @@ async fn uninstall_content_by_sha1_internal(
                         profile_utils::ContentType::ShaderPack => dirs_to_scan.into_iter().filter(|(name, _)| name == &"shaderpacks").collect(),
                         profile_utils::ContentType::ResourcePack => dirs_to_scan.into_iter().filter(|(name, _)| name == &"resourcepacks").collect(),
                         profile_utils::ContentType::DataPack => dirs_to_scan.into_iter().filter(|(name, _)| name == &"datapacks").collect(),
-                        _ => dirs_to_scan, // NoRiskMod or others: scan all
+                        _ => dirs_to_scan, // GEGMod or others: scan all
                     };
                 }
 
@@ -205,7 +205,7 @@ pub struct ToggleContentPayload {
     sha1_hash: Option<String>,
     file_path: Option<String>,
     enabled: bool,
-    norisk_mod_identifier: Option<crate::state::profile_state::NoriskModIdentifier>,
+    GEG_mod_identifier: Option<crate::state::profile_state::GEGModIdentifier>,
     content_type: Option<profile_utils::ContentType>, // Added for targeted toggling
 }
 
@@ -275,12 +275,12 @@ pub async fn toggle_content_from_profile(
     payload: ToggleContentPayload,
 ) -> Result<(), CommandError> {
     log::info!(
-        "Attempting to toggle content state: profile_id={}, sha1_hash={:?}, file_path={:?}, enabled={}, norisk_mod_identifier={:?}, content_type={:?}",
+        "Attempting to toggle content state: profile_id={}, sha1_hash={:?}, file_path={:?}, enabled={}, GEG_mod_identifier={:?}, content_type={:?}",
         payload.profile_id,
         payload.sha1_hash,
         payload.file_path,
         payload.enabled,
-        payload.norisk_mod_identifier,
+        payload.GEG_mod_identifier,
         payload.content_type
     );
 
@@ -302,36 +302,36 @@ pub async fn toggle_content_from_profile(
         )))
     })?;
 
-    // Handle NoRisk Pack item toggling if the identifier is provided
-    if let Some(norisk_mod_identifier) = payload.norisk_mod_identifier {
+    // Handle GEG Pack item toggling if the identifier is provided
+    if let Some(GEG_mod_identifier) = payload.GEG_mod_identifier {
         log::info!(
-            "Toggling NoRisk Pack item state: profile={}, pack={}, mod={}, disabled={}",
+            "Toggling GEG Pack item state: profile={}, pack={}, mod={}, disabled={}",
             payload.profile_id,
-            norisk_mod_identifier.pack_id,
-            norisk_mod_identifier.mod_id,
+            GEG_mod_identifier.pack_id,
+            GEG_mod_identifier.mod_id,
             !payload.enabled
         );
 
         // Clone the fields needed for logging
-        let pack_id = norisk_mod_identifier.pack_id.clone();
-        let mod_id = norisk_mod_identifier.mod_id.clone();
+        let pack_id = GEG_mod_identifier.pack_id.clone();
+        let mod_id = GEG_mod_identifier.mod_id.clone();
 
-        // Call set_norisk_mod_status with the appropriate parameters
+        // Call set_GEG_mod_status with the appropriate parameters
         match state_manager
             .profile_manager
-            .set_norisk_mod_status(
+            .set_GEG_mod_status(
                 payload.profile_id,
-                norisk_mod_identifier.pack_id,
-                norisk_mod_identifier.mod_id,
-                norisk_mod_identifier.game_version,
-                norisk_mod_identifier.loader,
+                GEG_mod_identifier.pack_id,
+                GEG_mod_identifier.mod_id,
+                GEG_mod_identifier.game_version,
+                GEG_mod_identifier.loader,
                 !payload.enabled, // Note: disabled = !enabled
             )
             .await
         {
             Ok(_) => {
                 log::info!(
-                    "Successfully toggled NoRisk Pack item state for pack_id={}, mod_id={} to enabled={}",
+                    "Successfully toggled GEG Pack item state for pack_id={}, mod_id={} to enabled={}",
                     pack_id,
                     mod_id,
                     payload.enabled
@@ -339,19 +339,19 @@ pub async fn toggle_content_from_profile(
                 return Ok(());
             }
             Err(e) => {
-                log::error!("Failed to toggle NoRisk Pack item state: {}", e);
+                log::error!("Failed to toggle GEG Pack item state: {}", e);
                 return Err(CommandError::from(e));
             }
         }
     }
 
-    // Continue with SHA1-based content toggling if not a NoRisk Pack item
+    // Continue with SHA1-based content toggling if not a GEG Pack item
     let current_sha1_hash = match payload.sha1_hash {
         Some(ref hash) => hash.clone(),
         None => {
-            log::warn!("SHA1 hash is required for the current toggle implementation when not toggling a NoRisk Pack item.");
+            log::warn!("SHA1 hash is required for the current toggle implementation when not toggling a GEG Pack item.");
             return Err(CommandError::from(AppError::Other(
-                "SHA1 hash is required for this toggle operation when not toggling a NoRisk Pack item.".to_string(),
+                "SHA1 hash is required for this toggle operation when not toggling a GEG Pack item.".to_string(),
             )));
         }
     };
@@ -558,13 +558,13 @@ pub async fn toggle_content_from_profile(
                 }
             }
         }
-        Some(profile_utils::ContentType::NoRiskMod) => {
+        Some(profile_utils::ContentType::GEGMod) => {
             log::debug!(
-                "Targeted toggle for NoRiskMod with SHA1: {}",
+                "Targeted toggle for GEGMod with SHA1: {}",
                 current_sha1_hash
             );
-            // NoRiskMods are handled differently, not by scanning directories
-            // We don't need to scan any asset types for NoRiskMods
+            // GEGMods are handled differently, not by scanning directories
+            // We don't need to scan any asset types for GEGMods
             // We'll handle this in the future if needed
         }
         None => {
@@ -772,10 +772,10 @@ pub async fn install_content_to_profile(
                 }
             }
         }
-        profile_utils::ContentType::NoRiskMod => {
-            log::info!("NoRiskMod installation is not supported via this unified command");
+        profile_utils::ContentType::GEGMod => {
+            log::info!("GEGMod installation is not supported via this unified command");
             Err(CommandError::from(AppError::Other(
-                "NoRiskMod installation not supported via this command".to_string(),
+                "GEGMod installation not supported via this command".to_string(),
             )))
         }
         profile_utils::ContentType::ResourcePack => {
@@ -1048,13 +1048,13 @@ pub async fn install_local_content_to_profile(
                 ))));
             }
         }
-        profile_utils::ContentType::NoRiskMod => {
+        profile_utils::ContentType::GEGMod => {
             log::error!(
-                "ContentType::NoRiskMod is not supported for local installation via this command. Profile: {}",
+                "ContentType::GEGMod is not supported for local installation via this command. Profile: {}",
                 payload.profile_id
             );
             return Err(CommandError::from(AppError::Other(
-                "Local installation of NoRiskMod content type is not supported.".to_string(),
+                "Local installation of GEGMod content type is not supported.".to_string(),
             )));
         }
         // Handle any other ContentType variants not explicitly covered, if any exist or are added later.
@@ -1267,10 +1267,10 @@ pub async fn switch_content_version(
                 .await
                 .map_err(CommandError::from)
         }
-        profile_utils::ContentType::NoRiskMod => {
-            log::error!("Switching version for NoRiskMod is not supported via this command.");
+        profile_utils::ContentType::GEGMod => {
+            log::error!("Switching version for GEGMod is not supported via this command.");
             Err(CommandError::from(AppError::InvalidOperation(
-                "NoRiskMod versions are managed by pack configuration.".to_string(),
+                "GEGMod versions are managed by pack configuration.".to_string(),
             )))
         }
     }

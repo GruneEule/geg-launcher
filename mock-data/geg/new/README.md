@@ -1,4 +1,4 @@
-# NoRiskClient StartUpHelper
+# GEG StartUpHelper
 
 Dieser Ordner enthält Dateien, die automatisch in neue Profile kopiert werden können.
 
@@ -20,14 +20,14 @@ Das StartUpHelper Feature erlaubt es, zusätzliche Dateien aus diesem Verzeichni
 ## Struktur
 
 ```
-noriskclient/
+GEG/
 ├── new/                    # StartUpHelper Quellordner
 │   ├── options.txt        # Beispiel: Standard-Optionen
 │   ├── config/
-│   │   └── hi.json       # Beispiel: NoRiskClient Konfiguration
+│   │   └── hi.json       # Beispiel: GEG Konfiguration
 │   └── mods/
 │       └── example.jar   # Beispiel: Standard-Mods
-└── [andere NoRiskClient Dateien...]
+└── [andere GEG Dateien...]
 ```
 
 ## Verwendung
@@ -36,7 +36,7 @@ Um StartUpHelper zu aktivieren, füge in einem Profil folgende Konfiguration hin
 
 ```json
 {
-  "norisk_information": {
+  "GEG_information": {
     "startup_helper": {
       "additional_paths": [
         "options.txt",
@@ -49,12 +49,12 @@ Um StartUpHelper zu aktivieren, füge in einem Profil folgende Konfiguration hin
 
 ## Pfad-Auflösung
 
-- **Quelle**: `{default_profile_path}/noriskclient/new/{relative_path}`
+- **Quelle**: `{default_profile_path}/GEG/new/{relative_path}`
 - **Ziel**: `{profile_dir}/{relative_path}`
 
 Beispiel:
-- Quelle: `~/Library/Application Support/gg/norisk/NoRiskClientV3/profiles/noriskclient/new/options.txt`
-- Ziel: `~/Library/Application Support/gg/norisk/NoRiskClientV3/profiles/{profile-id}/options.txt`
+- Quelle: `~/Library/Application Support/gg/GEG/GEGV3/profiles/GEG/new/options.txt`
+- Ziel: `~/Library/Application Support/gg/GEG/GEGV3/profiles/{profile-id}/options.txt`
 
 ## Unterstützte Dateitypen
 
@@ -70,7 +70,7 @@ Beispiel:
 
 ```json
 {
-  "norisk_information": {
+  "GEG_information": {
     "startup_helper": {
       "additional_paths": [
         "options.txt",

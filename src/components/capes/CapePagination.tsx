@@ -1,5 +1,5 @@
 "use client";
-import type { PaginationInfo } from "../../types/noriskCapes";
+import type { PaginationInfo } from "../../types/GEGCapes";
 import { Button } from "../ui/buttons/Button";
 import { Card } from "../ui/Card";
 

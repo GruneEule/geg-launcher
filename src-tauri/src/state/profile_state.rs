@@ -76,9 +76,9 @@ pub struct Mod {
     pub updates_enabled: bool,
 }
 
-// New struct to uniquely identify a Norisk Pack mod within a specific context
+// New struct to uniquely identify a GEG Pack mod within a specific context
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
-pub struct NoriskModIdentifier {
+pub struct GEGModIdentifier {
     pub pack_id: String,
     pub mod_id: String,
     pub game_version: String,
@@ -130,9 +130,9 @@ pub struct Profile {
     #[serde(default)] // Add default for backward compatibility when loading old profiles
     pub mods: Vec<Mod>, // List of mods for this profile
     #[serde(default)] // Add default for backward compatibility
-    pub selected_norisk_pack_id: Option<String>, // ID of the selected Norisk Pack (e.g., "norisk-prod")
+    pub selected_GEG_pack_id: Option<String>, // ID of the selected GEG Pack (e.g., "GEG-prod")
     #[serde(default)] // Keep track of disabled mods per pack/version/loader context
-    pub disabled_norisk_mods_detailed: HashSet<NoriskModIdentifier>, // Changed field
+    pub disabled_GEG_mods_detailed: HashSet<GEGModIdentifier>, // Changed field
     /// Optional: If this profile was created from a standard profile, store its original ID
     #[serde(default)]
     pub source_standard_profile_id: Option<Uuid>,
@@ -150,7 +150,7 @@ pub struct Profile {
     pub banner: Option<ProfileBanner>, // Banner/background image for the profile
     #[serde(default)]
     pub background: Option<ProfileBanner>,
-    pub norisk_information: Option<NoriskInformation>,
+    pub GEG_information: Option<GEGInformation>,
     /// Information about this profile's modpack origin (if it was created from a modpack)
     #[serde(default)]
     pub modpack_info: Option<ModPackInfo>,
@@ -161,7 +161,7 @@ fn default_true() -> bool {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct NoriskInformation {
+pub struct GEGInformation {
     #[serde(default)]
     pub keep_local_assets: bool,
     #[serde(default)]
@@ -534,7 +534,7 @@ impl ProfileManager {
             match crate::state::state_manager::State::get().await {
                 Ok(state) => {
                     if let Some(standard_profile) =
-                        state.norisk_version_manager.get_profile_by_id(id).await
+                        state.GEG_version_manager.get_profile_by_id(id).await
                     {
                         //info!("Found standard profile '{}' for ID {}", standard_profile.name, id);
                         Ok(standard_profile)
@@ -1536,8 +1536,8 @@ impl ProfileManager {
         }
     }
 
-    // Set the enabled/disabled status of a specific mod within a Norisk Pack for a profile's specific context
-    pub async fn set_norisk_mod_status(
+    // Set the enabled/disabled status of a specific mod within a GEG Pack for a profile's specific context
+    pub async fn set_GEG_mod_status(
         &self,
         profile_id: Uuid,
         pack_id: String,
@@ -1554,7 +1554,7 @@ impl ProfileManager {
         let mut profiles = self.profiles.write().await;
 
         if let Some(profile) = profiles.get_mut(&profile_id) {
-            let identifier = NoriskModIdentifier {
+            let identifier = GEGModIdentifier {
                 pack_id,
                 mod_id: mod_id.clone(),
                 game_version,
@@ -1563,9 +1563,9 @@ impl ProfileManager {
 
             let changed;
             if disabled {
-                changed = profile.disabled_norisk_mods_detailed.insert(identifier);
+                changed = profile.disabled_GEG_mods_detailed.insert(identifier);
             } else {
-                changed = profile.disabled_norisk_mods_detailed.remove(&identifier);
+                changed = profile.disabled_GEG_mods_detailed.remove(&identifier);
             }
 
             if changed {
@@ -2043,12 +2043,12 @@ impl ProfileManager {
             }
             None => {
                 //log::info!("Profile {} not found, checking standard versions",profile_id);
-                // Get state to access norisk_version_manager
+                // Get state to access GEG_version_manager
                 let state = crate::state::state_manager::State::get().await?;
 
                 // Check if it's a standard version ID
                 if let Some(standard_profile) = state
-                    .norisk_version_manager
+                    .GEG_version_manager
                     .get_profile_by_id(profile_id)
                     .await
                 {
@@ -2063,10 +2063,10 @@ impl ProfileManager {
         }
     }
 
-    /// Helper function to check if a group belongs to NoRisk Client
-    fn is_norisk_client_group(group_name: &str) -> bool {
+    /// Helper function to check if a group belongs to GEG Client
+    fn is_GEG_client_group(group_name: &str) -> bool {
         let normalized = group_name.to_lowercase();
-        normalized == "nrc" || normalized == "noriskclient" || normalized == "norisk client"
+        normalized == "nrc" || normalized == "GEG" || normalized == "GEG client"
     }
 
     /// Helper function to check if a group should NOT use shared Minecraft folder
@@ -2098,12 +2098,12 @@ impl ProfileManager {
     /// Returns the directory path based on the profile's group and Minecraft version.
     pub fn calculate_group_directory(&self, profile: &Profile) -> Result<PathBuf> {
         if let Some(group) = &profile.group {
-            if Self::is_norisk_client_group(group) {
-                // NoRisk Client groups go to "noriskclient/legacy" for MC < 1.13, "noriskclient/new" otherwise
+            if Self::is_GEG_client_group(group) {
+                // GEG Client groups go to "GEG/legacy" for MC < 1.13, "GEG/new" otherwise
                 if mc_utils::is_legacy_minecraft_version(&profile.game_version) {
-                    Ok(default_profile_path().join("noriskclient").join("legacy"))
+                    Ok(default_profile_path().join("GEG").join("legacy"))
                 } else {
-                    Ok(default_profile_path().join("noriskclient").join("new"))
+                    Ok(default_profile_path().join("GEG").join("new"))
                 }
             } else {
                 // Other custom groups go to "groups/{sanitized_group_name}"
@@ -2630,7 +2630,7 @@ impl ProfileManager {
         Ok(())
     }
 
-    /// Synchronizes standard profiles by creating editable copies for each norisk_version
+    /// Synchronizes standard profiles by creating editable copies for each GEG_version
     /// that doesn't already have a user copy, and updates existing copies with forced fields.
     /// Called during launcher startup.
     pub async fn sync_standard_profiles(&self) -> Result<()> {
@@ -2639,7 +2639,7 @@ impl ProfileManager {
         // Ensure profiles are loaded before syncing to avoid race conditions
         self.ensure_profiles_loaded().await?;
 
-        // Get standard profiles from norisk version manager
+        // Get standard profiles from GEG version manager
         let state = match crate::state::state_manager::State::get().await {
             Ok(state) => state,
             Err(e) => {
@@ -2648,7 +2648,7 @@ impl ProfileManager {
             }
         };
 
-        let standard_profiles = state.norisk_version_manager.get_config().await.profiles;
+        let standard_profiles = state.GEG_version_manager.get_config().await.profiles;
         info!("ProfileManager: Found {} standard profiles to sync", standard_profiles.len());
 
         if standard_profiles.is_empty() {
@@ -2808,10 +2808,10 @@ impl ProfileManager {
                 changed = true;
             }
             
-            // Force update NoRisk pack selection if different
-            if copy.selected_norisk_pack_id != standard_profile.selected_norisk_pack_id {
-                info!("Updating NoRisk pack for copy {}: {:?} -> {:?}", copy_id, copy.selected_norisk_pack_id, standard_profile.selected_norisk_pack_id);
-                copy.selected_norisk_pack_id = standard_profile.selected_norisk_pack_id.clone();
+            // Force update GEG pack selection if different
+            if copy.selected_GEG_pack_id != standard_profile.selected_GEG_pack_id {
+                info!("Updating GEG pack for copy {}: {:?} -> {:?}", copy_id, copy.selected_GEG_pack_id, standard_profile.selected_GEG_pack_id);
+                copy.selected_GEG_pack_id = standard_profile.selected_GEG_pack_id.clone();
                 changed = true;
             }
             
@@ -3160,7 +3160,7 @@ impl PostInitializationHandler for ProfileManager {
         // Load profiles with migrations (backup was already created above)
         self.ensure_profiles_loaded().await?;
 
-        // Sync standard profiles - create editable copies for each norisk_version
+        // Sync standard profiles - create editable copies for each GEG_version
         if let Err(e) = self.sync_standard_profiles().await {
             warn!("ProfileManager: Failed to sync standard profiles: {}", e);
         }

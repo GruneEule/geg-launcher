@@ -104,7 +104,7 @@ export function ProfilesTabV2() {
   const isNrcGroup = (groupName: string | null): boolean => {
     if (!groupName) return false;
     const normalized = groupName.toLowerCase();
-    return normalized === "nrc" || normalized === "noriskclient" || normalized === "norisk client";
+    return normalized === "nrc" || normalized === "GEG" || normalized === "GEG client";
   };
 
   // Calculate group counts based on current search/filter

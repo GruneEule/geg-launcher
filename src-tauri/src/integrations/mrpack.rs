@@ -209,14 +209,14 @@ pub async fn process_mrpack(pack_path: PathBuf) -> Result<(Profile, ModrinthInde
         settings: ProfileSettings::default(),
         state: ProfileState::NotInstalled,
         mods: Vec::new(),
-        selected_norisk_pack_id: None,
-        disabled_norisk_mods_detailed: HashSet::new(),
+        selected_GEG_pack_id: None,
+        disabled_GEG_mods_detailed: HashSet::new(),
         source_standard_profile_id: None,
         group: Some("MODPACKS".to_string()),
         is_standard_version: false,
         use_shared_minecraft_folder: false,
         description: None,
-        norisk_information: None,
+        GEG_information: None,
         banner: None,
         background: None,
         modpack_info: None,
@@ -897,7 +897,7 @@ pub async fn download_and_process_mrpack(
         .header(
             "User-Agent",
             format!(
-                "NoRiskClient-Launcher/{} (support@norisk.gg)",
+                "GEG-Launcher/{} (support@GEG.gg)",
                 env!("CARGO_PKG_VERSION")
             ),
         )

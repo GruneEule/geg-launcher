@@ -1,7 +1,7 @@
 use crate::config::{ProjectDirsExt, LAUNCHER_DIRECTORY};
 use crate::error::Result;
-use crate::integrations::norisk_versions::NoriskVersionsConfig;
-use crate::minecraft::api::norisk_api::NoRiskApi;
+use crate::integrations::norisk_versions::GEGVersionsConfig;
+use crate::minecraft::api::norisk_api::NoriskApi;
 use crate::state::post_init::PostInitializationHandler;
 use crate::state::state_manager::State;
 use async_trait::async_trait;
@@ -15,21 +15,21 @@ use uuid::Uuid;
 
 use super::profile_state::Profile;
 
-// Default filename for the Norisk versions configuration
-const NORISK_VERSIONS_FILENAME: &str = "norisk_versions.json";
+// Default filename for the GEG versions configuration
+const GEG_VERSIONS_FILENAME: &str = "GEG_versions.json";
 
-/// Returns the path for the norisk versions config depending on experimental mode
-pub fn norisk_versions_path_for(is_experimental: bool) -> PathBuf {
+/// Returns the path for the GEG versions config depending on experimental mode
+pub fn GEG_versions_path_for(is_experimental: bool) -> PathBuf {
     let filename = if is_experimental {
-        "norisk_versions_exp.json"
+        "GEG_versions_exp.json"
     } else {
-        NORISK_VERSIONS_FILENAME
+        GEG_VERSIONS_FILENAME
     };
     LAUNCHER_DIRECTORY.root_dir().join(filename)
 }
 
 pub struct NoriskVersionManager {
-    config: Arc<RwLock<NoriskVersionsConfig>>,
+    config: Arc<RwLock<GEGVersionsConfig>>,
     config_path: PathBuf,
     save_lock: Mutex<()>, // Lock for potential future save operations
 }
@@ -43,24 +43,24 @@ impl NoriskVersionManager {
             config_path
         );
         Ok(Self {
-            config: Arc::new(RwLock::new(NoriskVersionsConfig::default())),
+            config: Arc::new(RwLock::new(GEGVersionsConfig::default())),
             config_path,
             save_lock: Mutex::new(()),
         })
     }
 
-    /// Fetches the latest Norisk versions configuration from the API and updates the local state.
+    /// Fetches the latest GEG versions configuration from the API and updates the local state.
     /// Saves the updated configuration to the file on success.
     pub async fn fetch_and_update_config(
         &self,
         // Assuming no token/experimental needed based on previous confirmation for packs
-        norisk_token: &str,
+        GEG_token: &str,
         is_experimental: bool,
     ) -> Result<()> {
-        info!("Fetching latest Norisk versions config from API...");
+        info!("Fetching latest GEG versions config from API...");
 
         // Assuming placeholder token/flag is okay, like for packs
-        match NoRiskApi::get_standard_versions(norisk_token, is_experimental).await {
+        match NoriskApi::get_standard_versions(GEG_token, is_experimental).await {
             Ok(new_config) => {
                 debug!(
                     "Successfully fetched {} standard profile definitions from API.",
@@ -75,7 +75,7 @@ impl NoriskVersionManager {
                 // Save the newly fetched config
                 match self.save_config().await {
                     Ok(_) => {
-                        info!("Successfully updated and saved Norisk versions config from API.");
+                        info!("Successfully updated and saved GEG versions config from API.");
                         Ok(())
                     }
                     Err(e) => {
@@ -88,21 +88,21 @@ impl NoriskVersionManager {
                 }
             }
             Err(e) => {
-                error!("Failed to fetch Norisk versions config from API: {}", e);
+                error!("Failed to fetch GEG versions config from API: {}", e);
                 Err(e) // Return the fetch error
             }
         }
     }
 
-    /// Loads the Norisk versions configuration from a JSON file.
+    /// Loads the GEG versions configuration from a JSON file.
     /// Returns a default empty config if the file doesn't exist or cannot be parsed.
-    async fn load_config_internal(&self, path: &PathBuf) -> Result<NoriskVersionsConfig> {
+    async fn load_config_internal(&self, path: &PathBuf) -> Result<GEGVersionsConfig> {
         if !path.exists() {
             info!(
-                "Norisk versions config file not found at {:?}, using default empty config.",
+                "GEG versions config file not found at {:?}, using default empty config.",
                 path
             );
-            return Ok(NoriskVersionsConfig { profiles: vec![] });
+            return Ok(GEGVersionsConfig { profiles: vec![] });
         }
 
         let data = fs::read_to_string(path).await?;
@@ -110,9 +110,9 @@ impl NoriskVersionManager {
         match serde_json::from_str(&data) {
             Ok(config) => Ok(config),
             Err(e) => {
-                error!("Failed to parse norisk_versions.json at {:?}: {}. Returning default empty config.", path, e);
+                error!("Failed to parse GEG_versions.json at {:?}: {}. Returning default empty config.", path, e);
                 // Return default instead of error to allow launcher to start even with broken config
-                Ok(NoriskVersionsConfig { profiles: vec![] })
+                Ok(GEGVersionsConfig { profiles: vec![] })
             }
         }
     }
@@ -131,7 +131,7 @@ impl NoriskVersionManager {
         // Choose path based on experimental mode if available; fall back to manager's path
         let path_to_write = if let Ok(state) = State::get().await {
             let is_exp = state.config_manager.is_experimental_mode().await;
-            norisk_versions_path_for(is_exp)
+            GEG_versions_path_for(is_exp)
         } else {
             self.config_path.clone()
         };
@@ -140,7 +140,7 @@ impl NoriskVersionManager {
             if !parent_dir.exists() {
                 fs::create_dir_all(parent_dir).await?;
                 info!(
-                    "Created directory for norisk versions config: {:?}",
+                    "Created directory for GEG versions config: {:?}",
                     parent_dir
                 );
             }
@@ -148,21 +148,21 @@ impl NoriskVersionManager {
 
         fs::write(&path_to_write, config_data).await?;
         info!(
-            "Successfully saved norisk versions config to {:?}",
+            "Successfully saved GEG versions config to {:?}",
             path_to_write
         );
         Ok(())
     }
 
-    /// Returns a clone of the entire current NoriskVersionsConfig.
-    pub async fn get_config(&self) -> NoriskVersionsConfig {
+    /// Returns a clone of the entire current GEGVersionsConfig.
+    pub async fn get_config(&self) -> GEGVersionsConfig {
         self.config.read().await.clone()
     }
 
     /// Updates the entire configuration and saves it to the file.
     /// Note: Use with caution, as standard versions are often meant to be static or fetched.
     #[allow(dead_code)]
-    pub async fn update_config(&self, new_config: NoriskVersionsConfig) -> Result<()> {
+    pub async fn update_config(&self, new_config: GEGVersionsConfig) -> Result<()> {
         {
             let mut config_guard = self.config.write().await;
             *config_guard = new_config;
@@ -174,9 +174,9 @@ impl NoriskVersionManager {
     #[allow(dead_code)]
     pub async fn print_current_config(&self) {
         let config_guard = self.config.read().await;
-        //println!("--- Current Norisk Versions Config ---");
+        //println!("--- Current GEG Versions Config ---");
         //println!("{:#?}", *config_guard);
-        //println!("--- End Norisk Versions Config ---");
+        //println!("--- End GEG Versions Config ---");
     }
 
     /// Returns a standard profile by ID if found
@@ -186,7 +186,7 @@ impl NoriskVersionManager {
     }
 
     // Add more specific accessor methods if needed, e.g.:
-    // pub async fn get_standard_profile(&self, profile_id: Uuid) -> Option<NoriskVersionProfile> { ... }
+    // pub async fn get_standard_profile(&self, profile_id: Uuid) -> Option<GEGVersionProfile> { ... }
 }
 
 #[async_trait]
@@ -197,7 +197,7 @@ impl PostInitializationHandler for NoriskVersionManager {
         // If parsing fails or file not found, use default. This logic is now effectively in load_config_internal.
         let load_path = if let Ok(state) = State::get().await {
             let is_exp = state.config_manager.is_experimental_mode().await;
-            norisk_versions_path_for(is_exp)
+            GEG_versions_path_for(is_exp)
         } else {
             self.config_path.clone()
         };
@@ -207,7 +207,7 @@ impl PostInitializationHandler for NoriskVersionManager {
                 load_path,
                 e
             );
-            NoriskVersionsConfig::default()
+            GEGVersionsConfig::default()
         });
 
         let mut config_guard = self.config.write().await;
@@ -219,7 +219,7 @@ impl PostInitializationHandler for NoriskVersionManager {
     }
 }
 
-/// Returns the default path for the norisk_versions.json file within the launcher directory.
+/// Returns the default path for the GEG_versions.json file within the launcher directory.
 pub fn default_norisk_versions_path() -> PathBuf {
-    LAUNCHER_DIRECTORY.root_dir().join(NORISK_VERSIONS_FILENAME)
+    LAUNCHER_DIRECTORY.root_dir().join(GEG_VERSIONS_FILENAME)
 }

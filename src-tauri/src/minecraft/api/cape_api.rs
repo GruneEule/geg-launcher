@@ -106,10 +106,10 @@ impl CapeApi {
     fn get_api_base(is_experimental: bool) -> String {
         if is_experimental {
             debug!("[Cape API] Using experimental API endpoint");
-            String::from("https://api-staging.norisk.gg/api/v1/cosmetics")
+            String::from("https://api-staging.GEG.gg/api/v1/cosmetics")
         } else {
             debug!("[Cape API] Using production API endpoint");
-            String::from("https://api.norisk.gg/api/v1/cosmetics")
+            String::from("https://api.GEG.gg/api/v1/cosmetics")
         }
     }
 
@@ -125,7 +125,7 @@ impl CapeApi {
     /// - request_uuid: UUID for tracking the request
     pub async fn browse_capes(
         &self,
-        norisk_token: &str,
+        GEG_token: &str,
         page: Option<u32>,
         page_size: Option<u32>,
         sort_by: Option<&str>,
@@ -178,7 +178,7 @@ impl CapeApi {
 
         let response = HTTP_CLIENT
             .get(url)
-            .header("Authorization", format!("Bearer {}", norisk_token))
+            .header("Authorization", format!("Bearer {}", GEG_token))
             .query(&query_params)
             .send()
             .await
@@ -208,13 +208,13 @@ impl CapeApi {
     /// Get capes for a specific player
     ///
     /// Parameters:
-    /// - norisk_token: Authentication token
+    /// - GEG_token: Authentication token
     /// - player_uuid: UUID of the player to get capes for
     /// - request_uuid: UUID for tracking the request
     /// - is_experimental: Whether to use the experimental API endpoint
     pub async fn get_player_capes(
         &self,
-        norisk_token: &str,
+        GEG_token: &str,
         player_uuid: &Uuid,
         request_uuid: &str,
         is_experimental: bool,
@@ -233,8 +233,8 @@ impl CapeApi {
 
         debug!(
             "[Cape API get_player_capes] Authorization token (first/last 8 chars): {}...{}",
-            &norisk_token[..std::cmp::min(8, norisk_token.len())],
-            &norisk_token[std::cmp::max(0, norisk_token.len().saturating_sub(8))..]
+            &GEG_token[..std::cmp::min(8, GEG_token.len())],
+            &GEG_token[std::cmp::max(0, GEG_token.len().saturating_sub(8))..]
         );
         debug!(
             "[Cape API get_player_capes] Sending GET request with query parameters: {:?}",
@@ -243,7 +243,7 @@ impl CapeApi {
 
         let response = HTTP_CLIENT
             .get(&url)
-            .header("Authorization", format!("Bearer {}", norisk_token))
+            .header("Authorization", format!("Bearer {}", GEG_token))
             .query(&query_params)
             .send()
             .await
@@ -289,13 +289,13 @@ impl CapeApi {
     /// Equip a specific cape for a player
     ///
     /// Parameters:
-    /// - norisk_token: Authentication token
+    /// - GEG_token: Authentication token
     /// - player_uuid: UUID of the player
     /// - cape_hash: Hash of the cape to equip
     /// - is_experimental: Whether to use the experimental API endpoint
     pub async fn equip_cape(
         &self,
-        norisk_token: &str,
+        GEG_token: &str,
         player_uuid: &Uuid,
         cape_hash: &str,
         is_experimental: bool,
@@ -320,7 +320,7 @@ impl CapeApi {
 
         let response = HTTP_CLIENT
             .post(url)
-            .header("Authorization", format!("Bearer {}", norisk_token))
+            .header("Authorization", format!("Bearer {}", GEG_token))
             .query(&query_params)
             .send()
             .await
@@ -360,13 +360,13 @@ impl CapeApi {
     /// Delete a specific cape owned by the player
     ///
     /// Parameters:
-    /// - norisk_token: Authentication token
+    /// - GEG_token: Authentication token
     /// - player_uuid: UUID of the player who owns the cape
     /// - cape_hash: Hash of the cape to delete
     /// - is_experimental: Whether to use the experimental API endpoint
     pub async fn delete_cape(
         &self,
-        norisk_token: &str,
+        GEG_token: &str,
         player_uuid: &Uuid,
         cape_hash: &str,
         is_experimental: bool,
@@ -391,7 +391,7 @@ impl CapeApi {
 
         let response = HTTP_CLIENT
             .delete(url)
-            .header("Authorization", format!("Bearer {}", norisk_token))
+            .header("Authorization", format!("Bearer {}", GEG_token))
             .query(&query_params)
             .send()
             .await
@@ -431,7 +431,7 @@ impl CapeApi {
     /// Upload a new cape image for a player
     ///
     /// Parameters:
-    /// - norisk_token: Authentication token
+    /// - GEG_token: Authentication token
     /// - player_uuid: UUID of the player uploading the cape
     /// - image_path: Path to the cape image file (PNG)
     /// - is_experimental: Whether to use the experimental API endpoint
@@ -440,7 +440,7 @@ impl CapeApi {
     /// - Result containing the CapeUploadResponse with hash and resize info on success.
     pub async fn upload_cape(
         &self,
-        norisk_token: &str,
+        GEG_token: &str,
         player_uuid: &Uuid,
         image_path: &PathBuf,
         is_experimental: bool,
@@ -493,7 +493,7 @@ impl CapeApi {
 
         let response = HTTP_CLIENT
             .post(url)
-            .header("Authorization", format!("Bearer {}", norisk_token))
+            .header("Authorization", format!("Bearer {}", GEG_token))
             .query(&query_params)
             .body(image_data)
             .send()
@@ -536,7 +536,7 @@ impl CapeApi {
     /// Fetch multiple capes by hashes (max 100)
     pub async fn get_capes_by_hashes(
         &self,
-        norisk_token: &str,
+        GEG_token: &str,
         hashes: &[String],
         is_experimental: bool,
     ) -> Result<Vec<CosmeticCape>> {
@@ -554,7 +554,7 @@ impl CapeApi {
 
         let response = HTTP_CLIENT
             .get(url)
-            .header("Authorization", format!("Bearer {}", norisk_token))
+            .header("Authorization", format!("Bearer {}", GEG_token))
             .query(&[("hash", joined)])
             .send()
             .await
@@ -599,14 +599,14 @@ impl CapeApi {
     /// Add a cape to user's favorites
     ///
     /// Parameters:
-    /// - norisk_token: Authentication token
+    /// - GEG_token: Authentication token
     /// - cape_hash: Hash of the cape to favorite
     /// - is_experimental: Whether to use the experimental API endpoint
     ///
     /// Returns: Updated list of favorite cape hashes
     pub async fn add_favorite_cape(
         &self,
-        norisk_token: &str,
+        GEG_token: &str,
         cape_hash: &str,
         is_experimental: bool,
     ) -> Result<Vec<String>> {
@@ -622,7 +622,7 @@ impl CapeApi {
 
         let response = HTTP_CLIENT
             .put(url)
-            .header("Authorization", format!("Bearer {}", norisk_token))
+            .header("Authorization", format!("Bearer {}", GEG_token))
             .send()
             .await
             .map_err(|e| {
@@ -672,14 +672,14 @@ impl CapeApi {
     /// Remove a cape from user's favorites
     ///
     /// Parameters:
-    /// - norisk_token: Authentication token
+    /// - GEG_token: Authentication token
     /// - cape_hash: Hash of the cape to remove from favorites
     /// - is_experimental: Whether to use the experimental API endpoint
     ///
     /// Returns: Updated list of favorite cape hashes
     pub async fn remove_favorite_cape(
         &self,
-        norisk_token: &str,
+        GEG_token: &str,
         cape_hash: &str,
         is_experimental: bool,
     ) -> Result<Vec<String>> {
@@ -695,7 +695,7 @@ impl CapeApi {
 
         let response = HTTP_CLIENT
             .delete(url)
-            .header("Authorization", format!("Bearer {}", norisk_token))
+            .header("Authorization", format!("Bearer {}", GEG_token))
             .send()
             .await
             .map_err(|e| {
@@ -745,12 +745,12 @@ impl CapeApi {
     /// Unequip the currently equipped cape for a player
     ///
     /// Parameters:
-    /// - norisk_token: Authentication token
+    /// - GEG_token: Authentication token
     /// - player_uuid: UUID of the player
     /// - is_experimental: Whether to use the experimental API endpoint
     pub async fn unequip_cape(
         &self,
-        norisk_token: &str,
+        GEG_token: &str,
         player_uuid: &Uuid,
         is_experimental: bool,
     ) -> Result<()> {
@@ -775,7 +775,7 @@ impl CapeApi {
         // Note: Using DELETE method as per the original code for the unequip endpoint
         let response = HTTP_CLIENT
             .delete(url)
-            .header("Authorization", format!("Bearer {}", norisk_token))
+            .header("Authorization", format!("Bearer {}", GEG_token))
             .query(&query_params)
             .send()
             .await

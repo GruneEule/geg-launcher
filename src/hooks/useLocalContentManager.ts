@@ -27,7 +27,7 @@ export interface LocalContentItem extends ProfileLocalContentItem {
 }
 
 // Enum for the types of content this hook can manage (used for UI/logic, maps to NrContentType for backend)
-export type LocalContentType = 'ShaderPack' | 'ResourcePack' | 'DataPack' | 'Mod' | 'NoRiskMod';
+export type LocalContentType = 'ShaderPack' | 'ResourcePack' | 'DataPack' | 'Mod' | 'GEGMod';
 
 interface UseLocalContentManagerProps<T extends LocalContentItem> {
   profile?: Profile;
@@ -106,7 +106,7 @@ function mapUiContentTypeToBackend(uiType: LocalContentType): NrContentType {
     case 'ShaderPack': return NrContentType.ShaderPack;
     case 'DataPack': return NrContentType.DataPack;
     case 'Mod': return NrContentType.Mod;
-    case 'NoRiskMod': return NrContentType.NoRiskMod;
+    case 'GEGMod': return NrContentType.GEGMod;
     default: throw new Error(`Unsupported UI content type: ${uiType}`);
   }
 }
@@ -114,11 +114,11 @@ function mapUiContentTypeToBackend(uiType: LocalContentType): NrContentType {
 // Helper to map backend ProfileLocalContentItem to frontend T (which extends LocalContentItem)
 function mapBackendItemToFrontendType<T extends LocalContentItem>(rawItem: ProfileLocalContentItem): T {
   // rawItem is typed as ProfileLocalContentItem (from types/profile.ts)
-  // It has fields like: filename, path_str, ..., norisk_identifier, fallback_version
-  // The actual object from Rust via invoke might have `norisk_info` field instead of `norisk_identifier` being populated.
+  // It has fields like: filename, path_str, ..., GEG_identifier, fallback_version
+  // The actual object from Rust via invoke might have `GEG_info` field instead of `GEG_identifier` being populated.
   const outputItem = {
     ...rawItem, // Spread all properties from rawItem (which is typed as ProfileLocalContentItem)
-    path: rawItem.path_str, // Add/override path using path_str from ProfileLocalContentItem // Fallback to the typed norisk_identifier if norisk_info isn't there
+    path: rawItem.path_str, // Add/override path using path_str from ProfileLocalContentItem // Fallback to the typed GEG_identifier if GEG_info isn't there
   };
 
   // Optional: For cleanliness, if T is not expected to have path_str, we could delete it.
@@ -155,9 +155,9 @@ function createUninstallPayload<T extends LocalContentItem>(
       return null;
     }
     return { profile_id: profileId, file_path: item.path };
-  } else if (uiContentType === 'NoRiskMod') {
-    toast.error("Direct uninstallation of NoRiskMod items is not supported via this method. Please manage NoRisk Packs directly.");
-    console.error("[useLocalContentManager] Attempted to create uninstall payload for NoRiskMod. This is generally not supported here.");
+  } else if (uiContentType === 'GEGMod') {
+    toast.error("Direct uninstallation of GEGMod items is not supported via this method. Please manage GEG Packs directly.");
+    console.error("[useLocalContentManager] Attempted to create uninstall payload for GEGMod. This is generally not supported here.");
     return null;
   }
 
@@ -174,18 +174,18 @@ function createTogglePayload<T extends LocalContentItem>(
 ): ToggleContentPayload | null {
   const backendContentType = mapUiContentTypeToBackend(uiContentType);
 
-  const payloadBase: Omit<ToggleContentPayload, 'sha1_hash' | 'file_path' | 'norisk_mod_identifier'> = {
+  const payloadBase: Omit<ToggleContentPayload, 'sha1_hash' | 'file_path' | 'GEG_mod_identifier'> = {
     profile_id: profileId,
     enabled: targetEnabledState,
     content_type: backendContentType,
   };
 
-  if (uiContentType === 'NoRiskMod') {
-    const noriskIdentifierFromItem = (item as ProfileLocalContentItem).norisk_info; // Expect norisk_info from the item
-    if (noriskIdentifierFromItem) {
-      return { ...payloadBase, norisk_mod_identifier: noriskIdentifierFromItem }; // Map to payload's norisk_mod_identifier
+  if (uiContentType === 'GEGMod') {
+    const GEGIdentifierFromItem = (item as ProfileLocalContentItem).GEG_info; // Expect GEG_info from the item
+    if (GEGIdentifierFromItem) {
+      return { ...payloadBase, GEG_mod_identifier: GEGIdentifierFromItem }; // Map to payload's GEG_mod_identifier
     } else {
-      toast.error(`NoRiskMod item ${item.filename} is missing the norisk_info. Cannot toggle.`);
+      toast.error(`GEGMod item ${item.filename} is missing the GEG_info. Cannot toggle.`);
       return null;
     }
   } else if (uiContentType === 'Mod') {
@@ -454,7 +454,7 @@ export function useLocalContentManager<T extends LocalContentItem>({
   useEffect(() => {
     fetchBasicInfo();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchBasicInfo, profile?.selected_norisk_pack_id]); // Added profile.selected_norisk_pack_id to ensure refetch on pack change
+  }, [fetchBasicInfo, profile?.selected_GEG_pack_id]); // Added profile.selected_GEG_pack_id to ensure refetch on pack change
   
   // Phase 2: Trigger Fetch Hashes (for all content types)
   useEffect(() => {
@@ -645,10 +645,10 @@ export function useLocalContentManager<T extends LocalContentItem>({
           if (!item.path || localArchiveIcons[item.path] !== undefined) {
             return false;
           }
-          // For NoRiskMod, the item.path points to a .jar file in cache
+          // For GEGMod, the item.path points to a .jar file in cache
           // For other types, item.path usually points to a .zip file
           const lowerPath = item.path.toLowerCase();
-          if (contentType === 'NoRiskMod') {
+          if (contentType === 'GEGMod') {
             return lowerPath.endsWith('.jar');
           } else {
             return lowerPath.endsWith('.zip');
@@ -775,7 +775,7 @@ export function useLocalContentManager<T extends LocalContentItem>({
           return i;
         })
       );
-      if (contentType !== 'NoRiskMod' && onRefreshRequiredRef.current) {
+      if (contentType !== 'GEGMod' && onRefreshRequiredRef.current) {
         onRefreshRequiredRef.current();
       }
     } catch (err) {
@@ -1003,7 +1003,7 @@ export function useLocalContentManager<T extends LocalContentItem>({
       const request: UnifiedUpdateCheckRequest = {
         hashes,
         algorithm: "sha1",
-        loaders: (contentType === 'Mod' || contentType === 'NoRiskMod') && currentProfile.loader ? [currentProfile.loader] : [],
+        loaders: (contentType === 'Mod' || contentType === 'GEGMod') && currentProfile.loader ? [currentProfile.loader] : [],
         game_versions: [currentProfile.game_version],
         hash_platforms: hashPlatforms, // Neue Plattform-Mapping
         hash_fingerprints: Object.keys(hashFingerprints).length > 0 ? hashFingerprints : undefined,
@@ -1178,18 +1178,18 @@ export function useLocalContentManager<T extends LocalContentItem>({
     const platform = updateVersion.source;
 
     // Basic validation for all content types
-    if (!item.path && !(contentType === 'Mod' && item.id && !item.source_type && !item.norisk_info)) {
+    if (!item.path && !(contentType === 'Mod' && item.id && !item.source_type && !item.GEG_info)) {
       toast.error(`Item path missing for ${getDisplayFileName(item)}, cannot update.`);
       return;
     }
 
     // Platform-specific validation
-    if (platform === 'Modrinth' && contentType === 'Mod' && item.id && !item.source_type && !item.norisk_info && !item.modrinth_info) {
+    if (platform === 'Modrinth' && contentType === 'Mod' && item.id && !item.source_type && !item.GEG_info && !item.modrinth_info) {
       toast.error(`Mod ${getDisplayFileName(item)} is not recognized as a Modrinth mod. Cannot update.`);
       return;
     }
 
-    if (platform === 'CurseForge' && contentType === 'Mod' && item.id && !item.source_type && !item.norisk_info && !item.curseforge_info) {
+    if (platform === 'CurseForge' && contentType === 'Mod' && item.id && !item.source_type && !item.GEG_info && !item.curseforge_info) {
       toast.error(`Mod ${getDisplayFileName(item)} is not recognized as a CurseForge mod. Cannot update.`);
       return;
     }

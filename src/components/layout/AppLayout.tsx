@@ -40,7 +40,6 @@ const navItems = [
   { id: "profiles", icon: "solar:user-id-bold", label: "Profiles" },
   { id: "mods", icon: "solar:widget-bold", label: "Mods" },
   { id: "skins", icon: "solar:emoji-funny-circle-bold", label: "Skins" },
-  { id: "capes", icon: "solar:shop-bold", label: "Capes" },
   { id: "settings", icon: "solar:settings-bold", label: "Settings" },
 ];
 
@@ -455,7 +454,7 @@ function HeaderBar({ minimizeRef, maximizeRef, closeRef }: HeaderBarProps) {
               className="font-minecraft text-4xl tracking-wider font-bold lowercase text-shadow"
               data-tauri-drag-region
             >
-              noriskclient
+              GEG
             </h1>
             {availableUpdate && (
               <Tooltip content={`Click to update: ${availableUpdate.version}`}>

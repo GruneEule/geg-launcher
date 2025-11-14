@@ -57,13 +57,13 @@ use commands::profile_command::{
     create_profile, delete_custom_mod, delete_mod_from_profile, delete_profile, delete_world,
     export_profile, get_all_profiles_and_last_played, get_custom_mods, get_local_content,
     get_local_datapacks, get_local_resourcepacks, get_local_shaderpacks, get_log_file_content,
-    get_norisk_packs, get_norisk_packs_resolved, get_profile, get_profile_directory_structure,
+    get_GEG_packs, get_GEG_packs_resolved, get_profile, get_profile_directory_structure,
     get_profile_latest_log_content, get_profile_log_files, get_servers_for_profile,
     get_standard_profiles, get_system_ram_mb, get_worlds_for_profile, import_local_mods,
     import_profile, import_profile_from_file, is_content_installed, is_profile_launching,
     launch_profile, list_profile_screenshots, list_profiles, open_profile_folder,
-    open_profile_latest_log, refresh_norisk_packs, refresh_standard_versions, repair_profile,
-    resolve_loader_version, search_profiles, set_custom_mod_enabled, set_norisk_mod_status,
+    open_profile_latest_log, refresh_GEG_packs, refresh_standard_versions, repair_profile,
+    resolve_loader_version, search_profiles, set_custom_mod_enabled, set_GEG_mod_status,
     set_profile_mod_enabled, update_datapack_from_modrinth, update_modrinth_mod_version,
     update_profile, update_resourcepack_from_modrinth, update_shaderpack_from_modrinth,
 };
@@ -81,7 +81,7 @@ use commands::modrinth_commands::{
 };
 
 use commands::file_command::{
-    delete_file, get_icons_for_archives, get_icons_for_norisk_mods, open_file, open_file_directory,
+    delete_file, get_icons_for_archives, get_icons_for_GEG_mods, open_file, open_file_directory,
     read_file_bytes, set_file_enabled,
 };
 
@@ -129,7 +129,7 @@ async fn main() {
         eprintln!("FEHLER: Logging konnte nicht initialisiert werden: {}", e);
     }
 
-    info!("Starting NoRiskClient Launcher...");
+    info!("Starting GEG Launcher...");
 
     tauri::Builder::default()
         .plugin(tauri_plugin_process::init())
@@ -147,10 +147,10 @@ async fn main() {
                 let _ = window.unminimize(); // Ensure it's not minimized
                 let _ = window.set_focus();   // Bring to front and focus
             }
-            // Call the handler for .noriskpack files
+            // Call the handler for .GEGpack files
             let app_handle_clone = app.clone();
             tauri::async_runtime::spawn(async move {
-                norisk_packs::handle_noriskpack_file_paths(&app_handle_clone, argv).await;
+                norisk_packs::handle_GEGpack_file_paths(&app_handle_clone, argv).await;
             });*/
         }))
         .plugin(tauri_plugin_dialog::init())
@@ -160,14 +160,14 @@ async fn main() {
             let app_handle = app.handle().clone();
 
             // --- Initialize System Tray (Tauri 2.0) ---
-            let show_item = MenuItem::with_id(app, "show", "Show NoRisk Launcher", true, None::<&str>)?;
+            let show_item = MenuItem::with_id(app, "show", "Show GEG Launcher", true, None::<&str>)?;
             let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
 
             let _tray = TrayIconBuilder::new()
                 .menu(&menu)
                 .show_menu_on_left_click(false)
-                .tooltip("NoRisk Client Launcher")
+                .tooltip("GEG Client Launcher")
                 .icon(app.default_window_icon().unwrap().clone())
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "show" => {
@@ -221,7 +221,7 @@ async fn main() {
                 })
                 .build(app)?;
 
-            // --- Handle .noriskpack file opening on initial startup (all platforms) ---
+            // --- Handle .GEGpack file opening on initial startup (all platforms) ---
             // The single-instance plugin does not handle the *very first* launch with arguments.
             // We still need to check std::env::args() here for that first launch.
             /*info!("Checking for startup file arguments...");
@@ -229,38 +229,19 @@ async fn main() {
             if startup_args.len() > 1 { // args[0] is exe path, check if there are more
                 let handle_clone = app_handle.clone();
                 tauri::async_runtime::spawn(async move {
-                    // Pass all startup_args; handle_noriskpack_file_paths will skip the exe path if needed
-                    norisk_packs::handle_noriskpack_file_paths(&handle_clone, startup_args).await;
+                    // Pass all startup_args; handle_GEGpack_file_paths will skip the exe path if needed
+                    norisk_packs::handle_GEGpack_file_paths(&handle_clone, startup_args).await;
                 });
             }*/
-            // --- End .noriskpack handling on startup ---
+            // --- End .GEGpack handling on startup ---
 
-            // Task for State Init and Updater Window
+            // Task for State Init
             let state_init_app_handle = app_handle.clone();
             tauri::async_runtime::spawn(async move {
-                // --- Create Updater Window (but keep hidden initially) ---
-                let updater_window = match updater_utils::create_updater_window(&state_init_app_handle).await {
-                    Ok(win) => {
-                        info!("Updater window created successfully (initially hidden).");
-                        Some(win)
-                    }
-                    Err(e) => {
-                        error!("Failed to create updater window: {}", e);
-                        None
-                    }
-                };
-
                 // --- State Initialization --- 
                 info!("Initiating state initialization...");
                 if let Err(e) = state::state_manager::State::init(Arc::new(state_init_app_handle.clone())).await {
-                    error!("CRITICAL: Failed to initialize state: {}. Update check and main window might not proceed correctly.", e);
-                    if let Some(win) = updater_window {
-                        updater_utils::emit_status(&state_init_app_handle, "close", "Closing due to state init error.".to_string(), None);
-                        tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
-                        if let Err(close_err) = win.close() {
-                            error!("Failed to close updater window after state init error: {}", close_err);
-                        }
-                    }
+                    error!("CRITICAL: Failed to initialize state: {}", e);
                     return;
                 }
                 info!("State initialization finished successfully.");
@@ -269,7 +250,6 @@ async fn main() {
                 match state::state_manager::State::get().await {
                     Ok(state_manager_instance) => {
                         let config = state_manager_instance.config_manager.get_config().await;
-                        let check_beta_channel = config.check_beta_channel;
                         let mut auto_check_updates_enabled = config.auto_check_updates;
 
                         // Disable auto-updates when running in Flatpak
@@ -279,34 +259,29 @@ async fn main() {
                         }
 
                         if auto_check_updates_enabled {
-                            info!("Initiating application update check (Channel determined by config: Beta={})...", check_beta_channel);
-                            updater_utils::check_for_updates(state_init_app_handle.clone(), check_beta_channel, updater_window.clone()).await;
-                            info!("Update check process has finished.");
-                        } else {
-                            info!("Auto-check for updates is disabled in settings. Skipping update check.");
-                            // Ensure the updater window (if created) is closed if we skip the check.
-                            if let Some(win) = updater_window {
-                                updater_utils::emit_status(&state_init_app_handle, "close", "Auto-update disabled.".to_string(), None);
-                                tokio::time::sleep(tokio::time::Duration::from_millis(200)).await; // Give time for emit to process
-                                if let Err(close_err) = win.close() {
-                                    error!("Failed to close updater window when skipping updates: {}", close_err);
+                            info!("Initiating application update check...");
+                            match updater_utils::check_update_available(&state_init_app_handle).await {
+                                Ok(Some(update_info)) => {
+                                    info!("Update available: {}", update_info.version);
+                                    // Update is available - the frontend can prompt user to download
+                                }
+                                Ok(None) => {
+                                    info!("Application is up to date.");
+                                }
+                                Err(e) => {
+                                    info!("Update check failed: {}", e);
                                 }
                             }
+                        } else {
+                            info!("Auto-check for updates is disabled in settings. Skipping update check.");
                         }
                     }
                     Err(e) => {
-                        error!("Failed to get global state for update check: {}.", e);
-                        if let Some(win) = updater_window { 
-                            updater_utils::emit_status(&state_init_app_handle, "close", "Closing due to state fetch error.".to_string(), None);
-                            tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
-                            if let Err(close_err) = win.close() {
-                                error!("Failed to close updater window after state fetch error: {}", close_err);
-                            }
-                        }
+                        error!("Failed to get global state for update check: {}", e);
                     }
                 }
 
-                info!("Updater process finished. Attempting to show main window...");
+                info!("Initialization process finished. Attempting to show main window...");
                 if let Some(main_window) = state_init_app_handle.get_webview_window("main") { 
                     if let Err(e) = main_window.show() {
                         error!("Failed to show main window: {}", e);
@@ -317,14 +292,8 @@ async fn main() {
                         }
                     }
                 } else {
-                    error!("Could not get main window handle to show it after update check!");
+                    error!("Could not get main window handle to show it!");
                 }
-
-                // --- Test Unified Mod Search ---
-                //debug_utils::debug_unified_mod_search().await;
-
-                // --- Test Unified Mod Versions ---
-                //debug_utils::debug_unified_mod_versions().await;
             });
 
             // --- Register Focus Event Listener for Discord RPC --- 
@@ -400,9 +369,9 @@ async fn main() {
             get_icons_for_archives,
             set_profile_mod_enabled,
             delete_mod_from_profile,
-            get_norisk_packs,
-            get_norisk_packs_resolved,
-            set_norisk_mod_status,
+            get_GEG_packs,
+            get_GEG_packs_resolved,
+            set_GEG_mod_status,
             update_modrinth_mod_version,
             get_all_modrinth_versions_for_contexts,
             get_full_log,
@@ -424,7 +393,7 @@ async fn main() {
             get_quilt_loader_versions,
             set_file_enabled,
             delete_file,
-            get_icons_for_norisk_mods,
+            get_icons_for_GEG_mods,
             open_file_directory,
             download_and_install_modrinth_modpack,
             get_standard_profiles,
@@ -457,7 +426,7 @@ async fn main() {
             unequip_cape,
             add_favorite_cape,
             remove_favorite_cape,
-            refresh_norisk_packs,
+            refresh_GEG_packs,
             refresh_standard_versions,
             is_content_installed,
             batch_check_content_installed,

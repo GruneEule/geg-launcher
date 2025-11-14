@@ -3,8 +3,8 @@ use crate::error::{AppError, CommandError};
 use crate::integrations::curseforge;
 use crate::integrations::modrinth::ModrinthVersion;
 use crate::integrations::mrpack;
-use crate::integrations::norisk_packs::NoriskModpacksConfig;
-use crate::integrations::norisk_versions::NoriskVersionsConfig;
+use crate::integrations::norisk_packs::GEGModpacksConfig;
+use crate::integrations::norisk_versions::GEGVersionsConfig;
 use crate::minecraft::installer;
 use crate::minecraft::modloader::{ModloaderFactory, ResolvedLoaderVersion};
 use crate::state::event_state::{EventPayload, EventType};
@@ -45,7 +45,7 @@ pub struct CreateProfileParams {
     game_version: String,
     loader: String,
     loader_version: Option<String>,
-    selected_norisk_pack_id: Option<String>,
+    selected_GEG_pack_id: Option<String>,
     use_shared_minecraft_folder: Option<bool>,
 }
 
@@ -56,12 +56,12 @@ pub struct UpdateProfileParams {
     loader: Option<String>,
     loader_version: Option<String>,
     settings: Option<ProfileSettings>,
-    selected_norisk_pack_id: Option<String>,
+    selected_GEG_pack_id: Option<String>,
     group: Option<String>,
     clear_group: Option<bool>,
     use_shared_minecraft_folder: Option<bool>,
-    clear_selected_norisk_pack: Option<bool>,
-    norisk_information: Option<crate::state::profile_state::NoriskInformation>,
+    clear_selected_GEG_pack: Option<bool>,
+    GEG_information: Option<crate::state::profile_state::GEGInformation>,
 }
 
 // Neue DTO für den copy_profile Command
@@ -140,8 +140,8 @@ pub async fn create_profile(params: CreateProfileParams) -> Result<Uuid, Command
         settings: ProfileSettings::default(),
         state: ProfileState::NotInstalled,
         mods: Vec::new(),
-        selected_norisk_pack_id: params.selected_norisk_pack_id.clone(),
-        disabled_norisk_mods_detailed: HashSet::new(),
+        selected_GEG_pack_id: params.selected_GEG_pack_id.clone(),
+        disabled_GEG_mods_detailed: HashSet::new(),
         source_standard_profile_id: None,
         use_shared_minecraft_folder: params.use_shared_minecraft_folder.unwrap_or(false),
         group: None,
@@ -149,7 +149,7 @@ pub async fn create_profile(params: CreateProfileParams) -> Result<Uuid, Command
         banner: None,
         background: None,
         is_standard_version: false,
-        norisk_information: None,
+        GEG_information: None,
         modpack_info: None,
     };
 
@@ -203,7 +203,7 @@ pub async fn launch_profile(
                 "Profile with ID {} not found, checking standard versions",
                 id
             );
-            let standard_versions = state.norisk_version_manager.get_config().await;
+            let standard_versions = state.GEG_version_manager.get_config().await;
 
             // Find a standard profile with matching ID
             let standard_profile = standard_versions
@@ -600,19 +600,19 @@ async fn try_update_profile(id: Uuid, params: UpdateProfileParams) -> Result<(),
         profile.settings = settings; // Assuming ProfileSettings is Clone or params.settings is not used after this
     }
 
-    // Handle selected_norisk_pack_id based on clear_selected_norisk_pack and new value
-    if params.clear_selected_norisk_pack == Some(true) {
-        info!("Clearing selected_norisk_pack_id for profile {}", id);
-        profile.selected_norisk_pack_id = None;
-    } else if let Some(pack_id) = &params.selected_norisk_pack_id {
+    // Handle selected_GEG_pack_id based on clear_selected_GEG_pack and new value
+    if params.clear_selected_GEG_pack == Some(true) {
+        info!("Clearing selected_GEG_pack_id for profile {}", id);
+        profile.selected_GEG_pack_id = None;
+    } else if let Some(pack_id) = &params.selected_GEG_pack_id {
         info!(
-            "Updating selected_norisk_pack_id to: {} for profile {}",
+            "Updating selected_GEG_pack_id to: {} for profile {}",
             pack_id, id
         );
-        profile.selected_norisk_pack_id = Some(pack_id.clone());
+        profile.selected_GEG_pack_id = Some(pack_id.clone());
     } else {
-        info!("selected_norisk_pack_id not explicitly changed or cleared for profile {}. Current: {:?}", id, profile.selected_norisk_pack_id);
-        // No change to selected_norisk_pack_id if neither clear is true nor a new value is provided
+        info!("selected_GEG_pack_id not explicitly changed or cleared for profile {}. Current: {:?}", id, profile.selected_GEG_pack_id);
+        // No change to selected_GEG_pack_id if neither clear is true nor a new value is provided
     }
 
     // Handle group based on clear_group and new value
@@ -630,20 +630,20 @@ async fn try_update_profile(id: Uuid, params: UpdateProfileParams) -> Result<(),
         profile.use_shared_minecraft_folder = use_shared;
     }
 
-    // Handle norisk_information
-    if let Some(norisk_info) = params.norisk_information {
-        info!("Updating norisk_information to: {:?}", norisk_info);
-        profile.norisk_information = Some(norisk_info);
+    // Handle GEG_information
+    if let Some(GEG_info) = params.GEG_information {
+        info!("Updating GEG_information to: {:?}", GEG_info);
+        profile.GEG_information = Some(GEG_info);
     } else {
-        // This else block handles the case where `norisk_information` is explicitly `null` in JSON,
-        // which Serde maps to `None` for `Option<NoriskInformation>`.
+        // This else block handles the case where `GEG_information` is explicitly `null` in JSON,
+        // which Serde maps to `None` for `Option<GEGInformation>`.
         // If you want to distinguish between `null` and `undefined` (field not present),
-        // you might need `Option<Option<NoriskInformation>>` or a custom deserializer.
+        // you might need `Option<Option<GEGInformation>>` or a custom deserializer.
         // For now, if it's `None` (either not sent or sent as null), we keep the existing value.
-        // If you want `null` to clear it, you would do: `profile.norisk_information = None;`
+        // If you want `null` to clear it, you would do: `profile.GEG_information = None;`
         info!(
-            "norisk_information not provided or explicitly null, keeping existing: {:?}",
-            profile.norisk_information
+            "GEG_information not provided or explicitly null, keeping existing: {:?}",
+            profile.GEG_information
         );
     }
 
@@ -714,12 +714,12 @@ pub async fn resolve_loader_version(
     
     let state = State::get().await?;
     let profile = state.profile_manager.get_profile(profile_id).await?;
-    let norisk_pack_config = state.norisk_pack_manager.get_config().await;
+    let GEG_pack_config = state.GEG_pack_manager.get_config().await;
     
     let resolved = ModloaderFactory::resolve_loader_version(
         &profile,
         &minecraft_version,
-        Some(&norisk_pack_config),
+        Some(&GEG_pack_config),
     ).await;
     
     Ok(resolved)
@@ -778,10 +778,10 @@ pub async fn search_profiles(query: String) -> Result<Vec<Profile>, CommandError
 
 /// Loads and returns the list of standard profiles from the local configuration file.
 #[tauri::command]
-pub async fn get_standard_profiles() -> Result<NoriskVersionsConfig, CommandError> {
+pub async fn get_standard_profiles() -> Result<GEGVersionsConfig, CommandError> {
     info!("Executing get_standard_profiles command");
     let state = State::get().await?;
-    let config = state.norisk_version_manager.get_config().await;
+    let config = state.GEG_version_manager.get_config().await;
     Ok(config)
 }
 
@@ -814,21 +814,21 @@ pub async fn delete_mod_from_profile(profile_id: Uuid, mod_id: Uuid) -> Result<(
     Ok(())
 }
 
-// Command to retrieve the list of available Norisk Modpacks
+// Command to retrieve the list of available GEG Modpacks
 #[tauri::command]
-pub async fn get_norisk_packs() -> Result<NoriskModpacksConfig, CommandError> {
-    info!("Received command get_norisk_packs");
+pub async fn get_GEG_packs() -> Result<GEGModpacksConfig, CommandError> {
+    info!("Received command get_GEG_packs");
     let state = State::get().await?;
-    let config = state.norisk_pack_manager.get_config().await;
+    let config = state.GEG_pack_manager.get_config().await;
     Ok(config)
 }
 
-/// Retrieves the Norisk packs configuration with fully resolved mod lists for each pack.
+/// Retrieves the GEG packs configuration with fully resolved mod lists for each pack.
 #[tauri::command]
-pub async fn get_norisk_packs_resolved() -> Result<NoriskModpacksConfig, CommandError> {
-    info!("Received command get_norisk_packs_resolved");
+pub async fn get_GEG_packs_resolved() -> Result<GEGModpacksConfig, CommandError> {
+    info!("Received command get_GEG_packs_resolved");
     let state = State::get().await?;
-    let manager = &state.norisk_pack_manager; // Get a reference
+    let manager = &state.GEG_pack_manager; // Get a reference
 
     // Get the base configuration to access metadata and pack IDs
     let base_config = manager.get_config().await;
@@ -855,7 +855,7 @@ pub async fn get_norisk_packs_resolved() -> Result<NoriskModpacksConfig, Command
     }
 
     // Construct the final config object with the resolved packs
-    let resolved_config = NoriskModpacksConfig {
+    let resolved_config = GEGModpacksConfig {
         packs: resolved_packs, // Use the newly created map with resolved packs
         repositories: base_config.repositories, // Copy repositories from base config
     };
@@ -864,7 +864,7 @@ pub async fn get_norisk_packs_resolved() -> Result<NoriskModpacksConfig, Command
 }
 
 #[tauri::command]
-pub async fn set_norisk_mod_status(
+pub async fn set_GEG_mod_status(
     profile_id: Uuid,
     pack_id: String,
     mod_id: String,
@@ -873,7 +873,7 @@ pub async fn set_norisk_mod_status(
     disabled: bool,
 ) -> Result<(), CommandError> {
     info!(
-        "Received command set_norisk_mod_status: profile={}, pack={}, mod={}, mc={}, loader={}, disabled={}",
+        "Received command set_GEG_mod_status: profile={}, pack={}, mod={}, mc={}, loader={}, disabled={}",
         profile_id, pack_id, mod_id, game_version, loader_str, disabled
     );
     let state = State::get().await?;
@@ -883,7 +883,7 @@ pub async fn set_norisk_mod_status(
 
     state
         .profile_manager
-        .set_norisk_mod_status(profile_id, pack_id, mod_id, game_version, loader, disabled)
+        .set_GEG_mod_status(profile_id, pack_id, mod_id, game_version, loader, disabled)
         .await?;
     Ok(())
 }
@@ -1112,8 +1112,8 @@ pub async fn import_profile_from_file(app_handle: tauri::AppHandle) -> Result<()
         app_handle
             .dialog()
             .file()
-            .add_filter("Modpack Files", &["mrpack", "noriskpack", "zip"])
-            .set_title("Select Modpack File (.mrpack, .noriskpack, or .zip)")
+            .add_filter("Modpack Files", &["mrpack", "GEGpack", "zip"])
+            .set_title("Select Modpack File (.mrpack, .GEGpack, or .zip)")
             .blocking_pick_file() // Use the blocking version for single file selection
     })
     .await
@@ -1147,9 +1147,9 @@ pub async fn import_profile_from_file(app_handle: tauri::AppHandle) -> Result<()
                 log::info!("File extension is .mrpack, proceeding with mrpack processing.");
                 mrpack::import_mrpack_as_profile(file_path_buf, None, None).await?
             }
-            Some("noriskpack") => {
-                log::info!("File extension is .noriskpack, proceeding with noriskpack processing.");
-                crate::integrations::norisk_packs::import_noriskpack_as_profile(file_path_buf)
+            Some("GEGpack") => {
+                log::info!("File extension is .GEGpack, proceeding with GEGpack processing.");
+                crate::integrations::norisk_packs::import_GEGpack_as_profile(file_path_buf)
                     .await?
             }
             Some("zip") => {
@@ -1162,7 +1162,7 @@ pub async fn import_profile_from_file(app_handle: tauri::AppHandle) -> Result<()
                     file_path_buf
                 );
                 return Err(CommandError::from(AppError::Other(
-                    "Invalid file type selected. Please select a .mrpack, .noriskpack, or .zip file."
+                    "Invalid file type selected. Please select a .mrpack, .GEGpack, or .zip file."
                         .to_string(),
                 )));
             }
@@ -1224,9 +1224,9 @@ pub async fn import_profile(file_path_str: String) -> Result<Uuid, CommandError>
             log::info!("File extension is .mrpack, proceeding with mrpack processing.");
             mrpack::import_mrpack_as_profile(file_path_buf, None, None).await?
         }
-        Some("noriskpack") => {
-            log::info!("File extension is .noriskpack, proceeding with noriskpack processing.");
-            crate::integrations::norisk_packs::import_noriskpack_as_profile(file_path_buf).await?
+        Some("GEGpack") => {
+            log::info!("File extension is .GEGpack, proceeding with GEGpack processing.");
+            crate::integrations::norisk_packs::import_GEGpack_as_profile(file_path_buf).await?
         }
         Some("zip") => {
             log::info!("File extension is .zip, proceeding with CurseForge modpack processing.");
@@ -1238,7 +1238,7 @@ pub async fn import_profile(file_path_str: String) -> Result<Uuid, CommandError>
                 file_path_buf
             );
             return Err(CommandError::from(AppError::Other(
-                "Invalid file type selected. Please select a .mrpack, .noriskpack, or .zip file."
+                "Invalid file type selected. Please select a .mrpack, .GEGpack, or .zip file."
                     .to_string(),
             )));
         }
@@ -1378,7 +1378,7 @@ pub async fn get_profile_directory_structure(
                 "Profile with ID {} not found, checking standard versions",
                 profile_id
             );
-            let standard_versions = state.norisk_version_manager.get_config().await;
+            let standard_versions = state.GEG_version_manager.get_config().await;
 
             // Finde ein Standard-Profil mit passender ID
             let standard_profile = standard_versions
@@ -1438,7 +1438,7 @@ pub async fn copy_profile(params: CopyProfileParams) -> Result<Uuid, CommandErro
                 "Profile with ID {} not found, checking standard versions",
                 params.source_profile_id
             );
-            let standard_versions = state.norisk_version_manager.get_config().await;
+            let standard_versions = state.GEG_version_manager.get_config().await;
 
             // Finde ein Standard-Profil mit passender ID
             let standard_profile = standard_versions
@@ -1493,14 +1493,14 @@ pub async fn copy_profile(params: CopyProfileParams) -> Result<Uuid, CommandErro
         settings: source_profile.settings.clone(),
         state: ProfileState::NotInstalled, // Neues Profil ist noch nicht installiert
         mods: source_profile.mods.clone(), // Kopiere die Modrinth-Mods aus dem Quellprofil
-        selected_norisk_pack_id: source_profile.selected_norisk_pack_id.clone(),
-        disabled_norisk_mods_detailed: source_profile.disabled_norisk_mods_detailed.clone(),
+        selected_GEG_pack_id: source_profile.selected_GEG_pack_id.clone(),
+        disabled_GEG_mods_detailed: source_profile.disabled_GEG_mods_detailed.clone(),
         source_standard_profile_id: source_profile.source_standard_profile_id,
         group: source_profile.group.clone(),
         use_shared_minecraft_folder: params.use_shared_minecraft_folder.unwrap_or(source_profile.should_use_shared_minecraft_folder()),
         is_standard_version: false,
         description: source_profile.description.clone(),
-        norisk_information: source_profile.norisk_information.clone(),
+        GEG_information: source_profile.GEG_information.clone(),
         banner: source_profile.banner.clone(),
         background: source_profile.background.clone(),
         modpack_info: source_profile.modpack_info.clone(),
@@ -1575,7 +1575,7 @@ pub async fn copy_profile(params: CopyProfileParams) -> Result<Uuid, CommandErro
     Ok(new_profile_id)
 }
 
-/// Exports a profile to a .noriskpack file format with a fixed export directory
+/// Exports a profile to a .GEGpack file format with a fixed export directory
 #[tauri::command]
 pub async fn export_profile(
     app_handle: tauri::AppHandle,
@@ -1592,7 +1592,7 @@ pub async fn export_profile(
         .await
         .map_err(|e| CommandError::from(AppError::Io(e)))?;
 
-    // Sanitize the filename and add .noriskpack extension
+    // Sanitize the filename and add .GEGpack extension
     let sanitized_name = sanitize(&params.file_name);
     if sanitized_name.is_empty() {
         return Err(CommandError::from(AppError::Other(
@@ -1601,15 +1601,15 @@ pub async fn export_profile(
     }
 
     // Generate complete filename with extension
-    let noriskpack_filename = format!("{}.noriskpack", sanitized_name);
+    let GEGpack_filename = format!("{}.GEGpack", sanitized_name);
 
     // Create full export path
-    let export_path = exports_dir.join(&noriskpack_filename);
+    let export_path = exports_dir.join(&GEGpack_filename);
 
     info!("Exporting profile to {}", export_path.display());
 
     // Perform the export
-    let result_path = profile_utils::export_profile_to_noriskpack(
+    let result_path = profile_utils::export_profile_to_GEGpack(
         params.profile_id,
         Some(export_path.clone()),
         params.include_files,
@@ -1639,24 +1639,24 @@ pub async fn is_profile_launching(profile_id: Uuid) -> Result<bool, CommandError
     Ok(state.process_manager.has_launching_process(profile_id))
 }
 
-/// Fetches the latest Norisk packs configuration from the API and updates the local cache.
+/// Fetches the latest GEG packs configuration from the API and updates the local cache.
 #[tauri::command]
-pub async fn refresh_norisk_packs() -> Result<(), CommandError> {
-    info!("Refreshing Norisk packs via command...");
+pub async fn refresh_GEG_packs() -> Result<(), CommandError> {
+    info!("Refreshing GEG packs via command...");
     let state = State::get().await?;
     let config = state.config_manager.get_config().await;
 
     match state
-        .norisk_pack_manager
+        .GEG_pack_manager
         .fetch_and_update_config(&"", config.is_experimental)
         .await
     {
         Ok(_) => {
-            info!("Successfully refreshed Norisk packs via command.");
+            info!("Successfully refreshed GEG packs via command.");
             Ok(())
         }
         Err(e) => {
-            error!("Failed to refresh Norisk packs via command: {}", e);
+            error!("Failed to refresh GEG packs via command: {}", e);
             Err(CommandError::from(e))
         }
     }
@@ -1671,7 +1671,7 @@ pub async fn refresh_standard_versions() -> Result<Vec<Profile>, CommandError> {
     let config = state.config_manager.get_config().await;
 
     match state
-        .norisk_version_manager
+        .GEG_version_manager
         .fetch_and_update_config(&"", config.is_experimental)
         .await
     {
@@ -1684,7 +1684,7 @@ pub async fn refresh_standard_versions() -> Result<Vec<Profile>, CommandError> {
             }
 
             // Return the standard profiles
-            let standard_profiles = state.norisk_version_manager.get_config().await.profiles;
+            let standard_profiles = state.GEG_version_manager.get_config().await.profiles;
             Ok(standard_profiles)
         }
         Err(e) => {
@@ -2105,12 +2105,12 @@ pub async fn get_all_profiles_and_last_played() -> Result<AllProfilesAndLastPlay
         info!("Last played profile ID is not set or invalid. Attempting to set a default.");
 
         // First, try to find a standard profile marked as main version
-        let standard_profiles = state.norisk_version_manager.get_config().await.profiles;
+        let standard_profiles = state.GEG_version_manager.get_config().await.profiles;
         let new_default_id = if !standard_profiles.is_empty() {
             standard_profiles
                 .iter()
                 .find(|p| {
-                    p.norisk_information
+                    p.GEG_information
                         .as_ref()
                         .map(|ni| ni.is_main_version)
                         .unwrap_or(false)

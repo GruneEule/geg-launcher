@@ -226,7 +226,7 @@ export function ExportSettingsTab({
             variant="flat"
           />
           <p className="mt-1 text-xs text-white/50 font-minecraft-ten tracking-wide">
-            The .noriskpack extension will be added automatically.
+            The .GEGpack extension will be added automatically.
           </p>
         </div>
         {/* File selection section */}
@@ -285,7 +285,7 @@ export function ExportSettingsTab({
                 "resourcepacks",
                 "shaderpacks",
                 "options.txt",
-                "NoRiskClientLauncher",
+                "GEGLauncher",
                 "config",
                 "custom_mods",
                 "mods",

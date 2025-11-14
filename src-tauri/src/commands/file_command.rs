@@ -314,7 +314,7 @@ pub async fn get_icons_for_archives(
     Ok(results_map)
 }
 
-/// Fetches the first PNG icon found within Norisk Pack mods as Base64 strings.
+/// Fetches the first PNG icon found within GEG Pack mods as Base64 strings.
 ///
 /// # Arguments
 ///
@@ -328,19 +328,19 @@ pub async fn get_icons_for_archives(
 /// and values are `Option<String>`. The value is `Some(base64_string)` if a PNG
 /// was found, and `None` otherwise (or if an error occurred for that specific mod).
 #[tauri::command]
-pub async fn get_icons_for_norisk_mods(
+pub async fn get_icons_for_GEG_mods(
     mods: Vec<NoriskModEntryDefinition>,
     minecraft_version: String,
     loader: String,
 ) -> Result<HashMap<String, Option<String>>, CommandError> {
-    info!("Fetching icons for {} Norisk Pack mods...", mods.len());
+    info!("Fetching icons for {} GEG Pack mods...", mods.len());
     let mut results_map: HashMap<String, Option<String>> = HashMap::new();
 
     // Sammle alle Mod-Cache-Pfade
     let mut mod_paths: Vec<(String, String)> = Vec::new(); // (mod_id, file_path)
 
     for mod_entry in &mods {
-        match path_utils::get_norisk_mod_cache_path(mod_entry, &minecraft_version, &loader) {
+        match path_utils::get_GEG_mod_cache_path(mod_entry, &minecraft_version, &loader) {
             Ok(path) => {
                 mod_paths.push((mod_entry.id.clone(), path.to_string_lossy().to_string()));
             }
@@ -377,7 +377,7 @@ pub async fn get_icons_for_norisk_mods(
     }
 
     info!(
-        "Finished fetching Norisk mod icons. Returning {} results.",
+        "Finished fetching GEG mod icons. Returning {} results.",
         results_map.len()
     );
     Ok(results_map)

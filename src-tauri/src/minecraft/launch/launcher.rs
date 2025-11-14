@@ -182,8 +182,8 @@ impl MinecraftLauncher {
         while let Some(arg_os_str) = args_iter.next() {
             let mut arg_str = arg_os_str.to_string_lossy().into_owned();
 
-            if arg_str.starts_with("-Dnorisk.token=") {
-                parts.push("-Dnorisk.token=*****".to_string());
+            if arg_str.starts_with("-DGEG.token=") {
+                parts.push("-DGEG.token=*****".to_string());
             } else if arg_str == "--accessToken" {
                 parts.push(arg_str); // Push "--accessToken"
                 if args_iter.peek().is_some() {
@@ -255,7 +255,7 @@ impl MinecraftLauncher {
         // Create JVM arguments processor
         let jvm_args = JvmArguments::new(
             natives_path.clone(),
-            "noriskclient-launcher".to_string(),
+            "GEG-launcher".to_string(),
             "3.0.0".to_string(),
             classpath.clone(),
         );
@@ -290,53 +290,53 @@ impl MinecraftLauncher {
         command.arg("-XX:MaxGCPauseMillis=50");
         command.arg("-XX:G1HeapRegionSize=32M");
 
-        // Add NoRisk client specific parameters
-        // Only add token if we have credentials AND a NoRisk pack is selected in the profile
-        let has_norisk_pack = profile.as_ref().and_then(|p| p.selected_norisk_pack_id.as_ref()).is_some();
+        // Add GEG client specific parameters
+        // Only add token if we have credentials AND a GEG pack is selected in the profile
+        let has_GEG_pack = profile.as_ref().and_then(|p| p.selected_GEG_pack_id.as_ref()).is_some();
 
         // Add profile name for ingame display
         if let Some(p) = &profile {
-            command.arg(format!("-Dnorisk.profile.name={}", p.name));
+            command.arg(format!("-DGEG.profile.name={}", p.name));
         }
 
         if let Some(creds) = &self.credentials {
-            if has_norisk_pack {
-                // Get the appropriate NoRisk token based on experimental mode setting
-                if let Some(norisk_token) = if params.is_experimental_mode {
-                    info!("[NoRisk Launcher] Using experimental mode token");
+            if has_GEG_pack {
+                // Get the appropriate GEG token based on experimental mode setting
+                if let Some(GEG_token) = if params.is_experimental_mode {
+                    info!("[GEG Launcher] Using experimental mode token");
                     creds
-                        .norisk_credentials
+                        .GEG_credentials
                         .experimental
                         .as_ref()
                         .map(|t| &t.value)
                 } else {
-                    info!("[NoRisk Launcher] Using production mode token");
+                    info!("[GEG Launcher] Using production mode token");
                     creds
-                        .norisk_credentials
+                        .GEG_credentials
                         .production
                         .as_ref()
                         .map(|t| &t.value)
                 } {
-                    info!("[NoRisk Launcher] Adding NoRisk token to launch parameters");
-                    command.arg(format!("-Dnorisk.token={}", norisk_token));
+                    info!("[GEG Launcher] Adding GEG token to launch parameters");
+                    command.arg(format!("-DGEG.token={}", GEG_token));
                 } else {
-                    info!("[NoRisk Launcher] No NoRisk token available for the selected mode");
+                    info!("[GEG Launcher] No GEG token available for the selected mode");
                 }
 
                 // Add experimental mode parameter
                 info!(
-                    "[NoRisk Launcher] Setting experimental mode: {}",
+                    "[GEG Launcher] Setting experimental mode: {}",
                     params.is_experimental_mode
                 );
                 command.arg(format!(
-                    "-Dnorisk.experimental={}",
+                    "-DGEG.experimental={}",
                     params.is_experimental_mode
                 ));
             } else {
-                info!("[NoRisk Launcher] No NoRisk pack selected, skipping NoRisk token and experimental mode parameters");
+                info!("[GEG Launcher] No GEG pack selected, skipping GEG token and experimental mode parameters");
             }
         } else {
-            info!("[NoRisk Launcher] No credentials available, skipping NoRisk parameters");
+            info!("[GEG Launcher] No credentials available, skipping GEG parameters");
         }
 
         // Add Fabric specific mods folder argument if loader is Fabric
@@ -453,12 +453,12 @@ impl MinecraftLauncher {
         };
 
         // Extract optional profile information for process metadata
-        let (profile_loader, profile_loader_version, profile_norisk_pack, profile_name) =
+        let (profile_loader, profile_loader_version, profile_GEG_pack, profile_name) =
             match profile {
                 Some(p) => (
                     Some(p.loader.as_str().to_string()),
                     p.loader_version,
-                    p.selected_norisk_pack_id,
+                    p.selected_GEG_pack_id,
                     Some(p.name),
                 ),
                 None => (None, None, None, None),
@@ -478,7 +478,7 @@ impl MinecraftLauncher {
                 Some(piston_meta.id.clone()),
                 profile_loader,
                 profile_loader_version,
-                profile_norisk_pack,
+                profile_GEG_pack,
                 profile_name,
                 post_exit_hook,
             )

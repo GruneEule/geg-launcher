@@ -1,4 +1,4 @@
-import { NoriskModIdentifier, type LocalContentItem as ProfileLocalContentItem } from "./profile";
+import { GEGModIdentifier, type LocalContentItem as ProfileLocalContentItem } from "./profile";
 import type { ModrinthVersion } from "./modrinth";
 import { ModPlatform, type UnifiedVersion } from "./unified";
 import type { CurseForgeFile } from "./curseforge";
@@ -27,7 +27,7 @@ export interface ToggleContentPayload {
   sha1_hash?: string;  // Made optional - SHA1 hash of the content to toggle
   file_path?: string; // Optional: Direct path to the file to toggle
   enabled: boolean;   // The desired new enabled state
-  norisk_mod_identifier?: NoriskModIdentifier; // Optional identifier for NoRisk Pack items
+  GEG_mod_identifier?: GEGModIdentifier; // Optional identifier for GEG Pack items
   content_type?: ContentType; // Optional: For targeted asset toggling
   // Future: content_identifier (e.g., could be sha1, mod_id, filename)
   // Future: content_type?: 'mod' | 'resourcepack' | 'shaderpack' | 'datapack';
@@ -42,7 +42,7 @@ export enum ContentType {
   ResourcePack = "ResourcePack",
   ShaderPack = "ShaderPack",
   DataPack = "DataPack",
-  NoRiskMod = "NoRiskMod",
+  GEGMod = "GEGMod",
 }
 
 /**
@@ -114,4 +114,4 @@ export interface BulkModUpdateEntry {
   updates_enabled: boolean; // Whether updates should be enabled for this mod
 }
 
-// Represents a NoriskMod item as expected by the backend for add/remove operations
+// Represents a GEGMod item as expected by the backend for add/remove operations

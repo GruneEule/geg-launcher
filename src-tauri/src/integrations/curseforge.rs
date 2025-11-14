@@ -1225,14 +1225,14 @@ pub async fn process_curseforge_pack_from_zip(pack_path: &Path) -> Result<(Profi
         },
         state: ProfileState::NotInstalled,
         mods: Vec::new(),
-        selected_norisk_pack_id: None,
-        disabled_norisk_mods_detailed: std::collections::HashSet::new(),
+        selected_GEG_pack_id: None,
+        disabled_GEG_mods_detailed: std::collections::HashSet::new(),
         source_standard_profile_id: None,
         group: Some("MODPACKS".to_string()),
         is_standard_version: false,
         use_shared_minecraft_folder: false,
         description: manifest.description.clone(),
-        norisk_information: None,
+        GEG_information: None,
         banner: None,
         background: None,
         modpack_info: None,
@@ -1861,7 +1861,7 @@ pub async fn download_and_install_curseforge_modpack(
         .header(
             "User-Agent",
             format!(
-                "NoRiskClient-Launcher/{} (support@norisk.gg)",
+                "GEG-Launcher/{} (support@GEG.gg)",
                 env!("CARGO_PKG_VERSION")
             ),
         )

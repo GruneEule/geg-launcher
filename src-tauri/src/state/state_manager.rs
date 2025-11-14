@@ -23,8 +23,8 @@ pub struct State {
     pub event_state: EventState,
     pub process_manager: ProcessManager,
     pub minecraft_account_manager_v2: MinecraftAuthStore,
-    pub norisk_pack_manager: NoriskPackManager,
-    pub norisk_version_manager: NoriskVersionManager,
+    pub GEG_pack_manager: NoriskPackManager,
+    pub GEG_version_manager: NoriskVersionManager,
     pub config_manager: ConfigManager,
     pub skin_manager: SkinManager,
     pub discord_manager: DiscordManager,
@@ -42,8 +42,8 @@ impl State {
                 let io_semaphore = Arc::new(Semaphore::new(10));
                 let event_state = EventState::new(Some(app.clone()));
                 let minecraft_account_manager_v2 = MinecraftAuthStore::new().await?;
-                let norisk_pack_manager = NoriskPackManager::new(default_norisk_packs_path())?;
-                let norisk_version_manager = NoriskVersionManager::new(default_norisk_versions_path())?;
+                let GEG_pack_manager = NoriskPackManager::new(default_norisk_packs_path())?;
+                let GEG_version_manager = NoriskVersionManager::new(default_norisk_versions_path())?;
                 let skin_manager = SkinManager::new(default_skins_path())?;
                 let profile_manager = ProfileManager::new(LAUNCHER_DIRECTORY.root_dir().join("profiles.json"))?;
                 let process_manager = ProcessManager::new(default_processes_path(), app.clone()).await?;
@@ -55,8 +55,8 @@ impl State {
                     event_state,
                     process_manager,
                     minecraft_account_manager_v2,
-                    norisk_pack_manager,
-                    norisk_version_manager,
+                    GEG_pack_manager,
+                    GEG_version_manager,
                     config_manager,
                     skin_manager,
                     discord_manager,
@@ -93,13 +93,13 @@ impl State {
         );
 
         initial_state_arc
-            .norisk_version_manager
+            .GEG_version_manager
             .on_state_ready(app.clone())
             .await?;
         log::info!("State::init - NoriskVersionManager post-initialization complete.");
 
         initial_state_arc
-            .norisk_pack_manager
+            .GEG_pack_manager
             .on_state_ready(app.clone())
             .await?;
         log::info!("State::init - NoriskPackManager post-initialization complete.");
@@ -123,11 +123,11 @@ impl State {
         log::info!("State::init - SkinManager post-initialization complete.");
 
         initial_state_arc
-            .norisk_pack_manager
+            .GEG_pack_manager
             .print_current_config()
             .await;
         initial_state_arc
-            .norisk_version_manager
+            .GEG_version_manager
             .print_current_config()
             .await;
 

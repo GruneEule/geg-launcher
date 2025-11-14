@@ -1,6 +1,6 @@
 use crate::error::{AppError, CommandError};
 use crate::minecraft::api::norisk_api::CrashlogDto;
-use crate::minecraft::api::norisk_api::NoRiskApi;
+use crate::minecraft::api::norisk_api::NoriskApi;
 use crate::minecraft::api::wordpress_api::{BlogPost, WordPressApi};
 use crate::minecraft::auth::minecraft_auth::Credentials;
 use crate::state::state_manager::State;
@@ -37,11 +37,11 @@ pub async fn discord_auth_link(app: AppHandle) -> Result<(), CommandError> {
             "No active account found for Discord link.".to_string(),
         ))?;
 
-    let norisk_creds = &selected_account_arc.norisk_credentials;
-    let token = norisk_creds.get_token_for_mode(is_experimental)?;
+    let GEG_creds = &selected_account_arc.GEG_credentials;
+    let token = GEG_creds.get_token_for_mode(is_experimental)?;
 
     let url_string = format!(
-        "https://api{}.norisk.gg/api/v1/core/oauth/discord?token={}",
+        "https://api{}.GEG.gg/api/v1/core/oauth/discord?token={}",
         if is_experimental { "-staging" } else { "" },
         token
     );
@@ -70,7 +70,7 @@ pub async fn discord_auth_link(app: AppHandle) -> Result<(), CommandError> {
 
     let window =
         WebviewWindowBuilder::new(&app, "discord-signin", WebviewUrl::External(external_url))
-            .title("Discord X NoRiskClient")
+            .title("Discord X GEG")
             .always_on_top(true)
             .center()
             .max_inner_size(1250.0, 1000.0)
@@ -102,9 +102,9 @@ pub async fn discord_auth_link(app: AppHandle) -> Result<(), CommandError> {
             Ok(current_url) => {
                 let current_url_str = current_url.as_str();
                 if current_url_str
-                    .starts_with("https://api.norisk.gg/api/v1/core/oauth/discord/complete")
+                    .starts_with("https://api.GEG.gg/api/v1/core/oauth/discord/complete")
                     || current_url_str.starts_with(
-                        "https://api-staging.norisk.gg/api/v1/core/oauth/discord/complete",
+                        "https://api-staging.GEG.gg/api/v1/core/oauth/discord/complete",
                     )
                 {
                     debug!("Discord authentication successful, closing window.");
@@ -153,15 +153,15 @@ pub async fn discord_auth_status() -> Result<bool, CommandError> {
         ))?;
 
     let account_id_str = selected_account_arc.id.to_string();
-    let norisk_creds = &selected_account_arc.norisk_credentials;
-    let token = norisk_creds.get_token_for_mode(is_experimental)?;
+    let GEG_creds = &selected_account_arc.GEG_credentials;
+    let token = GEG_creds.get_token_for_mode(is_experimental)?;
 
     debug!(
         "Checking Discord link status for account {} (experimental: {})",
         account_id_str, is_experimental
     );
 
-    Ok(NoRiskApi::discord_link_status(&token, &account_id_str, is_experimental).await?)
+    Ok(NoriskApi::discord_link_status(&token, &account_id_str, is_experimental).await?)
 }
 
 #[tauri::command]
@@ -179,15 +179,15 @@ pub async fn discord_auth_unlink() -> Result<(), CommandError> {
         ))?;
 
     let account_id_str = selected_account_arc.id.to_string();
-    let norisk_creds = &selected_account_arc.norisk_credentials;
-    let token = norisk_creds.get_token_for_mode(is_experimental)?;
+    let GEG_creds = &selected_account_arc.GEG_credentials;
+    let token = GEG_creds.get_token_for_mode(is_experimental)?;
 
     debug!(
         "Unlinking Discord for account {} (experimental: {})",
         account_id_str, is_experimental
     );
 
-    NoRiskApi::unlink_discord(&token, &account_id_str, is_experimental).await?;
+    NoriskApi::unlink_discord(&token, &account_id_str, is_experimental).await?;
     Ok(())
 }
 
@@ -208,15 +208,15 @@ pub async fn submit_crash_log_command(payload: CrashlogDto) -> Result<(), Comman
             "No active account found for submitting crash log.".to_string(),
         ))?;
 
-    let norisk_creds = &selected_account_arc.norisk_credentials;
-    let token = norisk_creds.get_token_for_mode(is_experimental)?;
+    let GEG_creds = &selected_account_arc.GEG_credentials;
+    let token = GEG_creds.get_token_for_mode(is_experimental)?;
 
     debug!(
         "Submitting crash log for account {} (experimental: {}).",
         selected_account_arc.id, is_experimental
     );
 
-    NoRiskApi::submit_crash_log(
+    NoriskApi::submit_crash_log(
         &token,
         &payload,
         &selected_account_arc.id.to_string(),
@@ -253,15 +253,15 @@ pub async fn get_mobile_app_token() -> Result<String, CommandError> {
         ))?;
 
     let account_id_str = selected_account_arc.id.to_string();
-    let norisk_creds = &selected_account_arc.norisk_credentials;
-    let token = norisk_creds.get_token_for_mode(is_experimental)?;
+    let GEG_creds = &selected_account_arc.GEG_credentials;
+    let token = GEG_creds.get_token_for_mode(is_experimental)?;
 
     debug!(
         "Getting mobile app token for account {} (experimental: {})",
         account_id_str, is_experimental
     );
 
-    Ok(NoRiskApi::get_mcreal_app_token(&token, &account_id_str, is_experimental).await?)
+    Ok(NoriskApi::get_mcreal_app_token(&token, &account_id_str, is_experimental).await?)
 }
 
 #[tauri::command]
@@ -279,38 +279,36 @@ pub async fn reset_mobile_app_token() -> Result<String, CommandError> {
         ))?;
 
     let account_id_str = selected_account_arc.id.to_string();
-    let norisk_creds = &selected_account_arc.norisk_credentials;
-    let token = norisk_creds.get_token_for_mode(is_experimental)?;
+    let GEG_creds = &selected_account_arc.GEG_credentials;
+    let token = GEG_creds.get_token_for_mode(is_experimental)?;
 
     debug!(
         "Resetting mobile app token for account {} (experimental: {})",
         account_id_str, is_experimental
     );
 
-    Ok(NoRiskApi::reset_mcreal_app_token(&token, &account_id_str, is_experimental).await?)
+    Ok(NoriskApi::reset_mcreal_app_token(&token, &account_id_str, is_experimental).await?)
 }
 
 #[tauri::command]
 pub async fn check_update_available_command(app: AppHandle) -> Result<Option<crate::utils::updater_utils::UpdateInfo>, CommandError> {
     debug!("Executing check_update_available_command");
 
-    let state = State::get().await?;
-    let config = state.config_manager.get_config().await;
-    let is_beta_channel = config.check_beta_channel;
-
-    debug!("Using beta channel setting from config: {}", is_beta_channel);
-    Ok(updater_utils::check_update_available(&app, is_beta_channel).await?)
+    Ok(updater_utils::check_update_available(&app).await?)
 }
 
 #[tauri::command]
 pub async fn download_and_install_update_command(app: AppHandle) -> Result<(), CommandError> {
     debug!("Executing download_and_install_update_command");
 
-    let state = State::get().await?;
-    let config = state.config_manager.get_config().await;
-    let is_beta_channel = config.check_beta_channel;
-
-    debug!("Using beta channel setting from config: {}", is_beta_channel);
-    updater_utils::download_and_install_update(&app, is_beta_channel).await?;
+    match updater_utils::check_update_available(&app).await? {
+        Some(update_info) => {
+            debug!("Update info found: version {}", update_info.version);
+            updater_utils::download_and_install_update(&update_info).await?;
+        }
+        None => {
+            debug!("No update available");
+        }
+    }
     Ok(())
 }

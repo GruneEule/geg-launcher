@@ -1,7 +1,7 @@
 use crate::error::Result;
-use crate::integrations::norisk_packs::{self, NoriskModSourceDefinition, NoriskModpacksConfig};
+use crate::integrations::norisk_packs::{self, GEGModSourceDefinition, GEGModpacksConfig};
 use crate::state::profile_state::{
-    self, CustomModInfo, ModLoader, ModSource, NoriskModIdentifier, Profile,
+    self, CustomModInfo, ModLoader, ModSource, GEGModIdentifier, Profile,
 };
 use log::{debug, info, warn};
 use std::collections::HashMap;
@@ -23,7 +23,7 @@ pub struct TargetMod {
 // --- Helper function to check if a filename is blocked by Flagsmith config ---
 async fn is_filename_blocked_by_config(filename: &str, enable_flagsmith_blocking: bool) -> bool {
     if !enable_flagsmith_blocking {
-        return false; // Skip blocking if no NoRisk pack is selected
+        return false; // Skip blocking if no GEG pack is selected
     }
     
     match crate::commands::flagsmith_commands::is_filename_blocked(filename.to_string()).await {
@@ -43,7 +43,7 @@ async fn is_filename_blocked_by_config(filename: &str, enable_flagsmith_blocking
 // --- Helper function to check if a Modrinth project ID is blocked by Flagsmith config ---
 async fn is_modrinth_project_id_blocked_by_config(project_id: &str, enable_flagsmith_blocking: bool) -> bool {
     if !enable_flagsmith_blocking {
-        return false; // Skip blocking if no NoRisk pack is selected
+        return false; // Skip blocking if no GEG pack is selected
     }
     
     match crate::commands::flagsmith_commands::is_modrinth_project_id_blocked(project_id.to_string()).await {
@@ -130,7 +130,7 @@ async fn try_add_mod_to_final_list(
 // Renamed loader parameter to loader_str for clarity
 pub async fn resolve_target_mods(
     profile: &Profile,
-    norisk_config: Option<&NoriskModpacksConfig>,
+    GEG_config: Option<&GEGModpacksConfig>,
     custom_mod_infos: Option<&[CustomModInfo]>,
     minecraft_version: &str,
     loader_str: &str,
@@ -138,23 +138,23 @@ pub async fn resolve_target_mods(
 ) -> Result<Vec<TargetMod>> {
     let mut final_mods: HashMap<String, TargetMod> = HashMap::new(); // Key: Canonical Mod Identifier
     
-    // Enable Flagsmith blocking only if a NoRisk pack is selected
-    let enable_flagsmith_blocking = profile.selected_norisk_pack_id.is_some();
+    // Enable Flagsmith blocking only if a GEG pack is selected
+    let enable_flagsmith_blocking = profile.selected_GEG_pack_id.is_some();
     
     if enable_flagsmith_blocking {
-        debug!("Flagsmith mod blocking is enabled (NoRisk pack selected)");
+        debug!("Flagsmith mod blocking is enabled (GEG pack selected)");
     } else {
-        debug!("Flagsmith mod blocking is disabled (no NoRisk pack selected)");
+        debug!("Flagsmith mod blocking is disabled (no GEG pack selected)");
     }
 
     // --- Helper: Get Canonical Key ---
-    fn get_canonical_key(source: &NoriskModSourceDefinition, mod_id: &str) -> Option<String> {
+    fn get_canonical_key(source: &GEGModSourceDefinition, mod_id: &str) -> Option<String> {
         match source {
-            NoriskModSourceDefinition::Modrinth { project_id, .. } => {
+            GEGModSourceDefinition::Modrinth { project_id, .. } => {
                 Some(format!("modrinth:{}", project_id))
             }
-            NoriskModSourceDefinition::Url { .. } => Some(format!("url:{}", mod_id)),
-            NoriskModSourceDefinition::Maven {
+            GEGModSourceDefinition::Url { .. } => Some(format!("url:{}", mod_id)),
+            GEGModSourceDefinition::Maven {
                 group_id,
                 artifact_id,
                 ..
@@ -174,8 +174,8 @@ pub async fn resolve_target_mods(
     }
 
     // 1. Process Pack Mods (Only Modrinth)
-    if let (Some(ref pack_id), Some(config)) = (&profile.selected_norisk_pack_id, norisk_config) {
-        info!("Resolving mods from selected Norisk Pack: '{}'", pack_id);
+    if let (Some(ref pack_id), Some(config)) = (&profile.selected_GEG_pack_id, GEG_config) {
+        info!("Resolving mods from selected GEG Pack: '{}'", pack_id);
         match config.get_resolved_pack_definition(pack_id) {
             Ok(pack_definition) => {
                 for mod_entry in &pack_definition.mods {
@@ -185,14 +185,14 @@ pub async fn resolve_target_mods(
 
                     match ModLoader::from_str(loader_str) {
                         Ok(loader_enum) => {
-                            let identifier = NoriskModIdentifier {
+                            let identifier = GEGModIdentifier {
                                 pack_id: pack_id.clone(),
                                 mod_id: mod_id_str.clone(),
                                 game_version: game_version_str,
                                 loader: loader_enum,
                             };
 
-                            if profile.disabled_norisk_mods_detailed.contains(&identifier) {
+                            if profile.disabled_GEG_mods_detailed.contains(&identifier) {
                                 info!(
                                     "Skipping pack mod '{}' (ID: {}) because it is disabled for profile '{}' context (MC: {}, Loader: {:?})",
                                     mod_entry.display_name.as_deref().unwrap_or("?"), mod_id_str, profile.name, minecraft_version, loader_enum
@@ -211,7 +211,7 @@ pub async fn resolve_target_mods(
                     // --- Process the mod based on type (if not disabled) ---
 
                     // Current focus: Modrinth
-                    if let NoriskModSourceDefinition::Modrinth { project_id, .. } = &mod_entry.source {
+                    if let GEGModSourceDefinition::Modrinth { project_id, .. } = &mod_entry.source {
                         if let Some(target) = mod_entry
                             .compatibility
                             .get(minecraft_version)
@@ -224,7 +224,7 @@ pub async fn resolve_target_mods(
                             if let Some(canonical_key) =
                                 get_canonical_key(effective_source, &mod_entry.id)
                             {
-                                match norisk_packs::get_norisk_pack_mod_filename(
+                                match norisk_packs::get_GEG_pack_mod_filename(
                                     effective_source,
                                     target,
                                     &mod_entry.id,
@@ -253,7 +253,7 @@ pub async fn resolve_target_mods(
                         } // End compatibility check
 
                     // Handle URL Mods
-                    } else if let NoriskModSourceDefinition::Url { .. } = &mod_entry.source {
+                    } else if let GEGModSourceDefinition::Url { .. } = &mod_entry.source {
                         if let Some(target) = mod_entry
                             .compatibility
                             .get(minecraft_version)
@@ -263,7 +263,7 @@ pub async fn resolve_target_mods(
                             if let Some(canonical_key) =
                                 get_canonical_key(&mod_entry.source, &mod_entry.id)
                             {
-                                match norisk_packs::get_norisk_pack_mod_filename(
+                                match norisk_packs::get_GEG_pack_mod_filename(
                                     &mod_entry.source,
                                     target,
                                     &mod_entry.id,
@@ -293,7 +293,7 @@ pub async fn resolve_target_mods(
                         } // End compatibility check
 
                     // Handle Maven Mods
-                    } else if let NoriskModSourceDefinition::Maven {
+                    } else if let GEGModSourceDefinition::Maven {
                         repository_ref,
                         group_id,
                         artifact_id,
@@ -312,7 +312,7 @@ pub async fn resolve_target_mods(
                                 get_canonical_key(effective_source, &mod_entry.id)
                             {
                                 // Filename can be derived for Maven, or explicitly provided
-                                match norisk_packs::get_norisk_pack_mod_filename(
+                                match norisk_packs::get_GEG_pack_mod_filename(
                                     effective_source,
                                     target,
                                     &mod_entry.id,
@@ -345,7 +345,7 @@ pub async fn resolve_target_mods(
             }
             Err(e) => {
                 warn!(
-                    "Could not resolve Norisk Pack definition for pack ID '{}': {}. Skipping pack mods.",
+                    "Could not resolve GEG Pack definition for pack ID '{}': {}. Skipping pack mods.",
                     pack_id, e
                 );
             }

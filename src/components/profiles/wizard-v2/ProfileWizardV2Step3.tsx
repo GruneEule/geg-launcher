@@ -13,12 +13,12 @@ import { Select } from "../../ui/Select";
 import { Card } from "../../ui/Card";
 import { Checkbox } from "../../ui/Checkbox";
 import { invoke } from "@tauri-apps/api/core";
-import { NoriskModEntryDefinition, NoriskModpacksConfig } from "../../../types/noriskPacks";
+import { GEGModEntryDefinition, GEGModpacksConfig } from "../../../types/GEGPacks";
 
 const forbiddenChars = /[<>:"/\\|?*]/g;
 const forbiddenTrailing = /[ .]$/;
 
-interface NoriskPack {
+interface GEGPack {
     displayName: string;
     description: string;
     isExperimental?: boolean;
@@ -34,7 +34,7 @@ interface ProfileWizardV2Step3Props {
         loader: ModLoader;
         loaderVersion: string | null;
         memoryMaxMb: number;
-        selectedNoriskPackId: string | null;
+        selectedGEGPackId: string | null;
         use_shared_minecraft_folder?: boolean;
     }) => void;
     selectedMinecraftVersion: string;
@@ -57,8 +57,8 @@ export function ProfileWizardV2Step3({
     const [profileGroup, setProfileGroup] = useState(defaultGroup || "");
     const [memoryMaxMb, setMemoryMaxMb] = useState<number>(3072); // 3GB default
     const [systemRamMb] = useState<number>(16384); // 16GB default for slider range
-    const [selectedNoriskPackId, setSelectedNoriskPackId] = useState<string | null>(null);
-    const [noriskPacks, setNoriskPacks] = useState<Record<string, NoriskPack>>({});
+    const [selectedGEGPackId, setSelectedGEGPackId] = useState<string | null>(null);
+    const [GEGPacks, setGEGPacks] = useState<Record<string, GEGPack>>({});
     const [loadingPacks, setLoadingPacks] = useState(false);
     const [packCompatibilityWarning, setPackCompatibilityWarning] = useState<string | null>(null);
     const [showYellowWarning, setShowYellowWarning] = useState(false);
@@ -86,31 +86,31 @@ export function ProfileWizardV2Step3({
     const [creating, setCreating] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Load NoRisk packs on component mount
+    // Load GEG packs on component mount
     useEffect(() => {
-        const loadNoriskPacks = async () => {
+        const loadGEGPacks = async () => {
             try {
                 setLoadingPacks(true);
-                const packsData = await invoke<{ packs: Record<string, NoriskPack> }>(
-                    "get_norisk_packs_resolved",
+                const packsData = await invoke<{ packs: Record<string, GEGPack> }>(
+                    "get_GEG_packs_resolved",
                 ).catch(() => ({
                     packs: {},
                 }));
                 console.log("PACKS", packsData);
-                setNoriskPacks(packsData.packs);
+                setGEGPacks(packsData.packs);
 
-                // Auto-select "norisk-prod" if available
-                if (packsData.packs["norisk-prod"]) {
-                    setSelectedNoriskPackId("norisk-prod");
+                // Auto-select "GEG-prod" if available
+                if (packsData.packs["GEG-prod"]) {
+                    setSelectedGEGPackId("GEG-prod");
                 }
             } catch (err) {
-                console.error("Failed to load NoRisk packs:", err);
+                console.error("Failed to load GEG packs:", err);
             } finally {
                 setLoadingPacks(false);
             }
         };
 
-        loadNoriskPacks();
+        loadGEGPacks();
     }, []);
 
     const getLoaderDisplayName = (loader: ModLoader) => {
@@ -128,11 +128,11 @@ export function ProfileWizardV2Step3({
         setMemoryMaxMb(value);
     };
 
-    const noriskPackOptions = Object.entries(noriskPacks)
+    const GEGPackOptions = Object.entries(GEGPacks)
         .filter(([packId]) => {
             if (showAllVersions) return true; // Show all versions when checkbox is checked
             // Show only curated versions when checkbox is unchecked
-            return packId === "norisk-prod" || packId === "norisk-bughunter" || packId === "";
+            return packId === "GEG-prod" || packId === "GEG-bughunter" || packId === "";
         })
         .map(([packId, packDef]) => ({
             value: packId,
@@ -142,7 +142,7 @@ export function ProfileWizardV2Step3({
     // Check pack compatibility when selection changes
     useEffect(() => {
         const checkPackCompatibility = async () => {
-            if (!selectedNoriskPackId || selectedNoriskPackId === "") {
+            if (!selectedGEGPackId || selectedGEGPackId === "") {
                 setPackCompatibilityWarning(null);
                 setShowYellowWarning(false);
                 return;
@@ -154,12 +154,12 @@ export function ProfileWizardV2Step3({
 
             try {
                 // Get resolved packs with all mods
-                const resolvedPacks = await invoke<NoriskModpacksConfig>(
-                    "get_norisk_packs_resolved"
+                const resolvedPacks = await invoke<GEGModpacksConfig>(
+                    "get_GEG_packs_resolved"
                 );
 
-                // Check if the selected pack has NoRisk Client mods for this version/loader
-                const selectedPack = resolvedPacks.packs[selectedNoriskPackId];
+                // Check if the selected pack has GEG Client mods for this version/loader
+                const selectedPack = resolvedPacks.packs[selectedGEGPackId];
 
                 if (!selectedPack) {
                     setShowYellowWarning(true);
@@ -169,10 +169,10 @@ export function ProfileWizardV2Step3({
                 // Get the mods in the pack
                 const mods = selectedPack.mods || [];
 
-                // Check if any NoRisk Client mod exists and is compatible with the selected version/loader
-                const hasCompatibleNoRiskClient = mods.some((mod: NoriskModEntryDefinition) => {
-                    // Check if this is a NoRisk Client mod
-                    if (mod.id === "noriskclient-client" || mod.id === "nrc-client") {
+                // Check if any GEG Client mod exists and is compatible with the selected version/loader
+                const hasCompatibleGEG = mods.some((mod: GEGModEntryDefinition) => {
+                    // Check if this is a GEG Client mod
+                    if (mod.id === "GEG-client" || mod.id === "nrc-client") {
                         // Check if it has compatibility for the selected version and loader
                         const versionCompat = mod.compatibility?.[selectedMinecraftVersion];
                         const loaderCompat = versionCompat?.[selectedLoader];
@@ -188,10 +188,10 @@ export function ProfileWizardV2Step3({
                     return false;
                 });
 
-                console.log("Pack mods for", selectedNoriskPackId, selectedMinecraftVersion, selectedLoader, ":", mods);
-                console.log("Has compatible NoRisk Client:", hasCompatibleNoRiskClient);
+                console.log("Pack mods for", selectedGEGPackId, selectedMinecraftVersion, selectedLoader, ":", mods);
+                console.log("Has compatible GEG Client:", hasCompatibleGEG);
 
-                if (!hasCompatibleNoRiskClient) {
+                if (!hasCompatibleGEG) {
                     setShowYellowWarning(true);
                 }
             } catch (err) {
@@ -203,7 +203,7 @@ export function ProfileWizardV2Step3({
         };
 
         checkPackCompatibility();
-    }, [selectedNoriskPackId, selectedMinecraftVersion, selectedLoader]);
+    }, [selectedGEGPackId, selectedMinecraftVersion, selectedLoader]);
 
     // Auto-generate profile name based on loader and minecraft version
     useEffect(() => {
@@ -232,7 +232,7 @@ export function ProfileWizardV2Step3({
                 loader: selectedLoader,
                 loaderVersion: selectedLoaderVersion,
                 memoryMaxMb: memoryMaxMb,
-                selectedNoriskPackId: selectedNoriskPackId,
+                selectedGEGPackId: selectedGEGPackId,
                 use_shared_minecraft_folder: useSharedMinecraftFolder
             });
         } catch (err) {
@@ -357,13 +357,13 @@ export function ProfileWizardV2Step3({
 
                     {showAdvancedSettings && (
                         <div className="space-y-4 p-4 bg-white/5 border border-white/10 rounded-lg">
-                            {/* NoRisk Pack Selection */}
+                            {/* GEG Pack Selection */}
                             <div className="space-y-3">
                                 <label className="block text-base font-minecraft-ten text-white/50">
-                                    NoRisk Client Pack
+                                    GEG Client Pack
                                 </label>
                                 <p className="text-sm text-white/60 font-minecraft-ten">
-                                    NoRiskClient packs are predefined mod collections from NoRiskClient, including performance mods like Sodium, Fabric API, ImmediatelyFast, and mods for seamless NoRiskClient experience. You can disable this to start without NoRiskClient features.
+                                    GEG packs are predefined mod collections from GEG, including performance mods like Sodium, Fabric API, ImmediatelyFast, and mods for seamless GEG experience. You can disable this to start without GEG features.
                                 </p>
                                 {loadingPacks ? (
                                     <div className="flex items-center gap-2 text-white/70">
@@ -372,7 +372,7 @@ export function ProfileWizardV2Step3({
                                             className="w-4 h-4 animate-spin"
                                         />
                                         <span className="text-sm font-minecraft-ten">
-                                            Loading NoRisk packs...
+                                            Loading GEG packs...
                                         </span>
                                     </div>
                                 ) : (
@@ -380,13 +380,13 @@ export function ProfileWizardV2Step3({
                                         <div className="flex gap-3">
                                             <div className="flex-1">
                                                 <Select
-                                                    value={selectedNoriskPackId || ""}
-                                                    onChange={(value) => setSelectedNoriskPackId(value === "" ? null : value)}
+                                                    value={selectedGEGPackId || ""}
+                                                    onChange={(value) => setSelectedGEGPackId(value === "" ? null : value)}
                                                     options={[
                                                         { value: "", label: "None (Optional)" },
-                                                        ...noriskPackOptions,
+                                                        ...GEGPackOptions,
                                                     ]}
-                                                    placeholder="Select a NoRisk pack..."
+                                                    placeholder="Select a GEG pack..."
                                                     size="md"
                                                     className="w-full"
                                                 />
@@ -405,22 +405,22 @@ export function ProfileWizardV2Step3({
                                         {showYellowWarning ? (
                                             <div className="text-center">
                                                 <p className="text-base text-yellow-400 font-minecraft-ten">
-                                                    NoRiskClient is not currently compatible with this loader or version!<br />
+                                                    GEG is not currently compatible with this loader or version!<br />
                                                     You can still create it, but you won't have the features.<br />
                                                     This may change in the future.
                                                 </p>
                                             </div>
-                                        ) : selectedNoriskPackId === null || selectedNoriskPackId === "" ? (
+                                        ) : selectedGEGPackId === null || selectedGEGPackId === "" ? (
                                             <div className="text-center">
                                                 <p className="text-sm text-amber-400 font-minecraft-ten">
-                                                    You won't have any NoRiskClient features with this selection.
+                                                    You won't have any GEG features with this selection.
                                                 </p>
                                             </div>
                                         ) : (
-                                            selectedNoriskPackId && noriskPacks[selectedNoriskPackId] && (
+                                            selectedGEGPackId && GEGPacks[selectedGEGPackId] && (
                                                 <div className="text-center">
                                                     <p className="text-sm text-white/70 font-minecraft-ten">
-                                                        {noriskPacks[selectedNoriskPackId].description}
+                                                        {GEGPacks[selectedGEGPackId].description}
                                                     </p>
                                                 </div>
                                             )

@@ -122,12 +122,12 @@ export function ProfileSettings({ profile, onClose }: ProfileSettingsProps) {
             max: tempRamMb,
           },
         },
-        selected_norisk_pack_id: editedProfile.selected_norisk_pack_id,
-        clear_selected_norisk_pack: !editedProfile.selected_norisk_pack_id,
+        selected_GEG_pack_id: editedProfile.selected_GEG_pack_id,
+        clear_selected_GEG_pack: !editedProfile.selected_GEG_pack_id,
         group: editedProfile.group,
         clear_group: !editedProfile.group,
         description: editedProfile.description,
-        norisk_information: editedProfile.norisk_information,
+        GEG_information: editedProfile.GEG_information,
         use_shared_minecraft_folder: editedProfile.use_shared_minecraft_folder,
       });
 

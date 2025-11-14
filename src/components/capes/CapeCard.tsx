@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { useEffect, useState } from "react";
-import type { CosmeticCape } from "../../types/noriskCapes";
+import type { CosmeticCape } from "../../types/GEGCapes";
 import { useThemeStore } from "../../store/useThemeStore";
 import { IconButton } from "../ui/buttons/IconButton";
 import { getPlayerProfileByUuidOrName } from "../../services/cape-service";
@@ -35,7 +35,7 @@ export function CapeCard({
   onDelete,
 }: CapeCardProps) {
   const { _id: capeHash, elytra, uses, firstSeen: creatorUuid } = cape;
-  const imageUrl = `https://cdn.norisk.gg/capes/prod/${capeHash}.png`;
+  const imageUrl = `https://cdn.GEG.gg/capes/prod/${capeHash}.png`;
   const [creatorName, setCreatorName] = useState<string | null>(null);
 
   const accentColor = useThemeStore((state) => state.accentColor);

@@ -56,7 +56,7 @@ export function ModRow({
         try {
           if (mod.source?.type === "local" && mod.source.file_name) {
             const iconsResult = await invoke<Record<string, string | null>>(
-              "get_icons_for_norisk_mods",
+              "get_icons_for_GEG_mods",
               {
                 mods: [{ filePath: mod.source.file_name }],
                 minecraftVersion: mod.game_versions,

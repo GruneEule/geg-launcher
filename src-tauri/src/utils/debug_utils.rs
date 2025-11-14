@@ -199,7 +199,7 @@ pub async fn debug_print_news_and_changelogs() {
                         .unwrap_or("N/A");
 
                     //info!("    - Title: {}", title);
-                    info!("      Date: {}", date);
+                    info!("      Date: {:?}", date);
                     info!("      OG Image: {}", og_image_url);
                     // Optionally print more details like excerpt or link
                     // info!("      Excerpt: {}", post.excerpt.rendered);

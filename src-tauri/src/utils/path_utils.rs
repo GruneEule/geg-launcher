@@ -1,6 +1,6 @@
 use crate::config::{ProjectDirsExt, LAUNCHER_DIRECTORY};
 use crate::error::{AppError, Result}; // Dein Result- und Fehlertyp
-use crate::integrations::norisk_packs::{get_norisk_pack_mod_filename, NoriskModEntryDefinition};
+use crate::integrations::norisk_packs::{get_GEG_pack_mod_filename, NoriskModEntryDefinition};
 use crate::state::State;
 use crate::utils::download_utils; // Added for DownloadUtils
 use futures::future::try_join_all; // Added for joining futures
@@ -649,14 +649,14 @@ pub async fn copy_profile_with_exclusions(
     Ok(files_copied)
 }
 
-// Konstante aus dem mod_downloader/norisk_pack_downloader übernehmen
+// Konstante aus dem mod_downloader/GEG_pack_downloader übernehmen
 const MOD_CACHE_DIR_NAME: &str = "mod_cache";
 
-/// Gibt den vollständigen Pfad zu einem Norisk-Mod im Cache-Verzeichnis zurück.
+/// Gibt den vollständigen Pfad zu einem GEG-Mod im Cache-Verzeichnis zurück.
 ///
 /// # Arguments
 ///
-/// * `mod_entry` - Die Mod-Definition aus dem Norisk-Pack
+/// * `mod_entry` - Die Mod-Definition aus dem GEG-Pack
 /// * `minecraft_version` - Die Minecraft-Version, für die der Mod benötigt wird
 /// * `loader` - Der Mod-Loader (z.B. "fabric", "forge")
 ///
@@ -664,7 +664,7 @@ const MOD_CACHE_DIR_NAME: &str = "mod_cache";
 ///
 /// * `Ok(PathBuf)` - Den Pfad zur .jar Datei im Cache-Verzeichnis
 /// * `Err(AppError)` - Wenn kein kompatibler Mod gefunden wurde oder der Dateiname nicht ermittelt werden konnte
-pub fn get_norisk_mod_cache_path(
+pub fn get_GEG_mod_cache_path(
     mod_entry: &NoriskModEntryDefinition,
     minecraft_version: &str,
     loader: &str,
@@ -685,7 +685,7 @@ pub fn get_norisk_mod_cache_path(
 
     // Ermittle den Dateinamen mit der vorhandenen Hilfsfunktion
     let filename =
-        get_norisk_pack_mod_filename(&mod_entry.source, &compatibility_target, &mod_entry.id)?;
+        get_GEG_pack_mod_filename(&mod_entry.source, &compatibility_target, &mod_entry.id)?;
 
     // Erstelle den vollständigen Pfad zum Cache-Verzeichnis
     let mod_cache_dir = LAUNCHER_DIRECTORY.meta_dir().join(MOD_CACHE_DIR_NAME);

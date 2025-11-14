@@ -16,9 +16,9 @@ export function DesignerSettingsTab({
   
   const handleKeepLocalAssetsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     updateProfile({
-      norisk_information: {
-        ...(editedProfile.norisk_information || { 
-          is_experimental: editedProfile.norisk_information?.is_experimental || false 
+      GEG_information: {
+        ...(editedProfile.GEG_information || { 
+          is_experimental: editedProfile.GEG_information?.is_experimental || false 
         }), 
         keep_local_assets: event.target.checked,
       },
@@ -37,7 +37,7 @@ export function DesignerSettingsTab({
               id="keepLocalAssetsDesigner"
               label="Keep Local Assets"
               checked={
-                editedProfile.norisk_information?.keep_local_assets || false
+                editedProfile.GEG_information?.keep_local_assets || false
               }
               onChange={handleKeepLocalAssetsChange}
               variant="flat"
@@ -45,7 +45,7 @@ export function DesignerSettingsTab({
             />
           </div>
           <p className="text-xs text-white/70 font-minecraft-ten tracking-wide select-none pl-1">
-            If checked, edited assets (wings, norisk.jsons, etc.) will not be 
+            If checked, edited assets (wings, GEG.jsons, etc.) will not be 
             overwritten upon relaunch.
           </p>
         </div>

@@ -3,59 +3,59 @@
     {
       "id": "ea361d90-5541-4a2a-8eea-8cf1f822d6cb",
       "name": "NRC DEV 1.21",
-      "description": "NoRisk Client 1.21",
+      "description": "GEG Client 1.21",
       "game_version": "1.21",
       "loader": "fabric",
       "loader_version": "0.16.13",
-      "selected_norisk_pack_id": "norisk-dev",
-      "path": "noriskclient/new",
+      "selected_GEG_pack_id": "GEG-dev",
+      "path": "GEG/new",
       "is_standard_version": true,
-      "group": "NORISK CLIENT",
+      "group": "GEG CLIENT",
       "banner": {
         "source": {
           "type": "url",
           "url": "https://fabricmc.net/assets/logo.png"
         }
       },
-      "norisk_information": {}
+      "GEG_information": {}
     },
     {
       "id": "fc452b71-8e34-4b7a-9d2c-a6f13e5c7d8f",
       "name": "NRC DEV 1.21.4",
-      "description": "NoRisk Client 1.21.4",
+      "description": "GEG Client 1.21.4",
       "game_version": "1.21.4",
       "loader": "fabric",
       "loader_version": "0.16.13",
-      "selected_norisk_pack_id": "norisk-dev",
-      "path": "noriskclient/new",
+      "selected_GEG_pack_id": "GEG-dev",
+      "path": "GEG/new",
       "is_standard_version": true,
-      "group": "NORISK CLIENT",
+      "group": "GEG CLIENT",
       "banner": {
         "source": {
           "type": "url",
           "url": "https://fabricmc.net/assets/logo.png"
         }
       },
-      "norisk_information": {}
+      "GEG_information": {}
     },
     {
       "id": "b7cd5e92-3a16-4f85-bc60-9d8e47a1f3d2",
       "name": "NRC DEV 1.21.5",
-      "description": "NoRisk Client 1.21.5",
+      "description": "GEG Client 1.21.5",
       "game_version": "1.21.5",
       "loader": "fabric",
       "loader_version": "0.16.13",
-      "selected_norisk_pack_id": "norisk-dev",
-      "path": "noriskclient/new",
+      "selected_GEG_pack_id": "GEG-dev",
+      "path": "GEG/new",
       "is_standard_version": true,
-      "group": "NORISK CLIENT",
+      "group": "GEG CLIENT",
       "banner": {
         "source": {
           "type": "url",
           "url": "https://fabricmc.net/assets/logo.png"
         }
       },
-      "norisk_information": {}
+      "GEG_information": {}
     },
     {
       "id": "98e6a5c0-cb6b-4f30-8e4d-5b7f8f6a3e2b",
@@ -64,10 +64,10 @@
       "game_version": "1.8.9",
       "loader": "forge",
       "loader_version": "11.15.1.2318",
-      "selected_norisk_pack_id": null,
-      "path": "noriskclient",
+      "selected_GEG_pack_id": null,
+      "path": "GEG",
       "is_standard_version": true,
-      "group": "NORISK CLIENT",
+      "group": "GEG CLIENT",
       "banner": {
         "source": {
           "type": "base64",
@@ -75,7 +75,7 @@
           "mime_type": "image/png"
         }
       },
-      "norisk_information": {}
+      "GEG_information": {}
     }
   ]
 }

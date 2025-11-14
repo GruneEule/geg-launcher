@@ -1,11 +1,11 @@
 // src-tauri/tests/mrpack_test.rs
 
-use noriskclient_launcher_v3_lib::error::{AppError, Result}; // Use your crate name
-use noriskclient_launcher_v3_lib::integrations::mrpack::{process_mrpack, resolve_manifest_files};
+use GEG_launcher_v3_lib::error::{AppError, Result}; // Use your crate name
+use GEG_launcher_v3_lib::integrations::mrpack::{process_mrpack, resolve_manifest_files};
 use std::env;
 use std::path::PathBuf;
 
-//cargo test --package noriskclient-launcher-v3 --test mrpack_test -- --ignored --show-output
+//cargo test --package GEG-launcher-v3 --test mrpack_test -- --ignored --show-output
 
 // Kombinierter Test: Findet, parst und löst Mods auf
 #[tokio::test] // Async Test

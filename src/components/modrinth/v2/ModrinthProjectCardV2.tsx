@@ -207,13 +207,13 @@ export const ModrinthProjectCardV2 = React.memo<ModrinthProjectCardV2Props>(
           className={cn(
             "relative flex items-center gap-4 p-3 rounded-lg bg-black/20 border border-white/10 hover:border-white/20 transition-all duration-200",
           installStatus?.is_installed &&
-            !installStatus?.is_included_in_norisk_pack &&
+            !installStatus?.is_included_in_GEG_pack &&
             "border-l-green-500",
           !installStatus?.is_installed &&
-            installStatus?.is_included_in_norisk_pack &&
+            installStatus?.is_included_in_GEG_pack &&
             "border-l-blue-500",
           installStatus?.is_installed &&
-            installStatus?.is_included_in_norisk_pack &&
+            installStatus?.is_included_in_GEG_pack &&
             "border-l-blue-500",
         )}
       >
@@ -320,16 +320,16 @@ export const ModrinthProjectCardV2 = React.memo<ModrinthProjectCardV2Props>(
                     Installed
                   </TagBadge>
                 )}
-                {installStatus.is_included_in_norisk_pack && (
+                {installStatus.is_included_in_GEG_pack && (
                   <TagBadge
                     variant={
-                      installStatus.norisk_pack_item_details?.is_enabled === false
+                      installStatus.GEG_pack_item_details?.is_enabled === false
                         ? "inactive"
                         : "info"
                     }
                     size="sm"
                   >
-                    NoRisk Pack
+                    GEG Pack
                   </TagBadge>
                 )}
               </>

@@ -152,14 +152,14 @@ export function ModrinthProjectCard({
                 )}
 
                 {typeof installStatus === "object" &&
-                  installStatus?.is_included_in_norisk_pack && (
+                  installStatus?.is_included_in_GEG_pack && (
                     <Label
                       variant="info"
                       size="xs"
                       icon={<Icon icon="pixel:cube-solid" />}
                       withAnimation={false}
                     >
-                      NORISK PACK
+                      GEG PACK
                     </Label>
                   )}
 

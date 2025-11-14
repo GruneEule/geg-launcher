@@ -9,7 +9,7 @@ export const navItems = [
 ];
 
 export const versions = [
-  { id: "norisk-dev", label: "NoRisk Dev Branch", isCustom: true },
+  { id: "GEG-dev", label: "GEG Dev Branch", isCustom: true },
   { id: "1.21.4", label: "Minecraft 1.21.4", icon: "pixel:grid-solid" },
   { id: "1.20.6", label: "Minecraft 1.20.6", icon: "pixel:grid-solid" },
   { id: "1.20.5", label: "Minecraft 1.20.5", icon: "pixel:grid-solid" },
@@ -38,9 +38,9 @@ export const recentServers = [
 ];
 
 export const userData = {
-  username: "noriskk",
+  username: "GEGk",
   avatarUrl: "/skin.png",
-  skinUrl: "/NoRiskk.png",
+  skinUrl: "/GEGk.png",
 };
 
 export const appConfig = {

@@ -1,7 +1,7 @@
 use crate::config::{ProjectDirsExt, LAUNCHER_DIRECTORY};
 use crate::error::Result;
-use crate::integrations::norisk_packs::NoriskModpacksConfig;
-use crate::minecraft::api::norisk_api::NoRiskApi;
+use crate::integrations::norisk_packs::GEGModpacksConfig;
+use crate::minecraft::api::norisk_api::NoriskApi;
 use crate::state::post_init::PostInitializationHandler;
 use async_trait::async_trait;
 use log::{debug, error, info};
@@ -12,21 +12,21 @@ use tokio::fs;
 use tokio::sync::Mutex;
 use tokio::sync::RwLock;
 
-// Default filename for the Norisk packs configuration
-const NORISK_PACKS_FILENAME: &str = "norisk_modpacks.json";
+// Default filename for the GEG packs configuration
+const GEG_PACKS_FILENAME: &str = "GEG_modpacks.json";
 
-/// Returns the path for the norisk packs config depending on experimental mode
-pub fn norisk_packs_path_for(is_experimental: bool) -> PathBuf {
+/// Returns the path for the GEG packs config depending on experimental mode
+pub fn GEG_packs_path_for(is_experimental: bool) -> PathBuf {
     let filename = if is_experimental {
-        "norisk_modpacks_exp.json"
+        "GEG_modpacks_exp.json"
     } else {
-        NORISK_PACKS_FILENAME
+        GEG_PACKS_FILENAME
     };
     LAUNCHER_DIRECTORY.root_dir().join(filename)
 }
 
 pub struct NoriskPackManager {
-    config: Arc<RwLock<NoriskModpacksConfig>>,
+    config: Arc<RwLock<GEGModpacksConfig>>,
     config_path: PathBuf,
     save_lock: Mutex<()>,
 }
@@ -40,21 +40,21 @@ impl NoriskPackManager {
             config_path
         );
         Ok(Self {
-            config: Arc::new(RwLock::new(NoriskModpacksConfig::default())),
+            config: Arc::new(RwLock::new(GEGModpacksConfig::default())),
             config_path,
             save_lock: Mutex::new(()),
         })
     }
 
-    /// Loads the Norisk packs configuration from a JSON file.
+    /// Loads the GEG packs configuration from a JSON file.
     /// Returns a default empty config if the file doesn't exist or cannot be parsed.
-    async fn load_config_internal(&self, path: &PathBuf) -> Result<NoriskModpacksConfig> {
+    async fn load_config_internal(&self, path: &PathBuf) -> Result<GEGModpacksConfig> {
         if !path.exists() {
             info!(
-                "Norisk packs config file not found at {:?}, using default empty config.",
+                "GEG packs config file not found at {:?}, using default empty config.",
                 path
             );
-            return Ok(NoriskModpacksConfig {
+            return Ok(GEGModpacksConfig {
                 packs: HashMap::new(),
                 repositories: HashMap::new(),
             });
@@ -65,8 +65,8 @@ impl NoriskPackManager {
         match serde_json::from_str(&data) {
             Ok(config) => Ok(config),
             Err(e) => {
-                error!("Failed to parse norisk_modpacks.json at {:?}: {}. Returning default empty config.", path, e);
-                Ok(NoriskModpacksConfig {
+                error!("Failed to parse GEG_modpacks.json at {:?}: {}. Returning default empty config.", path, e);
+                Ok(GEGModpacksConfig {
                     packs: HashMap::new(),
                     repositories: HashMap::new(),
                 })
@@ -74,16 +74,16 @@ impl NoriskPackManager {
         }
     }
 
-    /// Fetches the latest Norisk packs configuration from the API and updates the local state.
+    /// Fetches the latest GEG packs configuration from the API and updates the local state.
     /// Saves the updated configuration to the file on success.
     pub async fn fetch_and_update_config(
         &self,
-        norisk_token: &str,
+        GEG_token: &str,
         is_experimental: bool,
     ) -> Result<()> {
-        info!("Fetching latest Norisk packs config from API...");
+        info!("Fetching latest GEG packs config from API...");
 
-        match NoRiskApi::get_modpacks(norisk_token, is_experimental).await {
+        match NoriskApi::get_modpacks(GEG_token, is_experimental).await {
             Ok(new_config) => {
                 debug!(
                     "Successfully fetched {} packs definitions from API.",
@@ -98,7 +98,7 @@ impl NoriskPackManager {
                 // Save the newly fetched config
                 match self.save_config().await {
                     Ok(_) => {
-                        info!("Successfully updated and saved Norisk packs config from API.");
+                        info!("Successfully updated and saved GEG packs config from API.");
                         Ok(())
                     }
                     Err(e) => {
@@ -108,7 +108,7 @@ impl NoriskPackManager {
                 }
             }
             Err(e) => {
-                error!("Failed to fetch Norisk packs config from API: {}", e);
+                error!("Failed to fetch GEG packs config from API: {}", e);
                 Err(e) // Return the fetch error
             }
         }
@@ -127,7 +127,7 @@ impl NoriskPackManager {
         // Choose path based on experimental mode if available; fall back to manager's path
         let path_to_write = if let Ok(state) = crate::state::state_manager::State::get().await {
             let is_exp = state.config_manager.is_experimental_mode().await;
-            norisk_packs_path_for(is_exp)
+            GEG_packs_path_for(is_exp)
         } else {
             self.config_path.clone()
         };
@@ -136,7 +136,7 @@ impl NoriskPackManager {
             if !parent_dir.exists() {
                 fs::create_dir_all(parent_dir).await?;
                 info!(
-                    "Created directory for norisk packs config: {:?}",
+                    "Created directory for GEG packs config: {:?}",
                     parent_dir
                 );
             }
@@ -144,19 +144,19 @@ impl NoriskPackManager {
 
         fs::write(&path_to_write, config_data).await?;
         info!(
-            "Successfully saved norisk packs config to {:?}",
+            "Successfully saved GEG packs config to {:?}",
             path_to_write
         );
         Ok(())
     }
 
-    /// Returns a clone of the entire current NoriskModpacksConfig.
-    pub async fn get_config(&self) -> NoriskModpacksConfig {
+    /// Returns a clone of the entire current GEGModpacksConfig.
+    pub async fn get_config(&self) -> GEGModpacksConfig {
         self.config.read().await.clone()
     }
 
     /// Updates the entire configuration and saves it to the file.
-    pub async fn update_config(&self, new_config: NoriskModpacksConfig) -> Result<()> {
+    pub async fn update_config(&self, new_config: GEGModpacksConfig) -> Result<()> {
         {
             let mut config_guard = self.config.write().await;
             *config_guard = new_config;
@@ -168,17 +168,17 @@ impl NoriskPackManager {
     #[allow(dead_code)] // Allow unused function for debugging purposes
     pub async fn print_current_config(&self) {
         let config_guard = self.config.read().await;
-        println!("--- Current Norisk Packs Config ---");
+        println!("--- Current GEG Packs Config ---");
        //println!("{:#?}", *config_guard); // Use pretty-print debug format
        //match config_guard.print_resolved_packs() {
        //    Ok(_) => (),
        //    Err(e) => error!("Failed to print resolved packs: {}", e),
        //}
-        println!("--- End Norisk Packs Config ---");
+        println!("--- End GEG Packs Config ---");
     }
 
     // Add more specific accessor methods if needed, e.g.:
-    // pub async fn get_pack_definition(&self, pack_id: &str) -> Option<NoriskPackDefinition> { ... }
+    // pub async fn get_pack_definition(&self, pack_id: &str) -> Option<GEGPackDefinition> { ... }
     // pub async fn get_repository_url(&self, repo_ref: &str) -> Option<String> { ... }
 }
 
@@ -189,7 +189,7 @@ impl PostInitializationHandler for NoriskPackManager {
         // Select load path based on experimental mode if accessible
         let load_path = if let Ok(state) = crate::state::state_manager::State::get().await {
             let is_exp = state.config_manager.is_experimental_mode().await;
-            norisk_packs_path_for(is_exp)
+            GEG_packs_path_for(is_exp)
         } else {
             self.config_path.clone()
         };
@@ -202,7 +202,7 @@ impl PostInitializationHandler for NoriskPackManager {
     }
 }
 
-/// Returns the default path for the norisk_modpacks.json file within the launcher directory.
+/// Returns the default path for the GEG_modpacks.json file within the launcher directory.
 pub fn default_norisk_packs_path() -> PathBuf {
-    LAUNCHER_DIRECTORY.root_dir().join(NORISK_PACKS_FILENAME)
+    LAUNCHER_DIRECTORY.root_dir().join(GEG_PACKS_FILENAME)
 }

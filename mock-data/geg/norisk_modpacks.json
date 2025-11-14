@@ -2,9 +2,9 @@
   "packs": {
     "cobblemon": {
       "displayName": "Cobblemon Pack (Test)",
-      "description": "Cobblemon basierend auf Norisk Prod, ohne Silk.",
+      "description": "Cobblemon basierend auf GEG Prod, ohne Silk.",
       "inheritsFrom": [
-        "norisk-prod"
+        "GEG-prod"
       ],
       "excludeMods": [
         "silk"
@@ -31,8 +31,8 @@
       "assets": [],
       "isExperimental": false
     },
-    "norisk-dev": {
-      "displayName": "Norisk Dev",
+    "GEG-dev": {
+      "displayName": "GEG Dev",
       "description": "Development Version mit allen Mods aus der alten Struktur.",
       "inheritsFrom": null,
       "excludeMods": null,
@@ -461,13 +461,13 @@
           }
         },
         {
-          "id": "noriskclient-fabric-utils",
-          "displayName": "NoRiskClient-Fabric-Utils",
+          "id": "GEG-fabric-utils",
+          "displayName": "GEG-Fabric-Utils",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
-            "artifactId": "noriskclient-fabric-utils"
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
+            "artifactId": "GEG-fabric-utils"
           },
           "compatibility": {
             "1.21": {
@@ -491,12 +491,12 @@
           }
         },
         {
-          "id": "noriskclient-ui",
-          "displayName": "NoRiskClient-UI",
+          "id": "GEG-ui",
+          "displayName": "GEG-UI",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "ui"
           },
           "compatibility": {
@@ -521,12 +521,12 @@
           }
         },
         {
-          "id": "noriskclient-client",
-          "displayName": "NoRiskClient-Client",
+          "id": "GEG-client",
+          "displayName": "GEG-Client",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "client"
           },
           "compatibility": {
@@ -551,12 +551,12 @@
           }
         },
         {
-          "id": "noriskclient-cosmetics",
-          "displayName": "NoRiskClient-Cosmetics",
+          "id": "GEG-cosmetics",
+          "displayName": "GEG-Cosmetics",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "cosmetics"
           },
           "compatibility": {
@@ -581,12 +581,12 @@
           }
         },
         {
-          "id": "noriskclient-friends",
-          "displayName": "NoRiskClient-Friends",
+          "id": "GEG-friends",
+          "displayName": "GEG-Friends",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "friends"
           },
           "compatibility": {
@@ -611,12 +611,12 @@
           }
         },
         {
-          "id": "noriskclient-mcreal",
-          "displayName": "NoRiskClient-McReal",
+          "id": "GEG-mcreal",
+          "displayName": "GEG-McReal",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "mcreal"
           },
           "compatibility": {
@@ -641,12 +641,12 @@
           }
         },
         {
-          "id": "noriskclient-minigames",
-          "displayName": "NoRiskClient-Minigames",
+          "id": "GEG-minigames",
+          "displayName": "GEG-Minigames",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "minigames"
           },
           "compatibility": {
@@ -693,8 +693,8 @@
           "displayName": "SubwaySurfers",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "subwaysurfers"
           },
           "compatibility": {
@@ -711,8 +711,8 @@
           "displayName": "DataTracker",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "datatracker"
           },
           "compatibility": {
@@ -735,8 +735,8 @@
           "displayName": "owoplus",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "owoplus"
           },
           "compatibility": {
@@ -765,8 +765,8 @@
           "displayName": "Emotes",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "emote-lib"
           },
           "compatibility": {
@@ -795,8 +795,8 @@
           "displayName": "quests",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "quests"
           },
           "compatibility": {
@@ -813,8 +813,8 @@
           "displayName": "lobby-common",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "lobby-common"
           },
           "compatibility": {
@@ -831,8 +831,8 @@
           "displayName": "lobby-client",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "lobby-client"
           },
           "compatibility": {
@@ -849,8 +849,8 @@
           "displayName": "voicechat-client",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "voicechat-client"
           },
           "compatibility": {
@@ -908,8 +908,8 @@
           "displayName": "hero-api",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "hero-api"
           },
           "compatibility": {
@@ -926,8 +926,8 @@
           "displayName": "katara",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "katara"
           },
           "compatibility": {
@@ -944,8 +944,8 @@
           "displayName": "toph",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "toph"
           },
           "compatibility": {
@@ -962,8 +962,8 @@
           "displayName": "aang",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "aang"
           },
           "compatibility": {
@@ -980,8 +980,8 @@
           "displayName": "OldPvP-Common",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "oldpvp-common"
           },
           "compatibility": {
@@ -998,8 +998,8 @@
           "displayName": "ffa-common",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "ffa-common"
           },
           "compatibility": {
@@ -1016,8 +1016,8 @@
           "displayName": "ffa-client",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
             "artifactId": "ffa-client"
           },
           "compatibility": {
@@ -1234,13 +1234,13 @@
         }
       ],
       "assets": [
-        "norisk-prod",
-        "norisk-dev"
+        "GEG-prod",
+        "GEG-dev"
       ],
       "isExperimental": false
     },
-    "norisk-prod": {
-      "displayName": "Norisk Production",
+    "GEG-prod": {
+      "displayName": "GEG Production",
       "description": "Standard empfohlenes Mod-Set für stabiles Spielen.",
       "inheritsFrom": null,
       "excludeMods": null,
@@ -1315,13 +1315,13 @@
           }
         },
         {
-          "id": "norisk-fabric-utils",
-          "displayName": "NoRiskClient-Fabric-Utils",
+          "id": "GEG-fabric-utils",
+          "displayName": "GEG-Fabric-Utils",
           "source": {
             "type": "maven",
-            "repositoryRef": "noriskproduction",
-            "groupId": "gg.norisk",
-            "artifactId": "noriskclient-fabric-utils"
+            "repositoryRef": "GEGproduction",
+            "groupId": "gg.GEG",
+            "artifactId": "GEG-fabric-utils"
           },
           "compatibility": {
             "1.21.4": {
@@ -1360,23 +1360,23 @@
           }
         },
         {
-          "id": "old-noriskclient",
-          "displayName": "Old NoRiskClient",
+          "id": "old-GEG",
+          "displayName": "Old GEG",
           "source": {
             "type": "url"
           },
           "compatibility": {
             "1.8.9": {
               "forge": {
-                "identifier": "http://dl.norisk.gg/noriskclient-0.2.1.jar",
-                "filename": "noriskclient-0.2.1.jar"
+                "identifier": "http://dl.GEG.gg/GEG-0.2.1.jar",
+                "filename": "GEG-0.2.1.jar"
               }
             }
           }
         }
       ],
       "assets": [
-        "norisk-prod"
+        "GEG-prod"
       ],
       "isExperimental": false
     }
@@ -1384,15 +1384,15 @@
   "repositories": {
     "modrinth": "https://api.modrinth.com/maven/",
     "kosmx": "https://maven.kosmx.dev/",
-    "norisksnapshots": "https://maven.norisk.gg/repository/norisk-snapshots/",
+    "GEGsnapshots": "https://maven.GEG.gg/repository/GEG-snapshots/",
     "jitpack": "https://jitpack.io/",
     "fabric": "https://maven.fabricmc.net/",
     "central": "https://repo1.maven.org/maven2/",
     "geckolib": "https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/",
-    "norisk": "https://dl.norisk.gg/",
+    "GEG": "https://dl.GEG.gg/",
     "terraformersmc": "https://maven.terraformersmc.com/",
     "viaversion": "https://repo.viaversion.com/",
     "wispforest": "https://maven.wispforest.io/",
-    "noriskproduction": "https://maven.norisk.gg/repository/norisk-production/"
+    "GEGproduction": "https://maven.GEG.gg/repository/GEG-production/"
   }
 }

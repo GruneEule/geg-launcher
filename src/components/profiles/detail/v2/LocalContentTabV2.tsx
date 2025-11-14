@@ -30,7 +30,7 @@ import {
 } from "../../../../hooks/useLocalContentManager";
 import type { UnifiedVersion } from "../../../../types/unified";
 import { ModPlatform, UnifiedVersionType, UnifiedDependencyType } from "../../../../types/unified";
-import type { NoriskModpacksConfig } from "../../../../types/noriskPacks";
+import type { GEGModpacksConfig } from "../../../../types/GEGPacks";
 import * as ProfileService from "../../../../services/profile-service";
 import * as ContentService from "../../../../services/content-service"; // Added import
 import {
@@ -155,7 +155,7 @@ const LOCAL_CONTENT_TAB_ICONS_TO_PRELOAD = [
   "solar:refresh-outline", // For primary refresh button normal state
   "solar:download-minimalistic-bold", // For Update All button
   "solar:alt-arrow-down-bold", // For version dropdown button
-  "solar:shield-cross-bold-duotone", // For NoRisk blocked badge
+  "solar:shield-cross-bold-duotone", // For GEG blocked badge
 ];
 
 interface LocalContentTabV2Props<T extends LocalContentItem> {
@@ -198,8 +198,8 @@ export function LocalContentTabV2<T extends LocalContentItem>({
 
   const [isBlockedConfigLoaded, setIsBlockedConfigLoaded] = useState(false);
 
-  const [noriskPacksConfig, setNoriskPacksConfig] =
-    useState<NoriskModpacksConfig | null>(null);
+  const [GEGPacksConfig, setGEGPacksConfig] =
+    useState<GEGModpacksConfig | null>(null);
   const [isFetchingPacksConfig, setIsFetchingPacksConfig] = useState(false);
   const [isRefreshingPacksList, setIsRefreshingPacksList] = useState(false);
   const [openVersionDropdownId, setOpenVersionDropdownId] = useState<
@@ -215,16 +215,16 @@ export function LocalContentTabV2<T extends LocalContentItem>({
   const [isLoadingVersions, setIsLoadingVersions] = useState(false);
   const [versionsError, setVersionsError] = useState<string | null>(null);
 
-  // Fetch Flagsmith config when a NoRisk pack is selected
+  // Fetch Flagsmith config when a GEG pack is selected
   useEffect(() => {
     // Only fetch if a pack is selected, as blocking rules only apply in that context.
-    if (profile?.selected_norisk_pack_id) {
+    if (profile?.selected_GEG_pack_id) {
       FlagsmithService.getBlockedModsConfig()
         .then(() => {
           setIsBlockedConfigLoaded(true);
         })
         .catch((err) => {
-          console.error("Failed to load NoRisk blocked mods config:", err);
+          console.error("Failed to load GEG blocked mods config:", err);
           // Optionally show a toast, but might be too noisy.
           // toast.error("Could not load mod compatibility rules.");
         });
@@ -232,7 +232,7 @@ export function LocalContentTabV2<T extends LocalContentItem>({
       // If no pack is selected, the config is not relevant/loaded.
       setIsBlockedConfigLoaded(false);
     }
-  }, [profile?.selected_norisk_pack_id]);
+  }, [profile?.selected_GEG_pack_id]);
 
   const {
     items,
@@ -338,49 +338,49 @@ export function LocalContentTabV2<T extends LocalContentItem>({
     }
   };
 
-  // Fetch NoRiskPacksConfig if content type is NoRiskMod
+  // Fetch GEGPacksConfig if content type is GEGMod
   useEffect(() => {
-    if (contentType === "NoRiskMod" && profile) {
+    if (contentType === "GEGMod" && profile) {
       const fetchPacks = async () => {
         setIsFetchingPacksConfig(true);
         try {
-          const config = await ProfileService.getNoriskPacksResolved();
-          setNoriskPacksConfig(config);
+          const config = await ProfileService.getGEGPacksResolved();
+          setGEGPacksConfig(config);
         } catch (err) {
-          console.error("Failed to fetch NoRisk packs config:", err);
-          toast.error("Failed to load NoRisk pack list.");
-          setNoriskPacksConfig(null);
+          console.error("Failed to fetch GEG packs config:", err);
+          toast.error("Failed to load GEG pack list.");
+          setGEGPacksConfig(null);
         } finally {
           setIsFetchingPacksConfig(false);
         }
       };
       fetchPacks();
     } else {
-      setNoriskPacksConfig(null); // Clear if not NoRiskMod or no profile
+      setGEGPacksConfig(null); // Clear if not GEGMod or no profile
     }
   }, [contentType, profile]);
 
   const handleRefreshPacksList = useCallback(async () => {
-    if (contentType !== "NoRiskMod") return;
+    if (contentType !== "GEGMod") return;
     setIsRefreshingPacksList(true);
     try {
-      await ProfileService.refreshNoriskPacks();
-      const config = await ProfileService.getNoriskPacksResolved();
-      setNoriskPacksConfig(config);
-      toast.success("NoRisk Pack list refreshed.");
+      await ProfileService.refreshGEGPacks();
+      const config = await ProfileService.getGEGPacksResolved();
+      setGEGPacksConfig(config);
+      toast.success("GEG Pack list refreshed.");
     } catch (err) {
-      console.error("Failed to refresh NoRisk packs list:", err);
-      toast.error("Failed to refresh NoRisk pack list.");
+      console.error("Failed to refresh GEG packs list:", err);
+      toast.error("Failed to refresh GEG pack list.");
     } finally {
       setIsRefreshingPacksList(false);
     }
   }, [contentType]);
 
-  const noriskPackOptions = useMemo((): SelectOption[] => {
-    if (contentType !== "NoRiskMod" || !noriskPacksConfig) {
+  const GEGPackOptions = useMemo((): SelectOption[] => {
+    if (contentType !== "GEGMod" || !GEGPacksConfig) {
       return [{ value: "", label: "- No Pack Selected -" }];
     }
-    const options = Object.entries(noriskPacksConfig.packs).map(
+    const options = Object.entries(GEGPacksConfig.packs).map(
       ([id, packDef]) => ({
         value: id,
         label: packDef.displayName || id,
@@ -388,16 +388,16 @@ export function LocalContentTabV2<T extends LocalContentItem>({
     );
     options.sort((a, b) => a.label.localeCompare(b.label));
     return [{ value: "", label: "- No Pack Selected -" }, ...options];
-  }, [contentType, noriskPacksConfig]);
+  }, [contentType, GEGPacksConfig]);
 
   const handleSelectedPackChange = useCallback(
     async (newPackId: string | null) => {
-      if (!profile || newPackId === profile.selected_norisk_pack_id) return;
+      if (!profile || newPackId === profile.selected_GEG_pack_id) return;
       try {
         // Update the profile on backend
         await ProfileService.updateProfile(profile.id, {
-          selected_norisk_pack_id: newPackId,
-          clear_selected_norisk_pack: newPackId === null,
+          selected_GEG_pack_id: newPackId,
+          clear_selected_GEG_pack: newPackId === null,
         });
 
         // Refresh the profile data to get the updated profile
@@ -410,9 +410,9 @@ export function LocalContentTabV2<T extends LocalContentItem>({
           onRefreshRequired();
         }
       } catch (err) {
-        console.error("Failed to update selected NoRisk pack:", err);
+        console.error("Failed to update selected GEG pack:", err);
         toast.error(
-          `Failed to switch NoRisk pack: ${err instanceof Error ? err.message : String(err)}`,
+          `Failed to switch GEG pack: ${err instanceof Error ? err.message : String(err)}`,
         );
       }
     },
@@ -697,10 +697,10 @@ export function LocalContentTabV2<T extends LocalContentItem>({
 
       const isItemOpen = openVersionDropdownId === item.filename;
 
-      const isBlockedByNoRisk =
-        !!profile?.selected_norisk_pack_id &&
+      const isBlockedByGEG =
+        !!profile?.selected_GEG_pack_id &&
         isBlockedConfigLoaded &&
-        FlagsmithService.isModBlockedByNoRisk(
+        FlagsmithService.isModBlockedByGEG(
           item.filename,
           item.modrinth_info?.project_id,
         );
@@ -774,7 +774,7 @@ export function LocalContentTabV2<T extends LocalContentItem>({
             {versionText ? (
               <>
                 <span>Version: {versionText}</span>
-                {contentType !== "NoRiskMod" && (
+                {contentType !== "GEGMod" && (
                   <div className="relative">
                     <button
                       ref={(el) => {
@@ -894,8 +894,8 @@ export function LocalContentTabV2<T extends LocalContentItem>({
       const isDisabled = item.is_disabled;
 
       const itemBadgesNode = [
-        // NoRisk crash warning (highest priority)
-        ...(isBlockedByNoRisk ? [{
+        // GEG crash warning (highest priority)
+        ...(isBlockedByGEG ? [{
           text: "CRASHES WITH NRC",
           color: "#ef4444"
         }] : []),
@@ -904,7 +904,7 @@ export function LocalContentTabV2<T extends LocalContentItem>({
         ...(itemPlatform !== 'Local' ? [{
           icon: itemPlatform === 'Modrinth'
             ? "https://cdn.modrinth.com/modrinth-new.png"
-            : "https://cdn.norisk.gg/misc/curseforge.webp",
+            : "https://cdn.GEG.gg/misc/curseforge.webp",
           text: itemPlatform,
           color: isDisabled ? "#6b7280" : (itemPlatform === 'Modrinth' ? "#22c55e" : "#f97316"),
           iconFilter: isDisabled ? "grayscale(100%) brightness(0.7)" : undefined
@@ -923,7 +923,7 @@ export function LocalContentTabV2<T extends LocalContentItem>({
       const itemActions: ContentActionButton[] = [];
 
       // Check if update is available (used for custom tooltip rendering)
-      // Note: NoRisk mods can also have updates available, but they won't be auto-updatable
+      // Note: GEG mods can also have updates available, but they won't be auto-updatable
       const hasUpdateAvailable = updateAvailableVersion && !isCurrentlyUpdating;
       let shouldShowUpdateButton = false;
       let isUpdateButtonDimmed = false;
@@ -975,7 +975,7 @@ export function LocalContentTabV2<T extends LocalContentItem>({
 
       // Update action is handled separately with custom tooltip below
       // Only add update action if no update available
-      if (isCurrentlyUpdating && !item.norisk_info) {
+      if (isCurrentlyUpdating && !item.GEG_info) {
         itemActions.push({
           id: "updating",
           icon: LOCAL_CONTENT_TAB_ICONS_TO_PRELOAD[11],
@@ -998,8 +998,8 @@ export function LocalContentTabV2<T extends LocalContentItem>({
         onClick: () => handleToggleItemEnabled(item),
       });
 
-      // Delete action (if not NoRisk mod) - icon-only
-      if (!item.norisk_info) {
+      // Delete action (if not GEG mod) - icon-only
+      if (!item.GEG_info) {
         itemActions.push({
           id: "delete",
           icon: isDeleting ? LOCAL_CONTENT_TAB_ICONS_TO_PRELOAD[11] : LOCAL_CONTENT_TAB_ICONS_TO_PRELOAD[6],
@@ -1186,7 +1186,7 @@ export function LocalContentTabV2<T extends LocalContentItem>({
 
   const isBusyWithEssentialLoad =
     isLoading ||
-    (contentType === "NoRiskMod" &&
+    (contentType === "GEGMod" &&
       (isFetchingPacksConfig || isRefreshingPacksList));
   const isAnyBatchActionInProgress =
     isBatchToggling || isBatchDeleting || isUpdatingAll;
@@ -1256,7 +1256,7 @@ export function LocalContentTabV2<T extends LocalContentItem>({
             }
           />
 
-          {/* Right side: Action Buttons and NoRiskPack Dropdown */}
+          {/* Right side: Action Buttons and GEGPack Dropdown */}
           <div className="flex items-center gap-2">
             {/* Batch Actions - Always visible when items are selected */}
             {selectedItemIds.size > 0 && (
@@ -1287,7 +1287,7 @@ export function LocalContentTabV2<T extends LocalContentItem>({
                       : `Disable update checks for ${updatesToggleConfig.actionCount} selected items`,
                     onClick: () => handleBatchToggleSelectedUpdatesEnabled(updatesToggleConfig.shouldEnable),
                   }] : []),
-                  ...(contentType !== "NoRiskMod" ? [{
+                  ...(contentType !== "GEGMod" ? [{
                     id: "batch-delete",
                     label: isBatchDeleting ? "DELETING..." : `DELETE (${selectedItemIds.size})`,
                     icon: isBatchDeleting ? LOCAL_CONTENT_TAB_ICONS_TO_PRELOAD[11] : LOCAL_CONTENT_TAB_ICONS_TO_PRELOAD[6],
@@ -1305,23 +1305,23 @@ export function LocalContentTabV2<T extends LocalContentItem>({
             {/* Hide other buttons when any items are selected */}
             {selectedItemIds.size === 0 && (
               <>
-                {/* NoRisk Pack Selector - Only for NoRiskMod type */}
-                {contentType === "NoRiskMod" &&
-                  noriskPacksConfig &&
-                  noriskPackOptions.length > 0 && (
+                {/* GEG Pack Selector - Only for GEGMod type */}
+                {contentType === "GEGMod" &&
+                  GEGPacksConfig &&
+                  GEGPackOptions.length > 0 && (
                     <div className="flex items-center gap-2">
                       <Select
-                        value={profile?.selected_norisk_pack_id || ""}
+                        value={profile?.selected_GEG_pack_id || ""}
                         onChange={(value) =>
                           handleSelectedPackChange(value === "" ? null : value)
                         }
-                        options={noriskPackOptions}
+                        options={GEGPackOptions}
                         placeholder="Select Pack..."
                         className="!h-9 text-sm min-w-[180px] max-w-[250px] truncate"
                         size="sm"
                       />
-                      {profile?.selected_norisk_pack_id &&
-                        noriskPacksConfig?.packs[profile.selected_norisk_pack_id]
+                      {profile?.selected_GEG_pack_id &&
+                        GEGPacksConfig?.packs[profile.selected_GEG_pack_id]
                           ?.isExperimental && (
                           <div className="text-xs text-yellow-500/80 font-minecraft">
                             (Experimental)
@@ -1330,8 +1330,8 @@ export function LocalContentTabV2<T extends LocalContentItem>({
                     </div>
                   )}
 
-                {/* Update All buttons - Only for non-NoRiskMod types */}
-                {contentType !== "NoRiskMod" && updatableContentCount > 0 && (
+                {/* Update All buttons - Only for non-GEGMod types */}
+                {contentType !== "GEGMod" && updatableContentCount > 0 && (
                   <ContentActionButtons
                     actions={[
                       {
@@ -1349,8 +1349,8 @@ export function LocalContentTabV2<T extends LocalContentItem>({
                   />
                 )}
 
-                {/* Browse and Add buttons - only for non-NoRiskMod types */}
-                {effectiveOnAddContent && contentType !== "NoRiskMod" && profile && (
+                {/* Browse and Add buttons - only for non-GEGMod types */}
+                {effectiveOnAddContent && contentType !== "GEGMod" && profile && (
                   <ContentActionButtons
                     actions={[
                       {
@@ -1506,14 +1506,14 @@ export function LocalContentTabV2<T extends LocalContentItem>({
   }
 
   const hasSelectedItems = selectedItemIds.size > 0;
-  const showNoRiskPackSelector = contentType === "NoRiskMod";
-  const isNoRiskPackSelected =
-    showNoRiskPackSelector && profile?.selected_norisk_pack_id;
+  const showGEGPackSelector = contentType === "GEGMod";
+  const isGEGPackSelected =
+    showGEGPackSelector && profile?.selected_GEG_pack_id;
 
   // Dynamic empty state messages
   const getEmptyStateMessage = () => {
-    if (contentType === "NoRiskMod" && !profile?.selected_norisk_pack_id) {
-      return "No NoRisk Pack Selected";
+    if (contentType === "GEGMod" && !profile?.selected_GEG_pack_id) {
+      return "No GEG Pack Selected";
     } else if (error) {
       return ""; // Remove title, show only button
     } else if ((isLoading || isFetchingPacksConfig) && items.length === 0) {
@@ -1536,8 +1536,8 @@ export function LocalContentTabV2<T extends LocalContentItem>({
   };
 
   const getEmptyStateDescription = () => {
-    if (contentType === "NoRiskMod" && !profile?.selected_norisk_pack_id) {
-      return "Please select a NoRisk Modpack from the dropdown to manage its mods.";
+    if (contentType === "GEGMod" && !profile?.selected_GEG_pack_id) {
+      return "Please select a GEG Modpack from the dropdown to manage its mods.";
     } else if (error) {
       return "Please try refreshing or check the console.";
     } else if ((isLoading || isFetchingPacksConfig) && items.length === 0) {
@@ -1586,7 +1586,7 @@ export function LocalContentTabV2<T extends LocalContentItem>({
     <>
       <GenericContentTab<T>
         items={
-          contentType === "NoRiskMod" && !profile?.selected_norisk_pack_id
+          contentType === "GEGMod" && !profile?.selected_GEG_pack_id
             ? []
             : filteredItems
         }
@@ -1602,11 +1602,11 @@ export function LocalContentTabV2<T extends LocalContentItem>({
         emptyStateMessage={getEmptyStateMessage()}
         emptyStateDescription={getEmptyStateDescription()}
         emptyStateAction={
-          // Show browse button for empty states (except when NoRisk pack not selected and when loading)
+          // Show browse button for empty states (except when GEG pack not selected and when loading)
           (isTrulyEmptyState ||
            (searchQuery && filteredItems.length === 0 && selectedItemIds.size === 0) ||
            (error && !isLoading)) &&
-          !(contentType === "NoRiskMod" && !profile?.selected_norisk_pack_id) ? (
+          !(contentType === "GEGMod" && !profile?.selected_GEG_pack_id) ? (
             <ContentActionButtons
               actions={[
                 {

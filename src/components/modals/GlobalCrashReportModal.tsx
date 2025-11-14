@@ -19,7 +19,7 @@ export function GlobalCrashReportModal() {
   const { isCrashModalOpen, crashData, closeCrashModal } = useCrashModalStore();
   const [profileName, setProfileName] = useState<string>('');
   const [mclogsUrl, setMclogsUrl] = useState<string | null>(null);
-  const [noriskReportSubmitted, setNoriskReportSubmitted] = useState<boolean>(false);
+  const [GEGReportSubmitted, setGEGReportSubmitted] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [displayedCrashReportContent, setDisplayedCrashReportContent] = useState<string | undefined>(undefined);
   const [isListeningForCrashContent, setIsListeningForCrashContent] = useState(false);
@@ -41,14 +41,14 @@ export function GlobalCrashReportModal() {
           });
       }
       setMclogsUrl(null);
-      setNoriskReportSubmitted(false);
+      setGEGReportSubmitted(false);
       setIsProcessing(false);
       setDisplayedCrashReportContent(crashData.crash_report_content);
       setIsListeningForCrashContent(false);
     } else {
       setProfileName('');
       setMclogsUrl(null);
-      setNoriskReportSubmitted(false);
+      setGEGReportSubmitted(false);
       setIsProcessing(false);
       setDisplayedCrashReportContent(undefined);
       setIsListeningForCrashContent(false);
@@ -168,15 +168,15 @@ export function GlobalCrashReportModal() {
         setMclogsUrl(currentMclogsUrl);
       }
 
-      if (currentMclogsUrl && !noriskReportSubmitted) {
-        toast.loading('Submitting crash report to NoRisk...', { id: mainToastId });
+      if (currentMclogsUrl && !GEGReportSubmitted) {
+        toast.loading('Submitting crash report to GEG...', { id: mainToastId });
         const crashReportPayload: CrashlogDto = {
           mcLogsUrl: currentMclogsUrl,
           metadata: crashData.process_metadata!, 
         };
         
         await submitCrashLog(crashReportPayload);
-        setNoriskReportSubmitted(true);
+        setGEGReportSubmitted(true);
         
         try {
           await writeText(currentMclogsUrl);
@@ -185,7 +185,7 @@ export function GlobalCrashReportModal() {
           console.error("Failed to copy mclogs URL after report:", copyError);
           toast.success(`Report submitted. Log URL: ${currentMclogsUrl} (Copying failed)`, { id: mainToastId });
         }
-      } else if (currentMclogsUrl && noriskReportSubmitted) {
+      } else if (currentMclogsUrl && GEGReportSubmitted) {
         toast.dismiss(mainToastId);
         await writeText(currentMclogsUrl);
         toast.success("mclogs.com URL copied to clipboard!");
@@ -202,16 +202,16 @@ export function GlobalCrashReportModal() {
   
   const handleContactSupport = async () => {
     try {
-      await openExternalUrl('https://discord.norisk.gg');
-      toast.success("Opened NoRisk Discord in your browser!");
+      await openExternalUrl('https://discord.GEG.gg');
+      toast.success("Opened GEG Discord in your browser!");
     } catch (error) {
       console.error("Failed to open Discord URL:", error);
-      toast.error("Could not open Discord. Please go to discord.norisk.gg manually.");
+      toast.error("Could not open Discord. Please go to discord.GEG.gg manually.");
     }
   };
 
   let primaryButtonText = 'Upload Logs & Report';
-  if (mclogsUrl && noriskReportSubmitted) {
+  if (mclogsUrl && GEGReportSubmitted) {
     primaryButtonText = 'Copy Log URL';
   }
 
@@ -220,7 +220,7 @@ export function GlobalCrashReportModal() {
       <Button 
         onClick={handlePrimaryAction} 
         variant="secondary" 
-        icon={<Icon icon={mclogsUrl && noriskReportSubmitted ? "solar:copy-line-duotone" : "solar:upload-linear"} className="w-5 h-5" />}
+        icon={<Icon icon={mclogsUrl && GEGReportSubmitted ? "solar:copy-line-duotone" : "solar:upload-linear"} className="w-5 h-5" />}
         disabled={isProcessing || !crashData?.process_metadata}
       >
         {primaryButtonText}

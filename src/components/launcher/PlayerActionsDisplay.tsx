@@ -124,8 +124,8 @@ export function PlayerActionsDisplay({
 
       {displayMode === 'logo' ? (
         <img
-          src="norisk_logo_color.png"
-          alt="NoRisk Logo"
+          src="GEG_logo_color.png"
+          alt="GEG Logo"
           className="h-48 sm:h-56 md:h-64 mb-[-80px] sm:mb-[-100px] md:mb-[-120px] relative z-0"
           style={{
             imageRendering: "pixelated",

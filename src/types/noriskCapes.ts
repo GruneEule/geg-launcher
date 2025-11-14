@@ -34,12 +34,12 @@ export interface BrowseCapesOptions {
   filter_creator?: string;
   time_frame?: string;
   show_owned_only?: boolean;
-  norisk_token?: string;
+  GEG_token?: string;
   request_uuid?: string;
 }
 
 export interface GetPlayerCapesPayloadOptions { 
   player_identifier: string; // snake_case
-  norisk_token?: string;    // snake_case
+  GEG_token?: string;    // snake_case
   request_uuid?: string;    // snake_case
 }
