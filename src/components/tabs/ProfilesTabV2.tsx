@@ -16,6 +16,8 @@ import * as ProfileService from "../../services/profile-service";
 import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 import { useProfileWizardStore } from "../../store/profile-wizard-store";
 import { useThemeStore } from "../../store/useThemeStore";
+import { GroupTabs, type GroupTab } from "../ui/GroupTabs";
+import * as ConfigService from "../../services/launcher-config-service";
 import { useGlobalModal } from "../../hooks/useGlobalModal";
 import { ExportProfileModal } from "../profiles/ExportProfileModal";
 import { Icon } from "@iconify/react";
@@ -48,6 +50,7 @@ export function ProfilesTabV2() {
   
   // Local non-persistent state
   const [searchQuery, setSearchQuery] = useState("");
+  const [profileCategories, setProfileCategories] = useState<string[]>([]);
   
   // Use persistent values instead of local state
   const activeGroup = profilesTabActiveGroup;
@@ -95,7 +98,28 @@ export function ProfilesTabV2() {
 
   useEffect(() => {
     fetchProfiles();
+    const fetchConfig = async () => {
+      try {
+        const config = await ConfigService.getLauncherConfig();
+        setProfileCategories(config.profile_categories || []);
+      } catch (error) {
+        console.error("Failed to fetch launcher config:", error);
+      }
+    };
+    fetchConfig();
   }, [fetchProfiles]);
+
+  const groups: GroupTab[] = [
+    { id: "all", name: "All", count: profiles.length },
+    { id: "nrc", name: "GEG", count: profiles.filter(p => isNrcGroup(p.group)).length },
+    { id: "server", name: "Server", count: profiles.filter(p => p.group === "SERVER").length },
+    { id: "modpacks", name: "Modpacks", count: profiles.filter(p => p.group === "MODPACKS").length },
+    ...profileCategories.map(category => ({
+      id: category.toLowerCase(),
+      name: category,
+      count: profiles.filter(p => p.group?.toLowerCase() === category.toLowerCase()).length,
+    })),
+  ];
 
   // Handler functions from ProfilesTab.tsx
   const handleCreateProfile = () => {
@@ -303,6 +327,14 @@ export function ProfilesTabV2() {
           
           <ActionButtons actions={actionButtons} />
         </div>
+        <div className="mt-4">
+          <GroupTabs
+            groups={groups}
+            activeGroup={activeGroup}
+            onGroupChange={(groupId) => setProfilesTabActiveGroup(groupId)}
+            showAddButton={false}
+          />
+        </div>
       </div>
 
       {/* Profile list or Empty State */}
@@ -339,3 +371,4 @@ export function ProfilesTabV2() {
     </div>
   );
 }
+
