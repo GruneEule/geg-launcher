@@ -44,8 +44,19 @@ Do the above and share your source code with everyone; just like we do.
    ```
 
 4. Build for production:
+
    ```bash
-   yarn tauri build --target all
+   # Windows
+   yarn tauri build --target x86_64-pc-windows-msvc
+
+   # Linux
+   yarn tauri build --target x86_64-unknown-linux-gnu
+
+   # macOS Intel
+   yarn tauri build --target x86_64-apple-darwin
+
+   # macOS Silicon
+   yarn tauri build --target aarch64-apple-darwin
    ```
 
 ## Contributing
