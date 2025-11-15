@@ -5,7 +5,8 @@
   "windows": [
     "main",
     "log_window_*",
-    "updater"
+    "updater",
+    "capes-browser"
   ],
   "permissions": [
     "core:default",
@@ -18,6 +19,8 @@
     "core:window:allow-show",
     "core:window:allow-unminimize",
     "core:window:allow-set-focus",
+    "core:webview:allow-create-webview-window",
+    "core:webview:default",
     "dialog:default",
     "opener:allow-open-path",
     "clipboard-manager:allow-write-text",
