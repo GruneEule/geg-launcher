@@ -44,7 +44,9 @@ export function NewsSection({ className }: NewsSectionProps) {
 
     try {
       const fetchedPosts = await fetchNewsAndChangelogs();
-      setPosts(fetchedPosts);
+      // Sort posts by ID in descending order (highest ID first)
+      const sortedPosts = fetchedPosts.sort((a, b) => b.id - a.id);
+      setPosts(sortedPosts);
       console.log("[NewsSection] News data updated");
     } catch (err) {
       console.error("[NewsSection] Error fetching news:", err);
